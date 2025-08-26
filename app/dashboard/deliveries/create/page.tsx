@@ -14,16 +14,12 @@ export default function CreateDeliveryPage() {
 
   const initialValues = {
     order_id: "",
-    vehicle_id: "",
-    from_location_id: "",
-    to_location_id: "",
+    vehicle_id: ""
   }
 
   const validationSchema = Yup.object({
     order_id: Yup.string().required("Order is required"),
     vehicle_id: Yup.string().required("Vehicle is required"),
-    from_location_id: Yup.string().required("Pickup location is required"),
-    to_location_id: Yup.string().required("Drop off location is required"),
   })
 
   const fields = [
