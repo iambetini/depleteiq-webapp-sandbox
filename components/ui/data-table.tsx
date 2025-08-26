@@ -667,9 +667,9 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-h-[400px] overflow-auto">
               {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
+                ?.getAllColumns()
+                ?.filter((column) => column.getCanHide())
+                ?.map((column) => {
                   return (
                     <DropdownMenuCheckboxItem
                       key={column.id}
