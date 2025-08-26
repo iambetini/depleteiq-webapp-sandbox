@@ -22,18 +22,14 @@ export default function DistributorTargetPage() {
   const [createTarget] = useCreateTargetMutation();
   const [updateTarget] = useUpdateTargetMutation();
 
-  // Fetch existing targets for this distributor user (if any)
   const userUuid = distributor?.user?.uuid || "";
   const { data: targetsData, isLoading: isTargetLoading } = useGetTargetsQuery(userUuid ? { user_id: userUuid } as any : (undefined as any), { skip: !userUuid });
-  // Normalize list from different possible shapes
   const targetList: any[] = Array.isArray(targetsData) ? targetsData : (targetsData as any)?.data?.items || [];
   const existingTarget: any | undefined = targetList[0];
 
   const targetTypeOptions = useMemo(
     () => [
-      { value: "monthly_sales", label: "Monthly Sales" },
-      { value: "quarterly_sales", label: "Quarterly Sales" },
-      { value: "yearly_sales", label: "Yearly Sales" },
+      { value: "sales", label: "Sales" },
       { value: "monthly_orders", label: "Monthly Orders" },
       { value: "quarterly_orders", label: "Quarterly Orders" },
       { value: "yearly_orders", label: "Yearly Orders" },
@@ -92,7 +88,7 @@ export default function DistributorTargetPage() {
         setSubmitting(false);
       }
     },
-    [distributorUser?.uuid, toast, createTarget, updateTarget, existingTarget?.uuid]
+    [distributorUser?.uuid, createTarget, updateTarget, existingTarget?.uuid]
   );
 
   const normalizeDate = (dateStr?: string) => {
