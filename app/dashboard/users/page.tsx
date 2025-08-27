@@ -36,7 +36,7 @@ function getColumns(
       header: "Phone",
     },
     {
-      accessorKey: "role",
+      accessorKey: "role.name",
       header: "Role",
       cell: ({ row }) => <Badge variant="secondary">{row.original.role?.name?.toUpperCase() || "No Role"}</Badge>,
     },
@@ -130,7 +130,7 @@ export default function UsersPage() {
         searchKey="first_name"
         searchPlaceholder="Search users..."
         store="webUsers"
-        exportFileName="Users.xlsx"
+        exportFileName="Users"
         filters={[
           {
             type: "select",
@@ -151,7 +151,7 @@ export default function UsersPage() {
       <BulkUploadModal
         open={bulkModalOpen}
         onClose={() => setBulkModalOpen(false)}
-        sampleUrl="/sample-users.xlsx"
+        sampleUrl="/sample-users"
         apiUrl="/users/bulk-store"
         onSuccess={refreshTable}
         title="Bulk Users Upload"

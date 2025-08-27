@@ -185,7 +185,7 @@ export default function DistributorsPage() {
         searchKey="business_name"
         searchPlaceholder="Search distributors..."
         store="distributors"
-        exportFileName="Distributors.xlsx"
+        exportFileName="Distributors"
         filters={filters}
       />
 

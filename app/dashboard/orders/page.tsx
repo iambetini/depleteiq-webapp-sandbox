@@ -23,7 +23,7 @@ export default function OrdersPage() {
         searchKey="ref"
         searchPlaceholder="Search orders..."
         store="orders"
-        exportFileName="Orders.xlsx"
+        exportFileName="Orders"
         filters={filters}
       />
     </div>

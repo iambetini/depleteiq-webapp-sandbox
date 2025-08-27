@@ -42,7 +42,7 @@ export default function BrandsPage() {
         searchKey="name"
         searchPlaceholder="Search brands..."
         store="brands"
-        exportFileName="Brands.xlsx"
+        exportFileName="Brands"
         filters={[
           {
             type: "select",
@@ -117,6 +117,13 @@ function getColumns(
             ₦{(Number(row.original.packages?.[0]?.og_price ?? 0) / (row.original.packages?.[0]?.quantity ?? 1)).toFixed(2).toLocaleString() ?? 'N/A'}
           </div>
         )
+      },
+      exportValue: (item: Brand) => {
+        const pkg = item.packages?.[0];
+        const quantity = Number(pkg?.quantity ?? 1) || 1;
+        const ogPrice = Number(pkg?.og_price ?? 0) || 0;
+        const unitPrice = ogPrice / quantity;
+        return Number.isFinite(unitPrice) ? Number(unitPrice.toFixed(2)) : 0;
       },
     },
     {

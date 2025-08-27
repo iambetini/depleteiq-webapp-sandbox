@@ -137,7 +137,7 @@ export default function LocationsPage() {
         searchKey="name"
         searchPlaceholder="Search locations..."
         store="locations"
-        exportFileName="Locations.xlsx"
+        exportFileName="Locations"
       />
     </div>
   )

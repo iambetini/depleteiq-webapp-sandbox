@@ -36,7 +36,7 @@ export default function DistributorOrdersPage() {
         store="distributorOrders"
         params={urlParams}
         fixedQuery={fixedQuery}
-        exportFileName="Distributor-Orders.xlsx"
+        exportFileName="Distributor-Orders"
         filters={DISTRIBUTOR_ORDER_FILTERS}
       />
     </div>

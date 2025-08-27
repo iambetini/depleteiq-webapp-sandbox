@@ -39,7 +39,7 @@ function getColumns(
       header: "Phone",
     },
     {
-      accessorKey: "role",
+      accessorKey: "role.name",
       header: "Role",
       cell: ({ row }) => <Badge variant="secondary">{row.original.role?.name?.toUpperCase() || "No Role"}</Badge>,
     },
@@ -162,7 +162,7 @@ export default function ImeVssPage() {
             labelFormatter: (item: any) => `${item.full_name}`,
           },
         ]}
-        exportFileName="IME-VSS.xlsx"
+        exportFileName="IME-VSS"
       />
 
       <BulkUploadModal

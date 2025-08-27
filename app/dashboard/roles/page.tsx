@@ -97,7 +97,7 @@ export default function RolesPage() {
         searchKey="name"
         searchPlaceholder="Search roles..."
         store="roles"
-        exportFileName="Roles.xlsx"
+        exportFileName="Roles"
       />
     </div>
   )

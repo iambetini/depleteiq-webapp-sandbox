@@ -108,7 +108,7 @@ export default function ReportsPage() {
         store="imeVssPerformance"
         searchKey="user"
         searchPlaceholder="Search by ime/vss"
-        exportFileName={`IME-VSS-Performance.xlsx`}
+        exportFileName={`IME-VSS-Performance`}
         filters={filters}
         per_page={20}
       />

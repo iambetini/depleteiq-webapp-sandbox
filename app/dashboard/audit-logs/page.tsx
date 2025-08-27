@@ -15,7 +15,7 @@ function getColumns(): ColumnDef<AuditLog>[] {
       cell: ({ row }) => row.index + 1,
     },
     {
-      accessorKey: "name",
+      accessorKey: "user.full_name",
       header: "Name",
       cell: ({ row }) => (
         <div>
@@ -27,7 +27,7 @@ function getColumns(): ColumnDef<AuditLog>[] {
       ),
     },
     {
-      accessorKey: "role",
+      accessorKey: "user.role.name",
       header: "Role",
       cell: ({ row }) => <Badge variant="secondary">{row.original.user.role?.name?.toUpperCase() || "No Role"}</Badge>,
     },
@@ -65,7 +65,7 @@ export default function AuditLogs() {
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchPlaceholder="Search log..."
         store="auditLogs"
-        exportFileName="audit-logs.xlsx"
+        exportFileName="Audit-Logs"
       />
     </div>
   )

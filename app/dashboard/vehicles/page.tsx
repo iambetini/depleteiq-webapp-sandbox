@@ -52,7 +52,7 @@ export default function VehiclesPage() {
         searchKey="ref"
         searchPlaceholder="Search vehicles..."
         store="vehicles"
-        exportFileName="Vehicles.xlsx"
+        exportFileName="Vehicles"
         filters={filters}
       />
       <BulkUploadModal
@@ -61,7 +61,7 @@ export default function VehiclesPage() {
         onClose={() => setBulkOpen(false)}
         label="Bulk Upload Vehicles"
         apiUrl="/vehicles/bulk-store"
-        sampleUrl="/sample-vehicles.xlsx"
+        sampleUrl="/sample-vehicles"
         onSuccess={refreshTable}
       />
     </div>

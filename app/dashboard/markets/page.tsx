@@ -110,7 +110,7 @@ export default function MarketsPage() {
         searchKey="name"
         searchPlaceholder="Search markets..."
         store="markets"
-        exportFileName="Markets.xlsx"
+        exportFileName="Markets"
       />
     </div>
   )

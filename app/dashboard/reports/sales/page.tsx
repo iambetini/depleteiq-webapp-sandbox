@@ -128,7 +128,7 @@ export default function ReportsPage() {
         ]}
         searchKey="order_ref"
         searchPlaceholder="Search..."
-        exportFileName={`Sales.xlsx`}
+        exportFileName={`Sales`}
       />
     </div>
   );

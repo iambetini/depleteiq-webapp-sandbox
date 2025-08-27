@@ -49,7 +49,7 @@ export default function WarehousesPage() {
         searchKey="ref"
         searchPlaceholder="Search warehouses..."
         store="warehouses"
-        exportFileName="Warehouses.xlsx"
+        exportFileName="Warehouses"
         filters={filters}
       />
       <BulkUploadModal
@@ -58,7 +58,7 @@ export default function WarehousesPage() {
         onClose={() => setBulkOpen(false)}
         label="Bulk Upload Warehouses"
         apiUrl="/warehouses/bulk-store"
-        sampleUrl="/sample-warehouses.xlsx"
+        sampleUrl="/sample-warehouses"
         onSuccess={refreshTable}
       />
     </div>

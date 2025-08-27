@@ -21,7 +21,7 @@ export default function ImeVssOrdersPage() {
         searchPlaceholder="Search orders..."
         store="orders"
         fixedQuery={fixedQuery}
-        exportFileName="IME-VSS-Orders.xlsx"
+        exportFileName="IME-VSS-Orders"
         filters={ORDER_FILTERS}
       />
     </div>

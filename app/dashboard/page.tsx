@@ -206,7 +206,7 @@ export default function DashboardPage() {
                 columns={columns as unknown as ColumnDef<unknown, unknown>[]}
                 store="orders"
                 per_page={5}
-                exportFileName="recent-orders.xlsx"
+                exportFileName="Recent-Orders"
               />
             </div>
           </div>

@@ -32,7 +32,7 @@ import {
 } from "@tanstack/react-table";
 import { ChevronDown, Download, Filter, RefreshCw, Search } from "lucide-react";
 import * as React from "react";
-import * as XLSX from "xlsx";
+import * as XLSX from "xlsx-js-style";
 import { type ColumnDef } from "./data-table-types";
 
 export type FilterOption = { label: string; value: string };
@@ -75,16 +75,9 @@ interface DataTableProps<TData, TValue> {
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
-/**
- * Helper function to export table data to Excel
- */
-const exportToExcel = (
-  tableData: any[],
-  table: any,
-  exportFileName: string
-) => {
-  // Get visible columns excluding actions
-  const visibleCols = table
+// Excel export helpers
+const getVisibleExportColumns = (table: any) =>
+  table
     .getAllLeafColumns()
     .filter(
       (col: any) =>
@@ -92,49 +85,77 @@ const exportToExcel = (
         col.id !== "actions" &&
         typeof col.columnDef.header === "string"
     );
-  const rows = table.getRowModel().rows.map((row: any) => {
-    const obj: { [key: string]: unknown } = {};
-    table
-      .getAllLeafColumns()
-      .filter(
-        (col: any) =>
-          col.getIsVisible() &&
-          col.id !== "actions" &&
-          typeof col.columnDef.header === "string"
-      )
-      .forEach((col: any) => {
-        const header = col.columnDef.header;
-        let value = "";
-        if (typeof col.columnDef.exportValue === "function") {
-          value = String(col.columnDef.exportValue(row.original));
-        } else if (col.columnDef.accessorKey) {
-          // Support dot notation for nested keys
-          let extracted = col.columnDef.accessorKey
-            .split(".")
-            .reduce((acc: any, k: string) => (acc ? acc[k] : ""), row.original);
 
-          if (extracted && typeof extracted === "object") {
-            value = JSON.stringify(extracted);
-          } else {
-            value = extracted ?? "";
-          }
-        }
-        obj[header] = value;
-      });
+const extractValueForColumn = (col: any, dataItem: any) => {
+  let value = "";
+  if (typeof col.columnDef.exportValue === "function") {
+    value = String(col.columnDef.exportValue(dataItem));
+  } else if (col.columnDef.accessorKey) {
+    let extracted = col.columnDef.accessorKey
+      .split(".")
+      .reduce((acc: any, k: string) => (acc ? acc[k] : ""), dataItem);
+    if (extracted && typeof extracted === "object") {
+      value = JSON.stringify(extracted);
+    } else {
+      value = extracted ?? "";
+    }
+  }
+  return value;
+};
+
+const buildRowsFromItems = (table: any, items: any[], startIndex: number = 0) => {
+  const exportCols = getVisibleExportColumns(table);
+  return items.map((dataItem: any, idx: number) => {
+    const obj: { [key: string]: unknown } = {};
+    exportCols.forEach((col: any) => {
+      const header = col.columnDef.header as string;
+      if (header === "S/N") {
+        obj[header] = String(startIndex + idx + 1);
+      } else {
+        obj[header] = extractValueForColumn(col, dataItem);
+      }
+    });
     return obj;
   });
+};
 
-  // Create and download Excel file
-  const ws = XLSX.utils.json_to_sheet(rows);
+const buildWorksheetWithHeader = (title: string, headers: string[], rows: any[]) => {
+  const ws = XLSX.utils.aoa_to_sheet([]);
+  XLSX.utils.sheet_add_aoa(ws, [[title]], { origin: "A1" });
+  XLSX.utils.sheet_add_json(ws, rows, { origin: "A3", skipHeader: false });
+  const lastColIndex = Math.max(0, headers.length - 1);
+  (ws as any)["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 1, c: lastColIndex } }];
+  if ((ws as any)["A1"]) {
+    ((ws as any)["A1"] as any).s = {
+      alignment: { horizontal: "center", vertical: "center" },
+      font: { sz: 24, bold: true },
+    } as any;
+  }
+  (ws as any)["!rows"] = [{ hpt: 36 }, { hpt: 18 }];
+  return ws;
+};
+
+const writeWorkbookToFile = (ws: any, exportFileName: string, scope: "current_page" | "all") => {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
-
   const now = new Date();
   const pad = (n: number) => n.toString().padStart(2, "0");
   const datetime = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}_${pad(now.getMinutes())}_${pad(now.getSeconds())}`;
   const baseName = exportFileName.replace(/\.xlsx$/, "");
+  XLSX.writeFile(wb, `ORBIT_${baseName}_Report_${datetime}_${scope}.xlsx`);
+};
 
-  XLSX.writeFile(wb, `ORBIT_${baseName}_Report_${datetime}_current_page.xlsx`);
+const exportToExcel = (
+  _tableData: any[],
+  table: any,
+  exportFileName: string
+) => {
+  const exportCols = getVisibleExportColumns(table);
+  const headers: string[] = exportCols.map((col: any) => col.columnDef.header as string);
+  const currentItems = table.getRowModel().rows.map((r: any) => r.original);
+  const rows = buildRowsFromItems(table, currentItems, 0);
+  const ws = buildWorksheetWithHeader(exportFileName, headers, rows);
+  writeWorkbookToFile(ws, exportFileName, "current_page");
 };
 
 export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
@@ -145,7 +166,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     searchPlaceholder = "Search...",
     onRowClick,
     store,
-    exportFileName = "export.xlsx",
+    exportFileName = "export",
     className,
     per_page,
     filters = [],
@@ -598,50 +619,13 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                       alert("Failed to fetch all data for export");
                       return;
                     }
-                    const visibleCols = table
-                      .getAllLeafColumns()
-                      .filter(
-                        (col) =>
-                          col.getIsVisible() &&
-                          col.id !== "actions" &&
-                          typeof col.columnDef.header === "string" &&
-                          typeof (col.columnDef as any).accessorKey === "string"
-                      )
-                      .map((col) => ({
-                        accessorKey: (col.columnDef as any)
-                          .accessorKey as string,
-                        header: col.columnDef.header as string,
-                      }));
-                    const rows = allRows.map((rowData) => {
-                      const obj: { [key: string]: unknown } = {};
-                      table
-                        .getAllLeafColumns()
-                        .filter(
-                          (col: any) =>
-                            col.getIsVisible() &&
-                            col.id !== "actions" &&
-                            typeof col.columnDef.header === "string"
-                        )
-                        .forEach((col: any) => {
-                          const header = col.columnDef.header;
-                          let value = "";
-                          if (typeof col.columnDef.exportValue === "function") {
-                            value = String(col.columnDef.exportValue(rowData));
-                          } else if (col.columnDef.accessorKey) {
-                            let extracted = col.columnDef.accessorKey
-                              .split(".")
-                              .reduce((acc: any, k: string) => (acc ? acc[k] : ""), rowData);
-                            if (extracted && typeof extracted === "object") {
-                              value = JSON.stringify(extracted);
-                            } else {
-                              value = extracted ?? "";
-                            }
-                          }
-                          obj[header] = value;
-                        });
-                      return obj;
-                    });
-                    const ws = XLSX.utils.json_to_sheet(rows);
+                    const rows = buildRowsFromItems(table, allRows);
+                    // Determine headers to know how many columns to span
+                    const exportCols = getVisibleExportColumns(table);
+                    const headers: string[] = exportCols.map((col: any) => col.columnDef.header as string);
+
+                    // Build worksheet with a 2-row merged header containing the export title
+                    const ws = buildWorksheetWithHeader(exportFileName, headers, rows);
                     const wb = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
                     const now = new Date();
@@ -785,6 +769,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
           <span className="text-sm text-muted-foreground">Rows per page:</span>
           <select
             className="border rounded px-2 py-1 text-sm"
+            aria-label="Rows per page"
             value={pageSize}
             onChange={(e) => handlePageSizeChange(Number(e.target.value))}
           >

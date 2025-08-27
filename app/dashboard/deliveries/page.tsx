@@ -59,7 +59,7 @@ export default function DeliveriesPage() {
         searchKey="ref"
         searchPlaceholder="Search deliveries..."
         store="deliveries"
-        exportFileName="Deliveries.xlsx"
+        exportFileName="Deliveries"
         filters={filters}
       />
     </div>

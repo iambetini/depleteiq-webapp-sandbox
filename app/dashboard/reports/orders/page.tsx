@@ -132,7 +132,7 @@ export default function ReportsPage() {
         store="orderEvents"
         searchKey="distributor"
         searchPlaceholder="Search by reference"
-        exportFileName={`LeadTime.xlsx`}
+        exportFileName={`LeadTime`}
       />
     </div>
   );
