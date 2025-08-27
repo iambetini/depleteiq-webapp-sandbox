@@ -1,16 +1,16 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Building, CreditCard, Mail, MapPin, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo } from "react";
 import {
-  useDistributor,
-  useDistributorInfo,
-  useDistributorPerformance,
-  useDistributorUser
+    useDistributor,
+    useDistributorInfo,
+    useDistributorPerformance,
+    useDistributorUser
 } from "./distributor-context";
+import PerformanceMetricsCard from "@/components/dashboard/PerformanceMetricsCard";
 
 const BusinessAndContactInformationCard = memo(() => {
   const distributorInfo = useDistributorInfo()
@@ -149,42 +149,12 @@ const BankingInformationCard = memo(() => {
 })
 BankingInformationCard.displayName = 'BankingInformationCard'
 
-const PerformanceMetricsCard = memo(() => {
-  const performance = useDistributorPerformance()
 
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-[#444444]">Performance Metrics</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex justify-between items-center">
-          <span className="text-[#ababab]">Total Orders</span>
-          <span className="font-bold text-[#444444]">{performance?.total_orders || 0}</span>
-        </div>
-        <Separator />
-        <div className="flex justify-between items-center">
-          <span className="text-[#ababab]">Total Value</span>
-          <span className="font-bold text-[#444444]">
-            ₦{(performance?.total_order_value || 0).toLocaleString()}
-          </span>
-        </div>
-        <Separator />
-        <div className="flex justify-between items-center">
-          <span className="text-[#ababab]">Target Volume</span>
-          <span className="font-bold text-[#444444]">
-            {(performance?.target_volume || 0).toLocaleString()}
-          </span>
-        </div>
-      </CardContent>
-    </Card>
-  )
-})
-PerformanceMetricsCard.displayName = 'PerformanceMetricsCard'
 
 export default function DistributorDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const { distributor } = useDistributor()
+  const performance = useDistributorPerformance()
 
   return (
     <div>
@@ -195,7 +165,11 @@ export default function DistributorDetailPage({ params }: { params: { id: string
         </div>
 
         <div>
-          <PerformanceMetricsCard />
+          <PerformanceMetricsCard
+            totalOrders={performance?.total_orders || 0}
+            totalOrderValue={performance?.total_order_value || 0}
+            targetVolume={performance?.target_volume || 0}
+          />
         </div>
       </div>
     </div>

@@ -2,10 +2,14 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Mail, MapPin, Phone, Shield, User } from "lucide-react";
-import { useImeVssContext } from "./ime-vss-context";
+import { useImeVssContext, useImeVssPerformance } from "./ime-vss-context";
+import PerformanceMetricsCard from "@/components/dashboard/PerformanceMetricsCard";
+
+
 
 export default function ImeVssDetailPage({ params }: { params: { id: string } }) {
   const { imeVss } = useImeVssContext();
+  const performance = useImeVssPerformance();
 
   if (!imeVss) { return null; }
 
@@ -73,6 +77,14 @@ export default function ImeVssDetailPage({ params }: { params: { id: string } })
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      <div>
+        <PerformanceMetricsCard
+          totalOrders={performance?.total_orders || 0}
+          totalOrderValue={performance?.total_order_value || 0}
+          targetVolume={performance?.target_volume || 0}
+        />
       </div>
     </div>
   )

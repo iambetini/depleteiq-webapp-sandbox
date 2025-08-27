@@ -1,14 +1,16 @@
 "use client";
 import { toast } from "@/hooks/use-toast";
 import { useGetIMEVSSQuery } from "@/store/ime-vss";
+import { apiClient } from "@/lib/api-client";
 import type { User } from "@/types/user";
-import React, { createContext, useCallback, useContext, useMemo } from "react";
+import React, { createContext, useCallback, useContext, useMemo, useState, useEffect } from "react";
 
 interface ImeVssContextValue {
   imeVss: User | null;
   isLoading: boolean;
   fetchImeVss: () => void;
   refetch: () => void;
+  performance: any | null;
 }
 
 const ImeVssContext = createContext<ImeVssContextValue | undefined>(undefined);
@@ -21,6 +23,23 @@ export function ImeVssProvider({ imeVssId, children }: { imeVssId: string; child
     error,
     refetch
   } = useGetIMEVSSQuery(imeVssId);
+
+  const [performance, setPerformance] = useState<any>(null);
+
+  const fetchPerformance = useCallback(async () => {
+    try {
+      const { data } = await apiClient.get(`/ime-vss/${imeVssId}/performance`);
+      setPerformance(data?.item || null);
+    } catch (error) {
+      console.error('Failed to fetch IME-VSS performance:', error);
+    }
+  }, [imeVssId]);
+
+  useEffect(() => {
+    if (imeVssId) {
+      fetchPerformance();
+    }
+  }, [imeVssId, fetchPerformance]);
 
 
   React.useEffect(() => {
@@ -38,7 +57,7 @@ export function ImeVssProvider({ imeVssId, children }: { imeVssId: string; child
   }, [refetch]);
 
   return (
-    <ImeVssContext.Provider value={{ imeVss: imeVss ?? null, isLoading, fetchImeVss, refetch }}>
+    <ImeVssContext.Provider value={{ imeVss: imeVss ?? null, isLoading, fetchImeVss, refetch, performance }}>
       {children}
     </ImeVssContext.Provider>
   );
@@ -66,4 +85,9 @@ export function useImeVssInfo() {
     phone: imeVss?.phone,
     status: imeVss?.status,
   }), [imeVss]);
+}
+
+export function useImeVssPerformance() {
+  const { performance } = useImeVssContext();
+  return useMemo(() => performance, [performance]);
 }

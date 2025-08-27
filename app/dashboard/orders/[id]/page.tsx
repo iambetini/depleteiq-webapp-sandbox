@@ -9,12 +9,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import SuccessIcon from "@/images/success.svg";
 import { apiClient } from "@/lib/api-client";
+import { catchError } from "@/lib/utils";
+import { DeliveryForm } from "@/components/dashboard/DeliveryForm";
+import { useCreateDeliveryMutation } from "@/store/deliveries";
+import * as Yup from "yup";
 import type { Order } from "@/types/order";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useOrderContext } from "./order-context";
 
 export default function OrderDetailPage({ params }: { params: { id: string } }) {
@@ -22,37 +25,35 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   const user = session?.user;
   const { order, fetchOrder } = useOrderContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
   const [updateMessage, setUpdateMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [messages, setMessages] = useState<any[]>([]);
   const [isMessagesLoading, setIsMessagesLoading] = useState(true);
-  const router = useRouter();
+  const [createDelivery, { isLoading: isCreatingDelivery }] = useCreateDeliveryMutation();
 
-  // Order fetching handled by useOrder hook
+  const fetchMessages = useCallback(() => {
+    const fetch = async () => {
+      setIsMessagesLoading(true);
+      try {
+        const response = await apiClient.get<{ items: any[] }>(`/orders/${order?.uuid}/messages`);
+        setMessages(response.data.items ?? []);
+      } catch (error: any) {
+      } finally {
+        setIsMessagesLoading(false);
+      }
+    };
+    fetch();
+  }, [order?.uuid]);
 
-  // Fetch messages for the order
-  const fetchMessages = async () => {
-    setIsMessagesLoading(true);
-    try {
-      const response = await apiClient.get<{ items: any[] }>(`/orders/${params.id}/messages`);
-      setMessages(response.data.items ?? []);
-    } catch (error: any) {
-    } finally {
-      setIsMessagesLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMessages();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+  useEffect(() => { fetchMessages(); }, [order?.uuid, fetchMessages]);
 
   if (!order) { return null; }
 
   const updateOrderStatus = async (status: string, extra: Record<string, any> = {}) => {
     setIsSubmitting(true);
     try {
-      await apiClient.put<{ status: string }>(`/orders/${params.id}`, { status, ...extra });
+      await apiClient.put<{ status: string }>(`/orders/${order.uuid}`, { status, ...extra });
       toast({
         title: "Success",
         description: `Order ${status?.replace("_", " ")} successfully`,
@@ -79,7 +80,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
         content: updateMessage,
         sales_admin: user?.uuid,
       };
-      await apiClient.post<{ status: string }>(`/orders/${params.id}/messages`, payload);
+      await apiClient.post<{ status: string }>(`/orders/${order.uuid}/messages`, payload);
       await updateOrderStatus("update_requested", { sales_admin: user?.uuid });
       toast({
         title: "Success",
@@ -216,6 +217,14 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
               >
                 View Tracks
               </Link>
+              {["manager", "super-admin"].includes(userRole) && order.status === "confirmed" && !order?.delivery_location?.uuid && (
+                <Button
+                  onClick={() => setIsDeliveryModalOpen(true)}
+                  className="ml-2 px-3 py-1 h-7 rounded bg-[#27A3D8] text-white text-sm font-semibold hover:bg-[#096ae0] transition-colors"
+                >
+                  Assign Vehicle
+                </Button>
+              )}
             </div>
           </div>
           {/* Order Information Grid */}
@@ -379,6 +388,55 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
             {isSubmitting ? "Sending..." : "Send Request"}
           </Button>
         </div>
+      </Modal>
+
+      {/* Assign Vehicle Modal */}
+      <Modal open={isDeliveryModalOpen} onClose={() => setIsDeliveryModalOpen(false)} size="lg-center" title="Assign Vehicle">
+        <DeliveryForm
+          title="Delivery Information"
+          description={`Assign a vehicle for order #${order.ref}`}
+          initialValues={{ order_id: order.uuid, vehicle_id: "" }}
+          validationSchema={Yup.object({
+            order_id: Yup.string().required("Order is required"),
+            vehicle_id: Yup.string().required("Vehicle is required"),
+          })}
+          fields={[
+            {
+              name: "vehicle_id",
+              label: "Vehicle",
+              type: "selectWithFetch",
+              required: true,
+              fetchUrl: "/vehicles",
+              valueKey: "uuid",
+              labelKey: "type",
+              placeholder: "Select vehicle",
+            },
+          ]}
+          isLoading={isCreatingDelivery}
+          onSubmit={async (values, helpers) => {
+            const payload = {
+              order_id: values.order_id,
+              vehicle_id: values.vehicle_id,
+            }
+            try {
+              await createDelivery(payload as any).unwrap()
+              toast({
+                title: "Success",
+                description: "Delivery created successfully",
+              })
+              setIsDeliveryModalOpen(false)
+              helpers.resetForm()
+              fetchOrder()
+            } catch (error: any) {
+              catchError(error, helpers.setFieldError)
+            } finally {
+              helpers.setSubmitting(false)
+            }
+          }}
+          submitLabel="Create Delivery"
+          onCancel={() => setIsDeliveryModalOpen(false)}
+          cardClassName="shadow-none border-0"
+        />
       </Modal>
     </div>
   )

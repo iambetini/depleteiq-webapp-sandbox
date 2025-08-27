@@ -1,7 +1,14 @@
-import { StatusBadgeProps } from "@/components/ui/status-badge";
 import { Order } from "./order";
 import { Vehicle } from "./vehicle";
 import { Location } from "./location";
+
+export type deliveryStatus =
+  | "awaiting"
+  | "pending_approval"
+  | "update_requested"
+  | "approved"
+  | "delivered"
+  | "fulfilled";
 
 export interface Delivery {
   uuid: string;
@@ -17,6 +24,6 @@ export interface Delivery {
   total_order_density: number; // total order density in kg/m^3
   vehicle_max_density: number; // vehicle maximum density in kg/m^3
   vehicle_coverage: number; // vehicle coverage in km
-  status: StatusBadgeProps["status"];
+  status: deliveryStatus;
   created_at: string;
 }

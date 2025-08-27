@@ -1,7 +1,9 @@
+import { orderStatus } from "@/types/order";
 import { Badge } from "./badge";
+import { deliveryStatus } from "@/types/delivery";
 
 export interface StatusBadgeProps {
-  status: 'approved' | 'update_requested' | 'confirmed' | 'fulfilled' | 'pending' | 'rejected';
+  status: orderStatus | deliveryStatus;
   className?: string;
 }
 
