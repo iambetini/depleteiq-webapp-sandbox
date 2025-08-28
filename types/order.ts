@@ -1,3 +1,4 @@
+import { Delivery } from "./delivery";
 import { Location } from "./location";
 import { Promo } from "./promo";
 import { User } from "./user";
@@ -37,6 +38,7 @@ export interface Order {
   ref: string;
   delivery_image: string;
   delivery_location: Location;
+  delivery: Delivery;
   fulfilled_token: string;
   market: string;
   ime_vss: User;

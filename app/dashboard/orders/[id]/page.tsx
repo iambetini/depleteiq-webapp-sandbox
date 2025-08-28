@@ -217,7 +217,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
               >
                 View Tracks
               </Link>
-              {["manager", "super-admin"].includes(userRole) && order.status === "confirmed" && !order?.delivery_location?.uuid && (
+              {["manager","delivery-manager", "super-admin"].includes(userRole) && order.status === "confirmed" && !order.self_pickup && !order?.delivery?.uuid && (
                 <Button
                   onClick={() => setIsDeliveryModalOpen(true)}
                   className="ml-2 px-3 py-1 h-7 rounded bg-[#27A3D8] text-white text-sm font-semibold hover:bg-[#096ae0] transition-colors"
