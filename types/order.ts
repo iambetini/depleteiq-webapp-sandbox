@@ -1,6 +1,15 @@
-import { StatusBadgeProps } from "@/components/ui/status-badge";
+import { Delivery } from "./delivery";
+import { Location } from "./location";
+import { Promo } from "./promo";
 import { User } from "./user";
 
+export type orderStatus =
+  | "approved"
+  | "update_requested"
+  | "confirmed"
+  | "fulfilled"
+  | "pending"
+  | "rejected";
 export interface OrderBrand {
   uuid: string;
   order_ref: string;
@@ -28,7 +37,10 @@ export interface Order {
   uuid: string;
   ref: string;
   delivery_image: string;
+  delivery_location: Location;
+  delivery: Delivery;
   fulfilled_token: string;
+  market: string;
   ime_vss: User;
   distributor_user: User & {
     distributor_details: {
@@ -39,7 +51,9 @@ export interface Order {
   };
   total_amount: string;
   created_at: string;
-  status: StatusBadgeProps["status"];
+  status: orderStatus;
+  status_progress: string;
+  self_pickup: string;
   brands: OrderBrand[];
-  promos: any;
+  promos: Promo;
 }

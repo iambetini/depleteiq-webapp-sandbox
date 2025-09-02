@@ -1,196 +1,184 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft, Edit, Trash2, Calendar } from "lucide-react"
-import { apiClient } from "@/lib/api-client"
-import { useToast } from "@/hooks/use-toast"
-
-interface LocationDetail {
-  uuid: string
-  city: string
-  state: string
-  region: string
-  country: string
-  full_location: string
-  markets_count: number
-  markets: Array<{
-    uuid: string
-    location: {
-      uuid: string
-      city: string
-      state: string
-      region: string
-      country: string
-      full_location: string
-      created_at: string
-    }
-    name: string
-    type: string
-    full_name: string
-    users: Array<any>
-    created_at: string
-  }>
-  created_at: string
-  updated_at: string
-}
+import { useLocationContext } from "./location-context"
+import { Calendar, MapPin, Navigation, Store, Users } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Map } from "@/components/ui/map"
 
 export default function LocationDetailPage({ params }: { params: { id: string } }) {
-  const [location, setLocation] = useState<LocationDetail | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
-  const { toast } = useToast()
+  const { location } = useLocationContext()
 
-  const fetchLocation = React.useCallback(async () => {
-    try {
-      setIsLoading(true)
-      const { data } = await apiClient.get<{ item: LocationDetail }>(`/locations/${params.id}`)
-      setLocation(data.item ?? null)
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to fetch location details",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }, [params.id, toast])
-
-  useEffect(() => {
-    fetchLocation()
-  }, [fetchLocation])
-
-  const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this location?")) return
-
-    try {
-      await apiClient.delete(`/locations/${params.id}`)
-      toast({
-        title: "Success",
-        description: "Location deleted successfully",
-      })
-      router.push("/dashboard/locations")
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: "Failed to delete location",
-        variant: "destructive",
-      })
-    }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    )
-  }
-
-  if (!location) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-[#ababab]">Location not found</p>
-      </div>
-    )
-  }
+  if (!location) { return null; }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="ghost" onClick={() => router.back()}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-[#444444]">
-              {location.full_location}
-            </h1>
-            <p className="text-[#ababab]">Location Details</p>
-          </div>
-        </div>
-        <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => router.push(`/dashboard/locations/${location.uuid}/edit`)}>
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-          </Button>
-          <Button variant="destructive" onClick={handleDelete}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
-          </Button>
-        </div>
-      </div>
+    <div>
+      <ViewPageHeader
+        title={location.full_location}
+        description="Location Details"
+        showEditButton={true}
+        editHref={`/dashboard/locations/${location.uuid}/edit`}
+        showDeleteButton={true}
+        deleteOptions={{
+          storeName: "locations",
+          uuid: params.id,
+        }}
+      />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-[#444444]">Location Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <span className="text-[#ababab]">City</span>
-              <div className="font-medium text-[#444444]">{location.city}</div>
-            </div>
-            <div className="space-y-2">
-              <span className="text-[#ababab]">State</span>
-              <div className="font-medium text-[#444444]">{location.state}</div>
-            </div>
-            <div className="space-y-2">
-              <span className="text-[#ababab]">Region</span>
-              <div className="font-medium text-[#444444]">{location.region}</div>
-            </div>
-            <div className="space-y-2">
-              <span className="text-[#ababab]">Country</span>
-              <div className="font-medium text-[#444444]">{location.country}</div>
-            </div>
-            <div className="space-y-2">
-              <span className="text-[#ababab]">Markets Count</span>
-              <div className="font-medium text-[#444444]">{location.markets_count}</div>
-            </div>
-            <div className="space-y-2">
-              <span className="text-[#ababab]">Markets</span>
+      {/* Main Content */}
+      <div className="space-y-6">
+        {/* Location Information and Map Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Location Information Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-[#444444]">Location Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Location Information Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center space-x-3">
+                  <MapPin className="h-5 w-5 text-[#ababab]" />
+                  <div>
+                    <p className="text-sm text-[#ababab]">Street</p>
+                    <p className="font-medium text-[#444444]">{location.street || "—"}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <MapPin className="h-5 w-5 text-[#ababab]" />
+                  <div>
+                    <p className="text-sm text-[#ababab]">City</p>
+                    <p className="font-medium text-[#444444]">{location.city}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <MapPin className="h-5 w-5 text-[#ababab]" />
+                  <div>
+                    <p className="text-sm text-[#ababab]">State</p>
+                    <p className="font-medium text-[#444444]">{location.state}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <MapPin className="h-5 w-5 text-[#ababab]" />
+                  <div>
+                    <p className="text-sm text-[#ababab]">Region</p>
+                    <p className="font-medium text-[#444444]">{location.region}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <MapPin className="h-5 w-5 text-[#ababab]" />
+                  <div>
+                    <p className="text-sm text-[#ababab]">Country</p>
+                    <p className="font-medium text-[#444444]">{location.country}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Navigation className="h-5 w-5 text-[#ababab]" />
+                  <div>
+                    <p className="text-sm text-[#ababab]">Coordinates</p>
+                    <p className="font-medium text-[#444444]">
+                      {location.latitude && location.longitude
+                        ? `${Number(location.longitude)?.toFixed(6)}, ${Number(location.latitude)?.toFixed(6)}`
+                        : "Not set"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Store className="h-5 w-5 text-[#ababab]" />
+                  <div>
+                    <p className="text-sm text-[#ababab]">Markets Count</p>
+                    <p className="font-medium text-[#444444]">{location.markets_count}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Calendar className="h-5 w-5 text-[#ababab]" />
+                  <div>
+                    <p className="text-sm text-[#ababab]">Created</p>
+                    <p className="font-medium text-[#444444]">{location.created_at}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Map Card */}
+          {location.latitude && location.longitude && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-[#444444] flex items-center space-x-2">
+                  <MapPin className="h-5 w-5" />
+                  <span>Location Map</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Map
+                  latitude={Number(location.latitude)}
+                  longitude={Number(location.longitude)}
+                  title={location.full_location}
+                  height="400px"
+                  className="w-full"
+                />
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Markets Information Card */}
+        {location.markets && location.markets.length > 0 && (
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle className="text-[#444444] flex items-center space-x-2">
+                <Store className="h-5 w-5" />
+                <span>Markets in this Location</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
+                <table className="w-full">
                   <thead>
-                    <tr>
-                      <th className="px-2 py-1 text-left text-[#ababab]">Name</th>
-                      <th className="px-2 py-1 text-left text-[#ababab]">Type</th>
-                      <th className="px-2 py-1 text-left text-[#ababab]">Users</th>
+                    <tr className="border-b border-gray-200">
+                      <th className="px-4 py-3 text-left text-sm font-medium text-[#ababab] bg-gray-50">Market Name</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-[#ababab] bg-gray-50">Type</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-[#ababab] bg-gray-50">Users</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-[#ababab] bg-gray-50">Created</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {location.markets?.map((market, idx) => (
-                      <tr key={idx}>
-                        <td className="px-2 py-1">{market.full_name}</td>
-                        <td className="px-2 py-1">{market.type}</td>
-                        <td className="px-2 py-1">
-                          {market.users && market.users.length > 0
-                            ? market.users.map((user) => user.full_name).join(", ")
-                            : "—"}
+                  <tbody className="divide-y divide-gray-100">
+                    {location.markets.map((market, idx) => (
+                      <tr key={market.uuid || idx} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 py-3 text-sm text-[#444444] font-medium">
+                          {market.full_name}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-[#444444]">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {market.type}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-[#444444]">
+                          {market.users && market.users.length > 0 ? (
+                            <div className="flex items-center space-x-1">
+                              <Users className="h-4 w-4 text-[#ababab]" />
+                              <span>{market.users.length} users</span>
+                            </div>
+                          ) : (
+                            <span className="text-[#ababab]">No users</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-[#444444]">
+                          {new Date(market.created_at).toLocaleDateString()}
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Calendar className="h-5 w-5 text-[#ababab]" />
-              <div>
-                <p className="text-sm text-[#ababab]">Created</p>
-                <p className="font-medium text-[#444444]">{location.created_at}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )
 }
+

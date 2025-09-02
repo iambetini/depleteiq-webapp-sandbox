@@ -5,4 +5,5 @@ export type ColumnDef<TData, TValue = unknown> = TanstackColumnDef<
   TValue
 > & {
   width?: number | string;
+  exportValue?: (item: TData) => string | number;
 };

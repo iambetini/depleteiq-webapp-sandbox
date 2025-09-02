@@ -56,6 +56,24 @@ export const routeRoles: RouteRole[] = [
     roles: ["super-admin", "operations"],
   },
   {
+    title: "Deliveries",
+    href: "/dashboard/deliveries",
+    pattern: /^\/dashboard\/deliveries(\/.*)?$/,
+    roles: ["super-admin", "operations"],
+  },
+  {
+    title: "Vehicles",
+    href: "/dashboard/vehicles",
+    pattern: /^\/dashboard\/vehicles(\/.*)?$/,
+    roles: ["super-admin", "operations"],
+  },
+  {
+    title: "Warehouses",
+    href: "/dashboard/warehouses",
+    pattern: /^\/dashboard\/warehouses(\/.*)?$/,
+    roles: ["super-admin", "operations"],
+  },
+  {
     title: "Roles & Permissions",
     href: "/dashboard/roles",
     pattern: /^\/dashboard\/roles(\/.*)?$/,
@@ -73,10 +91,11 @@ export const routeRoles: RouteRole[] = [
     pattern: /^\/dashboard\/audit-logs(\/.*)?$/,
     roles: ["super-admin"],
   },
-  // {
-  //   title: "Settings",
-  //   href: "/dashboard/settings",
-  //   pattern: /^\/dashboard\/settings(\/.*)?$/,
-  //   roles: ["everybody"],
-  // },
+
+  {
+    title: "Settings",
+    href: "/dashboard/settings",
+    pattern: /^\/dashboard\/settings(\/.*)?$/,
+    roles: ["everybody"],
+  },
 ];

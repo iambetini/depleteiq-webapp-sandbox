@@ -1,7 +1,7 @@
+import { User } from "@/types/user";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { apiClient } from "./api-client";
-import { User } from "@/types/user";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -42,7 +42,7 @@ export const authOptions: NextAuthOptions = {
           } else {
             throw new Error("Invalid credentials");
           }
-        } catch (error) {
+        } catch (error: any) {
           // console.error("Auth error:", error);
           throw new Error(error?.message || "Authentication failed");
         }
@@ -55,6 +55,8 @@ export const authOptions: NextAuthOptions = {
         token.accessToken = user.accessToken;
         token.role = user.role;
         token.uuid = user.uuid;
+        token.first_name = user.first_name;
+        token.last_name = user.last_name;
       }
       return token;
     },
@@ -63,6 +65,8 @@ export const authOptions: NextAuthOptions = {
         session.accessToken = token.accessToken as string;
         session.user.role = token.role as string;
         session.user.uuid = token.uuid as string;
+        session.user.first_name = token.first_name as string;
+        session.user.last_name = token.last_name as string;
       }
       return session;
     },

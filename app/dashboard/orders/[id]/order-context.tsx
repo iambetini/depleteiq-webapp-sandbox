@@ -1,8 +1,8 @@
 "use client";
-import React, { createContext, useContext, useCallback } from "react";
+import { toast } from "@/hooks/use-toast";
 import { useGetOrderQuery } from "@/store/orders";
-import { useToast } from "@/hooks/use-toast";
 import type { Order } from "@/types/order";
+import React, { createContext, useCallback, useContext } from "react";
 
 interface OrderContextValue {
   order: Order | null;
@@ -14,7 +14,6 @@ interface OrderContextValue {
 const OrderContext = createContext<OrderContextValue | undefined>(undefined);
 
 export function OrderProvider({ orderId, children }: { orderId: string; children: React.ReactNode }) {
-  const { toast } = useToast();
 
   const {
     data: order,
@@ -23,7 +22,7 @@ export function OrderProvider({ orderId, children }: { orderId: string; children
     refetch
   } = useGetOrderQuery(orderId);
 
-  // Handle errors from the query
+
   React.useEffect(() => {
     if (error) {
       toast({

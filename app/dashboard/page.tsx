@@ -1,25 +1,24 @@
 "use client"
 
-import { useRef, useMemo, useState } from "react";
-import { useSelector } from "react-redux";
+import { DateFilter } from "@/components/dashboard/DateFilter";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DataTable } from "@/components/ui/data-table";
+import { ColumnDef } from "@/components/ui/data-table-types";
+import { formatLabelToTitleCase } from "@/lib/label-formatters";
 import type { RootState } from "@/store";
 import { useGetDashboardQuery } from "@/store/dashboard-api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { ShoppingCart, Package } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { DataTable } from "@/components/ui/data-table";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useSession } from "next-auth/react";
-import { getColumns } from "./orders/page";
-import { ColumnDef } from "@/components/ui/data-table-types";
-import { DateFilter } from "@/components/dashboard/DateFilter";
 import { RevenueWithDay } from "@/types/dashboard";
-import { formatLabelToTitleCase } from "@/lib/label-formatters";
+import { Package, ShoppingCart } from "lucide-react";
+import Link from "next/link";
+import { useMemo, useRef, useState } from "react";
+import { useSelector } from "react-redux";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useOrderColumns } from "@/hooks/useOrderColumns";
+import { useSession } from "next-auth/react";
 
 
 export default function DashboardPage() {
+  const { data: session } = useSession();
   const dateRange = useSelector((state: RootState) => state.dashboardFilters.dateRange);
   const selectedFilter = useSelector((state: RootState) => state.dashboardFilters.selectedFilter);
 
@@ -31,17 +30,9 @@ export default function DashboardPage() {
         : undefined
   );
   const dataTableRef = useRef<{ refresh: () => void }>(null)
-  const { toast } = useToast();
   const [periodType, setPeriodType] = useState('');
-  const { data: session } = useSession()
-  const router = useRouter()
+  const { columns } = useOrderColumns();
 
-
-
-  const columns = useMemo(
-    () => getColumns(session, router, toast, () => { }),
-    [session, router, toast]
-  )
 
   const sortedRevenue: RevenueWithDay[] = useMemo(() => {
     if (!dashboardData || !dashboardData.revenue) return [];
@@ -59,7 +50,7 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div>
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-[#444444]">Dashboard</h1>
         </div>
@@ -86,7 +77,9 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-[#444444]">Dashboard</h1>
-          <p className="text-[#ababab]">Welcome back! Here&apos;s what&apos;s happening with your business.</p>
+          <p className="text-[#ababab]">
+            Welcome back, {session?.user?.first_name || "User"}! Here&apos;s what&apos;s happening with your business.
+          </p>
         </div>
         <div className="flex items-center">
           <DateFilter />
@@ -213,8 +206,7 @@ export default function DashboardPage() {
                 columns={columns as unknown as ColumnDef<unknown, unknown>[]}
                 store="orders"
                 per_page={5}
-                filters={filters}
-                exportFileName="recent-orders.xlsx"
+                exportFileName="Recent-Orders"
               />
             </div>
           </div>

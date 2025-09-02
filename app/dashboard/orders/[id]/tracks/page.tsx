@@ -1,22 +1,20 @@
-"use client";
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
-import { useToast } from "@/hooks/use-toast";
-import { useOrderContext } from "../order-context";
-import { Modal } from "@/components/ui/modal";
+"use client";;
+import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Modal } from "@/components/ui/modal";
+import { toast } from "@/hooks/use-toast";
+import { apiClient } from "@/lib/api-client";
 import Image from "next/image";
-
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useOrderContext } from "../order-context";
 export default function OrderTrackingPage({ params }: { params: { id: string } }) {
   const [orderEvents, setOrderEvents] = useState<any[]>([]);
   const [isEventsLoading, setIsEventsLoading] = useState(true);
   const { order } = useOrderContext();
   const router = useRouter();
-  const { toast } = useToast();
 
   const [evidenceOpen, setEvidenceOpen] = useState(false);
 
@@ -40,15 +38,14 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
+  if (!order) { return null; }
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center space-x-4 mb-2">
-        <Button variant="ghost" onClick={() => router.back()}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-        <h1 className="text-2xl font-semibold text-[#444444]">Order Tracking</h1>
-      </div>
+    <div>
+      <ViewPageHeader
+        title="Order Tracking"
+        description="Track order status and history"
+      />
       <Card className="w-full max-w-3xl">
         <CardContent className="p-6">
           <h2 className="text-lg font-semibold mb-4 text-[#444]">Tracking History</h2>
