@@ -71,6 +71,7 @@ interface DataTableProps<TData, TValue> {
   filters?: FilterConfig[];
   params?: Record<string, any>; // URL parameters for parameterized endpoints
   fixedQuery?: Record<string, any>; // Query string parameters
+  customExportFn?: (data: TData[], table: any, exportFileName: string, scope: "current_page" | "all") => void;
 }
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
@@ -148,14 +149,20 @@ const writeWorkbookToFile = (ws: any, exportFileName: string, scope: "current_pa
 const exportToExcel = (
   _tableData: any[],
   table: any,
-  exportFileName: string
+  exportFileName: string,
+  scope: "current_page" | "all" = "current_page",
+  customExportFn?: (data: any[], table: any, exportFileName: string, scope: "current_page" | "all") => void
 ) => {
+  const currentItems = table.getRowModel().rows.map((r: any) => r.original);
+  if (customExportFn) {
+    customExportFn(currentItems, table, exportFileName, scope);
+    return;
+  }
   const exportCols = getVisibleExportColumns(table);
   const headers: string[] = exportCols.map((col: any) => col.columnDef.header as string);
-  const currentItems = table.getRowModel().rows.map((r: any) => r.original);
   const rows = buildRowsFromItems(table, currentItems, 0);
   const ws = buildWorksheetWithHeader(exportFileName, headers, rows);
-  writeWorkbookToFile(ws, exportFileName, "current_page");
+  writeWorkbookToFile(ws, exportFileName, scope);
 };
 
 export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
@@ -172,6 +179,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     filters = [],
     params = {},
     fixedQuery = {},
+    customExportFn,
   }: DataTableProps<TData, TValue>,
   ref: React.Ref<{ refresh: () => void }>
 ) {
@@ -565,7 +573,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuCheckboxItem
-                onClick={() => exportToExcel(tableData, table, exportFileName)}
+                onClick={() => exportToExcel(tableData, table, exportFileName, "current_page", customExportFn)}
               >
                 Export Current Page
               </DropdownMenuCheckboxItem>
@@ -617,6 +625,10 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                       }));
                     } catch (e) {
                       alert("Failed to fetch all data for export");
+                      return;
+                    }
+                    if (customExportFn) {
+                      customExportFn(allRows, table, exportFileName, "all");
                       return;
                     }
                     const rows = buildRowsFromItems(table, allRows);
@@ -678,20 +690,39 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   const width = (header.column.columnDef as any).width;
+                  const headerLabel = typeof (header.column.columnDef as any).header === "string"
+                    ? (header.column.columnDef as any).header as string
+                    : undefined;
+                  const parentLabel = (header as any).parent && typeof (header as any).parent.column?.columnDef?.header === "string"
+                    ? ((header as any).parent.column.columnDef.header as string)
+                    : undefined;
+                  const isDayGroup = !!headerLabel && /^Day\s+\d+$/.test(headerLabel);
+                  const isDayLeaf = !!parentLabel && /^Day\s+\d+$/.test(parentLabel || "");
+                  const isDailyLeaf = isDayLeaf && (header.column.id?.endsWith("_daily"));
+                  const isCumLeaf = isDayLeaf && (header.column.id?.endsWith("_cum"));
                   return (
                     <TableHead
                       key={header.id}
+                      colSpan={header.colSpan}
                       onClick={
                         header.column.getCanSort()
                           ? header.column.getToggleSortingHandler()
                           : undefined
                       }
                       className={
-                        header.column.getCanSort()
+                        (header.column.getCanSort()
                           ? "cursor-pointer select-none"
-                          : ""
+                          : "") +
+                        (isDayGroup ? " border border-gray-200" : "") +
+                        (isDayLeaf ? " border-y border-gray-200" : "") +
+                        (isDailyLeaf ? " border-l border-gray-300" : "") +
+                        (isCumLeaf ? " border-r border-gray-300" : "") +
+                        ((header.column.columnDef as any).className ? ` ${(header.column.columnDef as any).className}` : "")
                       }
-                      style={width ? { minWidth: width } : undefined}
+                      style={{
+                        ...(width ? { minWidth: width } : {}),
+                        ...((header.column.columnDef as any).style || {})
+                      }}
                     >
                       {header.isPlaceholder ? null : (
                         <span className="flex items-center">
@@ -737,9 +768,13 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                 >
                   {row.getVisibleCells().map((cell) => {
                     const width = (cell.column.columnDef as any).width;
+                    const colId = cell.column.id as string;
+                    const isDailyCell = /day_\d+_daily$/.test(colId);
+                    const isCumCell = /day_\d+_cum$/.test(colId);
                     return (
                       <TableCell
                         key={cell.id}
+                        className={(isDailyCell ? "border-l border-gray-300 " : "") + (isCumCell ? "border-r border-gray-300 " : "")}
                         style={width ? { width } : undefined}
                       >
                         {flexRender(

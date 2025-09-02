@@ -28,7 +28,7 @@ export function ImeVssProvider({ imeVssId, children }: { imeVssId: string; child
 
   const fetchPerformance = useCallback(async () => {
     try {
-      const { data } = await apiClient.get(`/ime-vss/${imeVssId}/performance`);
+      const { data } = await apiClient.get(`/ime_vss/${imeVssId}/performance`);
       setPerformance(data?.item || null);
     } catch (error) {
       console.error('Failed to fetch IME-VSS performance:', error);

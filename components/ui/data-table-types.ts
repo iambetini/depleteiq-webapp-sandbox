@@ -6,4 +6,6 @@ export type ColumnDef<TData, TValue = unknown> = TanstackColumnDef<
 > & {
   width?: number | string;
   exportValue?: (item: TData) => string | number;
+  className?: string;
+  style?: React.CSSProperties;
 };
