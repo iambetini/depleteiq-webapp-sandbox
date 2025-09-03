@@ -32,6 +32,12 @@ export default function DashboardPage() {
   const dataTableRef = useRef<{ refresh: () => void }>(null)
   const [periodType, setPeriodType] = useState('');
   const { columns } = useOrderColumns();
+  const dashboardColumns = columns.filter(
+    col =>
+      col.header !== "Market" &&
+      col.header !== "Promos" &&
+      col.header !== "Self Pickup"
+  );
 
 
   const sortedRevenue: RevenueWithDay[] = useMemo(() => {
@@ -203,7 +209,7 @@ export default function DashboardPage() {
             <div className="dashboard-hide-header">
               <DataTable className="no-card"
                 ref={dataTableRef}
-                columns={columns as unknown as ColumnDef<unknown, unknown>[]}
+                columns={dashboardColumns as unknown as ColumnDef<unknown, unknown>[]}
                 store="orders"
                 per_page={5}
                 exportFileName="Recent-Orders"
