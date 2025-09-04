@@ -8,6 +8,19 @@ import { ErrorMessage, Form, Formik } from "formik";
 import { Save } from "lucide-react";
 import * as Yup from "yup";
 
+// Helper to fetch lat/lng from Google Maps Geocoding API
+async function fetchLatLng(address: string): Promise<{ lat: number; lng: number } | null> {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (data.status === "OK" && data.results.length > 0) {
+    const location = data.results[0].geometry.location;
+    return { lat: location.lat, lng: location.lng };
+  }
+  return null;
+}
+
 interface LocationFormProps {
   initialValues: {
     street: string;
@@ -52,6 +65,22 @@ export function LocationForm({
         >
           {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
             <Form className="space-y-6">
+              <div className="flex justify-end pb-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={async () => {
+                    const address = `${values.street}, ${values.city}, ${values.state}, ${values.region}, ${values.country}`;
+                    const coords = await fetchLatLng(address);
+                    if (coords) {
+                      setFieldValue("latitude", coords.lat);
+                      setFieldValue("longitude", coords.lng);
+                    }
+                  }}
+                >
+                  Auto-Fill Coordinates
+                </Button>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="street">Street *</Label>
