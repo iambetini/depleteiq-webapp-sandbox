@@ -8,4 +8,5 @@ export type ColumnDef<TData, TValue = unknown> = TanstackColumnDef<
   exportValue?: (item: TData) => string | number;
   className?: string;
   style?: React.CSSProperties;
+  showByDefault?: boolean;
 };

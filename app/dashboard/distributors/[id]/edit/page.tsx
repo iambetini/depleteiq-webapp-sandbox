@@ -154,11 +154,6 @@ export default function EditDistributorPage({ params }: { params: { id: string }
       placeholder: "Enter address",
       rows: 3,
     },
-    {
-      name: "send_notification",
-      label: "Send Notification",
-      type: "switch" as const,
-    },
   ], [])
 
 

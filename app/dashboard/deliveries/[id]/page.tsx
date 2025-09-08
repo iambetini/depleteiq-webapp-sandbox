@@ -66,14 +66,14 @@ export default function DeliveryDetailPage() {
             <div className="flex items-center space-x-3">
               <Icon name="vehicleNumber" />
               <div>
-                <p className="text-sm text-[#ababab]">Recommended Vehicle Number</p>
+                <p className="text-sm text-[#ababab]">Vehicle Number</p>
                 <p className="font-medium text-[#444444]">{delivery.vehicle?.vehicle_number}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <Icon name="vehicleType" />
               <div>
-                <p className="text-sm text-[#ababab]">Recommended Vehicle Type</p>
+                <p className="text-sm text-[#ababab]">Vehicle Type</p>
                 <p className="font-medium text-[#444444]">{delivery.vehicle?.type}</p>
               </div>
             </div>

@@ -290,6 +290,33 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     pageCount: pageCount,
   });
 
+  // Set initial column visibility based on showByDefault field
+  React.useEffect(() => {
+    const visibilityUpdates: VisibilityState = {};
+    let hasUpdates = false;
+    
+    columns.forEach((column) => {
+      const columnDef = column as any;
+      if (columnDef.showByDefault === false) {
+        // Find the column in the table by matching accessorKey or id
+        const tableColumn = table.getAllColumns().find(col => 
+          col.id === columnDef.id || 
+          col.id === columnDef.accessorKey ||
+          (columnDef.accessorKey && col.id.includes(columnDef.accessorKey.split('.')[0]))
+        );
+        
+        if (tableColumn) {
+          visibilityUpdates[tableColumn.id] = false;
+          hasUpdates = true;
+        }
+      }
+    });
+    
+    if (hasUpdates) {
+      setColumnVisibility(prev => ({ ...prev, ...visibilityUpdates }));
+    }
+  }, [columns, table]);
+
   // Pagination handlers
   const handlePageChange = (page: number) => {
     if (page < 0 || page >= pageCount) return;

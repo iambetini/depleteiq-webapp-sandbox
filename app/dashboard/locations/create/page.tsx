@@ -18,26 +18,26 @@ export default function CreateLocationPage() {
     state: "",
     region: "",
     country: "",
+    postal_code: "",
     latitude: "",
     longitude: "",
   }
 
   const validationSchema = Yup.object({
-    street: Yup.string().required("Street is required"),
-    city: Yup.string().required("City is required"),
-    state: Yup.string().required("State is required"),
-    region: Yup.string().required("Region is required"),
-    country: Yup.string().required("Country is required"),
+    street: Yup.string().nullable(),
+    city: Yup.string().nullable(),
+    state: Yup.string().nullable(),
+    region: Yup.string().nullable(),
+    country: Yup.string().nullable(),
+    postal_code: Yup.string().nullable(),
     latitude: Yup.number()
       .min(-90, "Latitude must be between -90 and 90")
       .max(90, "Latitude must be between -90 and 90")
-      .nullable()
-      .transform((value, originalValue) => originalValue === "" ? null : value),
+      .required("Please select a location to get coordinates"),
     longitude: Yup.number()
       .min(-180, "Longitude must be between -180 and 180")
       .max(180, "Longitude must be between -180 and 180")
-      .nullable()
-      .transform((value, originalValue) => originalValue === "" ? null : value),
+      .required("Please select a location to get coordinates"),
   })
 
   const handleSubmit = async (values: typeof initialValues, helpers: any) => {
@@ -55,6 +55,10 @@ export default function CreateLocationPage() {
     }
   };
 
+  const handleSuccess = () => {
+    // Additional success handling if needed
+  };
+
   return (
     <>
       <ViewPageHeader title="Create Location" />
@@ -65,6 +69,7 @@ export default function CreateLocationPage() {
         validationSchema={validationSchema}
         isLoading={isLoading}
         onSubmit={handleSubmit}
+        onSuccess={handleSuccess}
         submitLabel="Create Location"
         onCancel={() => router.back()}
       />

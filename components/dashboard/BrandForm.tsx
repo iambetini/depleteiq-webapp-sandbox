@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BrandPackage } from "@/types/brand";
 import { ErrorMessage, FieldArray, Form, Formik } from "formik";
-import { ArrowLeft, Plus, Save, Trash2 } from "lucide-react";
+import { Plus, Save, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 interface BrandFormProps {
   mode: "create" | "edit";
   initialValues: any;
@@ -27,6 +28,33 @@ export function BrandForm({
   onSubmit,
   onBack,
 }: BrandFormProps) {
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+
+  // Cleanup object URL when component unmounts or image changes
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+    };
+  }, [imagePreviewUrl]);
+
+  // Update preview URL when imageFile changes
+  useEffect(() => {
+    if (imageFile) {
+      // Clean up previous URL
+      if (imagePreviewUrl) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+      // Create new URL
+      setImagePreviewUrl(URL.createObjectURL(imageFile));
+    } else {
+      if (imagePreviewUrl) {
+        URL.revokeObjectURL(imagePreviewUrl);
+        setImagePreviewUrl(null);
+      }
+    }
+  }, [imageFile]);
   return (
     <div className="space-y-6">
       <Formik
@@ -55,7 +83,19 @@ export function BrandForm({
                   accept="image/*"
                   onChange={(e) => {
                     if (e.target.files && e.target.files[0]) {
-                      setImageFile(e.target.files[0]);
+                      const file = e.target.files[0];
+                      // Validate file type
+                      if (!file.type.startsWith('image/')) {
+                        alert('Please select a valid image file');
+                        return;
+                      }
+                      // Validate file size (max 5MB)
+                      if (file.size > 5 * 1024 * 1024) {
+                        alert('Image size must be less than 5MB');
+                        return;
+                      }
+                      
+                      setImageFile(file);
                     }
                   }}
                   className="hidden"
@@ -65,7 +105,7 @@ export function BrandForm({
                   {imageFile ? (
                     <>
                       <img
-                        src={URL.createObjectURL(imageFile)}
+                        src={imagePreviewUrl || ""}
                         alt="Preview"
                         className="h-16 w-16 rounded-md object-cover border shadow-md"
                       />

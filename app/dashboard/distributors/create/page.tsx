@@ -123,12 +123,7 @@ export default function CreateDistributorPage() {
       required: true,
       placeholder: "Enter address",
       rows: 3,
-    },
-    {
-      name: "send_notification",
-      label: "Send Notification",
-      type: "switch" as const,
-    },
+    }
   ]
 
   return (
