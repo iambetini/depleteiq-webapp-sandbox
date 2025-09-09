@@ -1,19 +1,23 @@
 "use client"
 
-import UserForm from "@/components/dashboard/UserForm"
+import UserForm, { UserFormRef } from "@/components/dashboard/UserForm"
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
+import { LocationModal } from "@/components/dashboard/LocationModal"
 import { toast } from "@/hooks/use-toast"
 import { userFullNameEmailFormatter } from "@/lib/label-formatters"
 import { catchError } from "@/lib/utils"
 import { useCreateDistributorMutation } from "@/store/distributors"
 import { useRouter } from "next/navigation"
 import { useDispatch } from "react-redux"
+import { useState } from "react"
 import * as Yup from "yup"
 
 export default function CreateDistributorPage() {
   const [createDistributor, { isLoading }] = useCreateDistributorMutation()
   const router = useRouter()
   const dispatch = useDispatch()
+  const [locationModalOpen, setLocationModalOpen] = useState(false)
+  const [formRef, setFormRef] = useState<UserFormRef | null>(null)
 
   const initialValues = {
     first_name: "",
@@ -25,6 +29,7 @@ export default function CreateDistributorPage() {
     business_name: "",
     address: "",
     ime_vss_user_id: "",
+    location_id: "",
     send_notification: false,
   }
 
@@ -38,6 +43,7 @@ export default function CreateDistributorPage() {
     business_name: Yup.string().required("Business name is required"),
     address: Yup.string().required("Address is required"),
     ime_vss_user_id: Yup.string().required("IME VSS User is required"),
+    location_id: Yup.string().required("Location is required"),
     send_notification: Yup.boolean(),
   })
 
@@ -53,6 +59,20 @@ export default function CreateDistributorPage() {
       catchError(error, helpers.setFieldError);
     } finally {
       helpers.setSubmitting(false)
+    }
+  }
+
+  const handleLocationCreated = (locationId: string) => {
+    // Update the form field with the new location ID
+    if (formRef && formRef.setFieldValue) {
+      formRef.setFieldValue("location_id", locationId)
+    }
+    setLocationModalOpen(false)
+  }
+
+  const handleFieldUpdate = (fieldName: string, value: any) => {
+    if (formRef && formRef.setFieldValue) {
+      formRef.setFieldValue(fieldName, value)
     }
   }
 
@@ -117,6 +137,18 @@ export default function CreateDistributorPage() {
       placeholder: "Select IME/VSS user",
     },
     {
+      name: "location_id",
+      label: "Location",
+      type: "selectWithFetchAndCreate" as const,
+      required: true,
+      fetchUrl: "/locations",
+      valueKey: "uuid",
+      labelKey: "full_location",
+      placeholder: "Select location",
+      onCreateNew: () => setLocationModalOpen(true),
+      createButtonText: "Create Location",
+    },
+    {
       name: "address",
       label: "Address",
       type: "textarea" as const,
@@ -140,6 +172,13 @@ export default function CreateDistributorPage() {
         submitLabel="Create Distributor"
         onCancel={() => router.back()}
         cardClassName="max-w-4xl"
+        onFieldUpdate={handleFieldUpdate}
+        ref={setFormRef}
+      />
+      <LocationModal
+        open={locationModalOpen}
+        onClose={() => setLocationModalOpen(false)}
+        onLocationCreated={handleLocationCreated}
       />
     </div>
   )

@@ -9,8 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { apiClient } from "@/lib/api-client";
 import { ErrorMessage, Form, Formik } from "formik";
-import { Save } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Save, Plus } from "lucide-react";
+import { useEffect, useState, forwardRef, useImperativeHandle, useRef } from "react";
 
 type FieldType =
   | "text"
@@ -19,6 +19,7 @@ type FieldType =
   | "textarea"
   | "select"
   | "selectWithFetch"
+  | "selectWithFetchAndCreate"
   | "switch"
   | "checkbox"
 
@@ -40,6 +41,8 @@ interface FieldConfig {
   labelFormatter?: (item: any) => string
   rows?: number
   colSpan?: number
+  onCreateNew?: () => void
+  createButtonText?: string
 }
 
 interface UserFormProps {
@@ -53,9 +56,14 @@ interface UserFormProps {
   submitLabel: string
   onCancel: () => void
   cardClassName?: string
+  onFieldUpdate?: (fieldName: string, value: any) => void
 }
 
-export function UserForm({
+export interface UserFormRef {
+  setFieldValue: (fieldName: string, value: any) => void
+}
+
+export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
   title,
   description,
   initialValues,
@@ -66,9 +74,19 @@ export function UserForm({
   submitLabel,
   onCancel,
   cardClassName,
-}: UserFormProps) {
+  onFieldUpdate,
+}, ref) => {
   // For selectWithFetch fields, manage fetched options
   const [fetchedOptions, setFetchedOptions] = useState<Record<string, FieldOption[]>>({})
+  const setFieldValueRef = useRef<((field: string, value: any) => void) | null>(null)
+
+  useImperativeHandle(ref, () => ({
+    setFieldValue: (fieldName: string, value: any) => {
+      if (setFieldValueRef.current) {
+        setFieldValueRef.current(fieldName, value)
+      }
+    }
+  }), [])
 
   useEffect(() => {
     fields.forEach(field => {
@@ -103,7 +121,11 @@ export function UserForm({
           validationSchema={validationSchema}
           onSubmit={onSubmit}
         >
-          {({ values, handleChange, setFieldValue, isSubmitting }) => (
+          {({ values, handleChange, setFieldValue, isSubmitting }) => {
+            // Store the setFieldValue function for external access
+            setFieldValueRef.current = setFieldValue
+            
+            return (
             <Form className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {fields
@@ -165,6 +187,39 @@ export function UserForm({
                         </div>
                       )
                     }
+                    if (field.type === "selectWithFetchAndCreate") {
+                      return (
+                        <div className="space-y-2" key={field.name}>
+                          <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>
+                          <div className="flex gap-2">
+                            <div className="flex-1">
+                              <SelectWithFetch
+                                fetchUrl={field.fetchUrl!}
+                                value={values[field.name]}
+                                onChange={uuid => setFieldValue(field.name, uuid)}
+                                valueKey={field.valueKey}
+                                labelKey={field.labelKey}
+                                labelFormatter={field.labelFormatter}
+                                placeholder={field.placeholder}
+                              />
+                            </div>
+                            {field.onCreateNew && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={field.onCreateNew}
+                                className="px-3"
+                              >
+                                <Plus className="h-4 w-4 mr-1" />
+                                {field.createButtonText || "Create"}
+                              </Button>
+                            )}
+                          </div>
+                          <ErrorMessage name={field.name} component="p" className="text-sm text-red-500" />
+                        </div>
+                      )
+                    }
                     // Default: text, email, password
                     return (
                       <div className="space-y-2" key={field.name}>
@@ -208,6 +263,7 @@ export function UserForm({
                           checked={values[field.name]}
                           onChange={handleChange}
                           className="h-4 w-4"
+                          aria-label={field.label}
                         />
                         <Label htmlFor={field.name}>{field.label}</Label>
                       </div>
@@ -225,11 +281,14 @@ export function UserForm({
                 </Button>
               </div>
             </Form>
-          )}
+            )
+          }}
         </Formik>
       </CardContent>
     </Card>
   )
-}
+})
+
+UserForm.displayName = 'UserForm'
 
 export default UserForm

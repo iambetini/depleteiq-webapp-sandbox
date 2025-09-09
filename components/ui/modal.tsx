@@ -4,6 +4,7 @@ import { ReactNode, useEffect } from "react";
 type ModalSize =
   | "sm-center"
   | "lg-center"
+  | "xlg-center"
   | "half-right"
   | "half-left"
   | "third-right"
@@ -23,6 +24,8 @@ const sizeClasses: Record<ModalSize, string> = {
     "w-full max-w-sm mx-auto my-auto rounded-lg",
   "lg-center":
     "w-full max-w-2xl mx-auto my-auto rounded-lg",
+  "xlg-center":
+    "w-full max-w-6xl mx-auto my-auto rounded-lg",
   "half-right":
     "w-1/2 h-full ml-auto rounded-l-lg",
   "half-left":

@@ -7,6 +7,7 @@ import { BrandPackage } from "@/types/brand";
 import { ErrorMessage, FieldArray, Form, Formik } from "formik";
 import { Plus, Save, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 interface BrandFormProps {
   mode: "create" | "edit";
   initialValues: any;
@@ -54,7 +55,7 @@ export function BrandForm({
         setImagePreviewUrl(null);
       }
     }
-  }, [imageFile]);
+  }, [imageFile, imagePreviewUrl]);
   return (
     <div className="space-y-6">
       <Formik
@@ -94,7 +95,7 @@ export function BrandForm({
                         alert('Image size must be less than 5MB');
                         return;
                       }
-                      
+
                       setImageFile(file);
                     }
                   }}
@@ -104,9 +105,11 @@ export function BrandForm({
                 <label htmlFor="image" className="flex items-center justify-center relative group">
                   {imageFile ? (
                     <>
-                      <img
+                      <Image
                         src={imagePreviewUrl || ""}
                         alt="Preview"
+                        width={64}
+                        height={64}
                         className="h-16 w-16 rounded-md object-cover border shadow-md"
                       />
                       <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-md">
@@ -115,9 +118,11 @@ export function BrandForm({
                     </>
                   ) : values.image ? (
                     <>
-                      <img
+                      <Image
                         src={values.image}
                         alt="Existing"
+                        width={64}
+                        height={64}
                         className="h-16 w-16 rounded-md object-cover border shadow-md"
                       />
                       <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-md">
