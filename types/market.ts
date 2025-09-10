@@ -1,4 +1,5 @@
 import { Location } from "./location";
+import { Warehouse } from "./warehouse";
 
 export interface Market {
   id: string;
@@ -12,5 +13,7 @@ export interface Market {
   users_count: number;
   location: Location;
   location_count: number;
+  warehouse_id?: string;
+  warehouse: Warehouse;
   created_at: string;
 }

@@ -1,4 +1,5 @@
 import { User } from "./user";
+import { Location } from "./location";
 
 export interface Distributor {
   id: string;
@@ -14,6 +15,8 @@ export interface Distributor {
   account_number?: string;
   account_name?: string;
   ime_vss_user_id?: string;
+  location_id?: string;
+  location?: Location;
   ime_vss?: {
     uuid: string;
     first_name: string;

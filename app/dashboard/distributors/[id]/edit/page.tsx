@@ -1,6 +1,7 @@
 "use client"
 
-import UserForm from "@/components/dashboard/UserForm";
+import UserForm, { UserFormRef } from "@/components/dashboard/UserForm";
+import { LocationModal } from "@/components/dashboard/LocationModal";
 import { toast } from "@/hooks/use-toast";
 import { useUpdateDistributorMutation } from "@/store/distributors";
 import { useRouter } from "next/navigation";
@@ -17,14 +18,17 @@ interface Distributor {
   business_name: string
   address: string
   ime_vss_user_id: string
+  location_id: string
   send_notification: boolean
 }
 
 export default function EditDistributorPage({ params }: { params: { id: string } }) {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-    const { distributor, updateDistributor } = useDistributor()
+  const { distributor, updateDistributor } = useDistributor()
   const [updateDistributorMutation] = useUpdateDistributorMutation()
+  const [locationModalOpen, setLocationModalOpen] = useState(false)
+  const [formRef, setFormRef] = useState<UserFormRef | null>(null)
 
   const initialValues = useMemo<Distributor>(() => {
     if (!distributor) {
@@ -37,6 +41,7 @@ export default function EditDistributorPage({ params }: { params: { id: string }
         business_name: "",
         address: "",
         ime_vss_user_id: "",
+        location_id: "",
         send_notification: false,
       }
     }
@@ -50,6 +55,7 @@ export default function EditDistributorPage({ params }: { params: { id: string }
       business_name: distributor.business_name || "",
       address: distributor.address || "",
       ime_vss_user_id: distributor.ime_vss?.uuid || "",
+      location_id: distributor.location_id || "",
       send_notification: false,
     }
   }, [distributor])
@@ -63,6 +69,7 @@ export default function EditDistributorPage({ params }: { params: { id: string }
     business_name: Yup.string().required("Business name is required"),
     address: Yup.string().required("Address is required"),
     ime_vss_user_id: Yup.string().required("IME VSS User is required"),
+    location_id: Yup.string().required("Location is required"),
     send_notification: Yup.boolean(),
   }), [])
 
@@ -92,6 +99,20 @@ export default function EditDistributorPage({ params }: { params: { id: string }
       setSubmitting(false);
     }
   }, [params.id, distributor, updateDistributor, toast, router, updateDistributorMutation])
+
+  const handleLocationCreated = (locationId: string) => {
+    // Update the form field with the new location ID
+    if (formRef && formRef.setFieldValue) {
+      formRef.setFieldValue("location_id", locationId)
+    }
+    setLocationModalOpen(false)
+  }
+
+  const handleFieldUpdate = (fieldName: string, value: any) => {
+    if (formRef && formRef.setFieldValue) {
+      formRef.setFieldValue(fieldName, value)
+    }
+  }
 
   const fields = useMemo(() => [
     {
@@ -147,17 +168,24 @@ export default function EditDistributorPage({ params }: { params: { id: string }
       placeholder: "Select IME/VSS user",
     },
     {
+      name: "location_id",
+      label: "Location",
+      type: "selectWithFetchAndCreate" as const,
+      required: true,
+      fetchUrl: "/locations",
+      valueKey: "uuid",
+      labelKey: "full_location",
+      placeholder: "Select location",
+      onCreateNew: () => setLocationModalOpen(true),
+      createButtonText: "Create Location",
+    },
+    {
       name: "address",
       label: "Address",
       type: "textarea" as const,
       required: true,
       placeholder: "Enter address",
       rows: 3,
-    },
-    {
-      name: "send_notification",
-      label: "Send Notification",
-      type: "switch" as const,
     },
   ], [])
 
@@ -176,6 +204,13 @@ export default function EditDistributorPage({ params }: { params: { id: string }
         submitLabel="Update Distributor"
         onCancel={() => router.back()}
         cardClassName="max-w-4xl"
+        onFieldUpdate={handleFieldUpdate}
+        ref={setFormRef}
+      />
+      <LocationModal
+        open={locationModalOpen}
+        onClose={() => setLocationModalOpen(false)}
+        onLocationCreated={handleLocationCreated}
       />
     </div>
   )

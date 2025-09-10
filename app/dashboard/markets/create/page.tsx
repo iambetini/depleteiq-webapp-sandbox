@@ -6,6 +6,7 @@ import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useGetLocationsQuery } from "@/store/locations";
 import { useCreateMarketMutation } from "@/store/markets";
+import { useGetWarehousesQuery } from "@/store/warehouses";
 import { useRouter } from "next/navigation";
 import * as Yup from "yup";
 
@@ -13,12 +14,14 @@ export default function CreateMarketPage() {
   const router = useRouter();
   const [createMarket, { isLoading }] = useCreateMarketMutation();
   const { data: locationsData, isLoading: locationsLoading } = useGetLocationsQuery();
+  const { data: warehousesData, isLoading: warehousesLoading } = useGetWarehousesQuery();
 
   const initialValues = {
     name: "",
     description: "",
     type: "",
     location_id: "",
+    warehouse_id: "",
   };
 
   const locations: { uuid: string; full_location: string }[] = Array.isArray(locationsData) ? locationsData : [];
@@ -28,6 +31,7 @@ export default function CreateMarketPage() {
     description: Yup.string(),
     type: Yup.string().oneOf(["InMarket", "OutMarket"]).required("Type is required"),
     location_id: Yup.string().required("Location is required"),
+    warehouse_id: Yup.string().required("Warehouse is required"),
   });
 
   const handleSubmit = async (values: typeof initialValues, helpers: any) => {
@@ -80,6 +84,16 @@ export default function CreateMarketPage() {
       labelKey: "full_location",
       placeholder: "Select location",
     },
+    {
+      name: "warehouse_id",
+      label: "Warehouse",
+      type: "selectWithFetch" as const,
+      required: true,
+      fetchUrl: "/warehouses",
+      valueKey: "uuid",
+      labelKey: "warehouse_code",
+      placeholder: "Select warehouse",
+    },
   ];
 
   return (
@@ -94,7 +108,7 @@ export default function CreateMarketPage() {
         initialValues={initialValues}
         validationSchema={validationSchema}
         fields={fields}
-        isLoading={isLoading || locationsLoading}
+        isLoading={isLoading || locationsLoading || warehousesLoading}
         onSubmit={handleSubmit}
         submitLabel="Create Market"
         onCancel={() => router.back()}

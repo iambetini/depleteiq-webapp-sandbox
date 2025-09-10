@@ -25,7 +25,7 @@ OrderRefCell.displayName = "OrderRefCell"
 
 const DistributorCell = React.memo(({ distributor }: { distributor: Order["distributor_user"] }) => (
   <div>
-    <div className="font-medium">{distributor.distributor_details.business_name}</div>
+    <div className="font-medium">{distributor?.distributor_details?.business_name}</div>
     <div className="text-sm text-muted-foreground">{distributor.full_name}</div>
   </div>
 ))
@@ -154,7 +154,7 @@ export function getOrderColumns({ session, router, updateOrder, currentPath }: C
       cell: ({ row }) => <OrderRefCell orderRef={row.original.ref} />,
     },
     {
-      accessorKey: "distributor_user.distributor_details.business_name",
+      accessorKey: "distributor_user?.distributor_details?.business_name",
       header: "Distributor",
       width: 175,
       cell: ({ row }) => <DistributorCell distributor={row.original.distributor_user} />,
@@ -169,18 +169,21 @@ export function getOrderColumns({ session, router, updateOrder, currentPath }: C
       accessorKey: "market",
       header: "Market",
       width: 150,
+      showByDefault: false,
       cell: ({ row }) => <MarketCell market={row.original.market} />,
     },
     {
       accessorKey: "self_pickup",
       width: 120,
       header: "Self Pickup",
+      showByDefault: false,
       cell: ({ row }) => <SelfPickupCell selfPickup={row.original.self_pickup} />,
     },
     {
       accessorKey: "promos",
       header: "Promos",
       width: 100,
+      showByDefault: false,
       cell: ({ row }) => <PromosCell promos={row.original.promos} />,
     },
     {

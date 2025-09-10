@@ -71,17 +71,18 @@ export function getColumns(router: any, refreshTable: () => void, handleUpdateVe
     {
       accessorKey: "order.ref",
       header: "Order Ref",
+      width: 125,
       cell: ({ row }) => <div className="text-sm">{row.original.order?.ref}</div>,
     },
     {
       accessorKey: "vehicle.vehicle_number",
-      header: "Recommended Vehicle Number",
+      header: "Vehicle Number",
       width: 150,
       cell: ({ row }) => <div className="text-sm">{row.original.vehicle?.vehicle_number}</div>,
     },
     {
       accessorKey: "vehicle.type",
-      header: "Recommended Vehicle Type",
+      header: "Vehicle Type",
       width: 130,
       cell: ({ row }) => <div className="text-sm">{row.original.vehicle?.type}</div>,
     },
@@ -95,18 +96,21 @@ export function getColumns(router: any, refreshTable: () => void, handleUpdateVe
       accessorKey: "distance",
       header: "Distance (km)",
       width: 130,
+      showByDefault: false,
       cell: ({ row }) => <div className="text-sm">{row.original.distance}</div>,
     },
     {
       accessorKey: "cost_ratio",
       header: "Cost Ratio",
       width: 125,
+      showByDefault: false,
       cell: ({ row }) => <div className="text-sm">{row.original.cost_ratio}</div>,
     },
     {
       accessorKey: "delivery_burn_rate",
       header: "Burn Rate",
       width: 125,
+      showByDefault: false,
       cell: ({ row }) => <div className="text-sm">{row.original.delivery_burn_rate}</div>,
     },
     {

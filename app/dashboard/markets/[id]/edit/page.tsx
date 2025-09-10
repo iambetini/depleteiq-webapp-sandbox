@@ -5,6 +5,7 @@ import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useGetLocationsQuery } from "@/store/locations";
 import { useUpdateMarketMutation } from "@/store/markets";
+import { useGetWarehousesQuery } from "@/store/warehouses";
 import { useRouter } from "next/navigation";
 import * as Yup from "yup";
 import { useMarketContext } from "../market-context";
@@ -14,6 +15,7 @@ interface MarketData {
   description: string
   type: string
   location_id: string
+  warehouse_id: string
 }
 
 export default function EditMarketPage() {
@@ -21,6 +23,7 @@ export default function EditMarketPage() {
   const [updateMarket] = useUpdateMarketMutation();
   const { market, isLoading } = useMarketContext();
   const { data: locationsData, isLoading: locationsLoading } = useGetLocationsQuery();
+  const { data: warehousesData, isLoading: warehousesLoading } = useGetWarehousesQuery();
 
   if (!market) { return null; }
 
@@ -29,6 +32,7 @@ export default function EditMarketPage() {
     description: market?.description || "",
     type: market?.type || "",
     location_id: market?.location?.uuid || "",
+    warehouse_id: market?.warehouse?.uuid || "",
   };
 
   const locations: { uuid: string; full_location: string }[] = Array.isArray(locationsData) ? locationsData : locationsData || [];
@@ -38,6 +42,7 @@ export default function EditMarketPage() {
     description: Yup.string(),
     type: Yup.string().oneOf(["InMarket", "OutMarket"]).required("Type is required"),
     location_id: Yup.string().required("Location is required"),
+    warehouse_id: Yup.string().required("Warehouse is required"),
   });
 
   const handleSubmit = async (values: MarketData, helpers: any) => {
@@ -90,6 +95,16 @@ export default function EditMarketPage() {
       labelKey: "full_location",
       placeholder: "Select location",
     },
+    {
+      name: "warehouse_id",
+      label: "Warehouse",
+      type: "selectWithFetch" as const,
+      required: true,
+      fetchUrl: "/warehouses",
+      valueKey: "uuid",
+      labelKey: "warehouse_code",
+      placeholder: "Select warehouse",
+    },
   ];
 
   return (
@@ -102,7 +117,7 @@ export default function EditMarketPage() {
         initialValues={initialValues}
         validationSchema={validationSchema}
         fields={fields}
-        isLoading={isLoading || locationsLoading}
+        isLoading={isLoading || locationsLoading || warehousesLoading}
         onSubmit={handleSubmit}
         submitLabel="Update Market"
         title="Update Market"
