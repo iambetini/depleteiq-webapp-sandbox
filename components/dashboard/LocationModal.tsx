@@ -1,7 +1,5 @@
-"use client";
-
+"use client";;
 import { LocationForm } from "@/components/dashboard/LocationForm";
-import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useCreateLocationMutation } from "@/store/locations";
 import { Modal } from "@/components/ui/modal";
@@ -10,7 +8,7 @@ import * as Yup from "yup";
 interface LocationModalProps {
   open: boolean;
   onClose: () => void;
-  onLocationCreated: (locationId: string) => void;
+  onLocationCreated: (locationData: any, locationId: string) => void;
 }
 
 export function LocationModal({ open, onClose, onLocationCreated }: LocationModalProps) {
@@ -53,12 +51,8 @@ export function LocationModal({ open, onClose, onLocationCreated }: LocationModa
         longitude: parseFloat(values.longitude.toString()),
       }
       const result = await createLocation(locationData).unwrap();
-      toast({
-        title: "Success",
-        description: "Location created successfully",
-      });
       helpers.resetForm();
-      onLocationCreated(result.uuid);
+      onLocationCreated(locationData, result.uuid);
       onClose();
     } catch (error: any) {
       catchError(error, helpers.setFieldError);
@@ -76,7 +70,7 @@ export function LocationModal({ open, onClose, onLocationCreated }: LocationModa
       open={open}
       onClose={onClose}
       size="xlg-center"
-      title="Create New Location"
+      title="Location"
     >
       <div className="max-h-[80vh] overflow-y-auto">
         <LocationForm
@@ -84,7 +78,7 @@ export function LocationModal({ open, onClose, onLocationCreated }: LocationModa
           validationSchema={validationSchema}
           isLoading={isLoading}
           onSubmit={handleSubmit}
-          submitLabel="Create Location"
+          submitLabel="Confirm Address"
           title=""
           description=""
           onCancel={onClose}

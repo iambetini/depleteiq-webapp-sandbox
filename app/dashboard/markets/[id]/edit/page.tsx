@@ -1,12 +1,14 @@
 "use client";
 import { MarketForm } from "@/components/dashboard/MarketForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
+import { FormWithLocationModal } from "@/components/dashboard/FormWithLocationModal";
+import { createAddressFieldConfig } from "@/lib/field-configs";
 import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
-import { useGetLocationsQuery } from "@/store/locations";
 import { useUpdateMarketMutation } from "@/store/markets";
 import { useGetWarehousesQuery } from "@/store/warehouses";
 import { useRouter } from "next/navigation";
+import { useCallback, useMemo } from "react";
 import * as Yup from "yup";
 import { useMarketContext } from "../market-context";
 
@@ -14,6 +16,7 @@ interface MarketData {
   name: string
   description: string
   type: string
+  address: string
   location_id: string
   warehouse_id: string
 }
@@ -22,30 +25,28 @@ export default function EditMarketPage() {
   const router = useRouter();
   const [updateMarket] = useUpdateMarketMutation();
   const { market, isLoading } = useMarketContext();
-  const { data: locationsData, isLoading: locationsLoading } = useGetLocationsQuery();
   const { data: warehousesData, isLoading: warehousesLoading } = useGetWarehousesQuery();
 
-  if (!market) { return null; }
-
-  const initialValues: MarketData = {
+  const initialValues: MarketData = useMemo(() => ({
     name: market?.name || "",
     description: market?.description || "",
     type: market?.type || "",
+    address: "", // Market doesn't have address field, will be populated from location
     location_id: market?.location?.uuid || "",
     warehouse_id: market?.warehouse?.uuid || "",
-  };
+  }), [market]);
 
-  const locations: { uuid: string; full_location: string }[] = Array.isArray(locationsData) ? locationsData : locationsData || [];
-
-  const validationSchema = Yup.object({
+  const validationSchema = useMemo(() => Yup.object({
     name: Yup.string().required("Name is required"),
     description: Yup.string(),
     type: Yup.string().oneOf(["InMarket", "OutMarket"]).required("Type is required"),
-    location_id: Yup.string().required("Location is required"),
+    address: Yup.string().required("Address is required"),
     warehouse_id: Yup.string().required("Warehouse is required"),
-  });
+  }), []);
 
-  const handleSubmit = async (values: MarketData, helpers: any) => {
+  const handleSubmit = useCallback(async (values: MarketData, helpers: any) => {
+    if (!market) return;
+    
     try {
       await updateMarket({ id: market.uuid, data: values }).unwrap();
       toast({
@@ -58,9 +59,11 @@ export default function EditMarketPage() {
     } finally {
       helpers.setSubmitting(false);
     }
-  };
+  }, [market, updateMarket]);
 
-  const fields = [
+  if (!market) { return null; }
+
+  const createFields = (setLocationModalOpen: (open: boolean) => void) => [
     {
       name: "name",
       label: "Name",
@@ -86,16 +89,6 @@ export default function EditMarketPage() {
       placeholder: "Select type",
     },
     {
-      name: "location_id",
-      label: "Location",
-      type: "selectWithFetch" as const,
-      required: true,
-      fetchUrl: "/locations",
-      valueKey: "uuid",
-      labelKey: "full_location",
-      placeholder: "Select location",
-    },
-    {
       name: "warehouse_id",
       label: "Warehouse",
       type: "selectWithFetch" as const,
@@ -105,6 +98,7 @@ export default function EditMarketPage() {
       labelKey: "warehouse_code",
       placeholder: "Select warehouse",
     },
+    createAddressFieldConfig(() => setLocationModalOpen(true), "text"),
   ];
 
   return (
@@ -113,17 +107,23 @@ export default function EditMarketPage() {
         title="Update Market"
         description="Edit market information below"
       />
-      <MarketForm
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        fields={fields}
-        isLoading={isLoading || locationsLoading || warehousesLoading}
-        onSubmit={handleSubmit}
-        submitLabel="Update Market"
-        title="Update Market"
-        description="Edit market information below"
-        onCancel={() => router.back()}
-      />
+      <FormWithLocationModal>
+        {({ onFieldUpdate, setFormRef, setLocationModalOpen }) => (
+          <MarketForm
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            fields={createFields(setLocationModalOpen)}
+            isLoading={isLoading || warehousesLoading}
+            onSubmit={handleSubmit}
+            submitLabel="Update Market"
+            title="Update Market"
+            description="Edit market information below"
+            onCancel={() => router.back()}
+            onFieldUpdate={onFieldUpdate}
+            ref={setFormRef}
+          />
+        )}
+      </FormWithLocationModal>
     </>
   );
 }

@@ -1,11 +1,12 @@
 "use client"
 
-import UserForm, { UserFormRef } from "@/components/dashboard/UserForm";
-import { LocationModal } from "@/components/dashboard/LocationModal";
+import UserForm from "@/components/dashboard/UserForm";
+import { FormWithLocationModal } from "@/components/dashboard/FormWithLocationModal";
+import { createAddressFieldConfig } from "@/lib/field-configs";
 import { toast } from "@/hooks/use-toast";
 import { useUpdateDistributorMutation } from "@/store/distributors";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import * as Yup from "yup";
 import { useDistributor } from "../distributor-context";
 import { catchError } from "@/lib/utils";
@@ -18,17 +19,13 @@ interface Distributor {
   business_name: string
   address: string
   ime_vss_user_id: string
-  location_id: string
   send_notification: boolean
 }
 
 export default function EditDistributorPage({ params }: { params: { id: string } }) {
-  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { distributor, updateDistributor } = useDistributor()
   const [updateDistributorMutation] = useUpdateDistributorMutation()
-  const [locationModalOpen, setLocationModalOpen] = useState(false)
-  const [formRef, setFormRef] = useState<UserFormRef | null>(null)
 
   const initialValues = useMemo<Distributor>(() => {
     if (!distributor) {
@@ -41,7 +38,6 @@ export default function EditDistributorPage({ params }: { params: { id: string }
         business_name: "",
         address: "",
         ime_vss_user_id: "",
-        location_id: "",
         send_notification: false,
       }
     }
@@ -55,7 +51,6 @@ export default function EditDistributorPage({ params }: { params: { id: string }
       business_name: distributor.business_name || "",
       address: distributor.address || "",
       ime_vss_user_id: distributor.ime_vss?.uuid || "",
-      location_id: distributor.location_id || "",
       send_notification: false,
     }
   }, [distributor])
@@ -69,7 +64,6 @@ export default function EditDistributorPage({ params }: { params: { id: string }
     business_name: Yup.string().required("Business name is required"),
     address: Yup.string().required("Address is required"),
     ime_vss_user_id: Yup.string().required("IME VSS User is required"),
-    location_id: Yup.string().required("Location is required"),
     send_notification: Yup.boolean(),
   }), [])
 
@@ -100,21 +94,7 @@ export default function EditDistributorPage({ params }: { params: { id: string }
     }
   }, [params.id, distributor, updateDistributor, toast, router, updateDistributorMutation])
 
-  const handleLocationCreated = (locationId: string) => {
-    // Update the form field with the new location ID
-    if (formRef && formRef.setFieldValue) {
-      formRef.setFieldValue("location_id", locationId)
-    }
-    setLocationModalOpen(false)
-  }
-
-  const handleFieldUpdate = (fieldName: string, value: any) => {
-    if (formRef && formRef.setFieldValue) {
-      formRef.setFieldValue(fieldName, value)
-    }
-  }
-
-  const fields = useMemo(() => [
+  const createFields = (setLocationModalOpen: (open: boolean) => void) => [
     {
       name: "business_name",
       label: "Business Name",
@@ -167,51 +147,29 @@ export default function EditDistributorPage({ params }: { params: { id: string }
       labelKey: "email",
       placeholder: "Select IME/VSS user",
     },
-    {
-      name: "location_id",
-      label: "Location",
-      type: "selectWithFetchAndCreate" as const,
-      required: true,
-      fetchUrl: "/locations",
-      valueKey: "uuid",
-      labelKey: "full_location",
-      placeholder: "Select location",
-      onCreateNew: () => setLocationModalOpen(true),
-      createButtonText: "Create Location",
-    },
-    {
-      name: "address",
-      label: "Address",
-      type: "textarea" as const,
-      required: true,
-      placeholder: "Enter address",
-      rows: 3,
-    },
-  ], [])
-
-
+    createAddressFieldConfig(() => setLocationModalOpen(true), "textarea", 3),
+  ]
 
   return (
     <div>
-      <UserForm
-        title="Distributor Information"
-        description="Update the distributor details below"
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        fields={fields}
-        isLoading={isLoading}
-        onSubmit={handleSubmit}
-        submitLabel="Update Distributor"
-        onCancel={() => router.back()}
-        cardClassName="max-w-4xl"
-        onFieldUpdate={handleFieldUpdate}
-        ref={setFormRef}
-      />
-      <LocationModal
-        open={locationModalOpen}
-        onClose={() => setLocationModalOpen(false)}
-        onLocationCreated={handleLocationCreated}
-      />
+      <FormWithLocationModal>
+        {({ onFieldUpdate, setFormRef, setLocationModalOpen }) => (
+          <UserForm
+            title="Distributor Information"
+            description="Update the distributor details below"
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            fields={createFields(setLocationModalOpen)}
+            isLoading={false}
+            onSubmit={handleSubmit}
+            submitLabel="Update Distributor"
+            onCancel={() => router.back()}
+            cardClassName="max-w-4xl"
+            onFieldUpdate={onFieldUpdate}
+            ref={setFormRef}
+          />
+        )}
+      </FormWithLocationModal>
     </div>
   )
 }

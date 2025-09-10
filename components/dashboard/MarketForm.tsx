@@ -7,18 +7,22 @@ import { Label } from "@/components/ui/label";
 import { ErrorMessage, Form, Formik } from "formik";
 import { Save } from "lucide-react";
 import * as Yup from "yup";
+import { Textarea } from "@/components/ui/textarea";
 import { SelectWithFetch } from "@/components/ui/select";
+import { forwardRef, useImperativeHandle, useRef } from "react";
 
 interface FieldConfig {
   name: string;
   label: string;
-  type: "text" | "select" | "selectWithFetch";
+  type: "text" | "textarea" | "select" | "selectWithFetch";
   required?: boolean;
   placeholder?: string;
   options?: { value: string; label: string }[];
   fetchUrl?: string;
   valueKey?: string;
   labelKey?: string;
+  onFocus?: () => void;
+  rows?: number;
 }
 
 interface MarketFormProps {
@@ -31,9 +35,14 @@ interface MarketFormProps {
   title: string;
   description: string;
   onCancel: () => void;
+  onFieldUpdate?: (fieldName: string, value: any) => void;
 }
 
-export function MarketForm({
+export interface MarketFormRef {
+  setFieldValue: (fieldName: string, value: any) => void;
+}
+
+export const MarketForm = forwardRef<MarketFormRef, MarketFormProps>(({
   initialValues,
   validationSchema,
   fields,
@@ -43,7 +52,17 @@ export function MarketForm({
   title,
   description,
   onCancel,
-}: MarketFormProps) {
+  onFieldUpdate,
+}, ref) => {
+  const setFieldValueRef = useRef<((field: string, value: any) => void) | null>(null)
+
+  useImperativeHandle(ref, () => ({
+    setFieldValue: (fieldName: string, value: any) => {
+      if (setFieldValueRef.current) {
+        setFieldValueRef.current(fieldName, value)
+      }
+    }
+  }), [])
   return (
     <Card className="max-w-2xl">
       <CardHeader>
@@ -57,7 +76,11 @@ export function MarketForm({
           onSubmit={onSubmit}
           enableReinitialize
         >
-          {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
+          {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => {
+            // Store the setFieldValue function for external access
+            setFieldValueRef.current = setFieldValue
+            
+            return (
             <Form className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {fields.map(field => (
@@ -72,7 +95,18 @@ export function MarketForm({
                         name={field.name}
                         value={values[field.name]}
                         onChange={handleChange}
+                        onFocus={field.onFocus}
                         placeholder={field.placeholder}
+                      />
+                    ) : field.type === "textarea" ? (
+                      <Textarea
+                        id={field.name}
+                        name={field.name}
+                        value={values[field.name]}
+                        onChange={handleChange}
+                        onFocus={field.onFocus}
+                        placeholder={field.placeholder}
+                        rows={field.rows || 3}
                       />
                     ) : field.type === "selectWithFetch" ? (
                       <SelectWithFetch
@@ -115,9 +149,14 @@ export function MarketForm({
                 </Button>
               </div>
             </Form>
-          )}
+            )
+          }}
         </Formik>
       </CardContent>
     </Card>
   );
-}
+})
+
+MarketForm.displayName = 'MarketForm'
+
+export default MarketForm

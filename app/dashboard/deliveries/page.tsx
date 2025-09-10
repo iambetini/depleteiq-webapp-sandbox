@@ -115,7 +115,7 @@ export function getColumns(router: any, refreshTable: () => void, handleUpdateVe
     },
     {
       accessorKey: "total_order_volume",
-      header: "Order Volume (m³)",
+      header: "Order Vol (m³)",
       width: 175,
       cell: ({ row }) => <div className="text-sm">{row.original.total_order_volume}</div>,
     },
