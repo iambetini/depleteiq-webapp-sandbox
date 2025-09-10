@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SelectWithFetch } from "@/components/ui/select"
 import { ErrorMessage, Form, Formik } from "formik"
+import { forwardRef, useImperativeHandle, useRef } from "react"
 
 interface FieldConfig {
   name: string
@@ -16,6 +17,7 @@ interface FieldConfig {
   fetchUrl?: string
   valueKey?: string
   labelKey?: string
+  onFocus?: () => void
 }
 
 interface WarehouseFormProps {
@@ -29,9 +31,14 @@ interface WarehouseFormProps {
   submitLabel: string
   onCancel: () => void
   cardClassName?: string
+  onFieldUpdate?: (fieldName: string, value: any) => void
 }
 
-export function WarehouseForm({
+export interface WarehouseFormRef {
+  setFieldValue: (fieldName: string, value: any) => void
+}
+
+export const WarehouseForm = forwardRef<WarehouseFormRef, WarehouseFormProps>(({
   title,
   description,
   initialValues,
@@ -42,7 +49,17 @@ export function WarehouseForm({
   submitLabel,
   onCancel,
   cardClassName,
-}: WarehouseFormProps) {
+  onFieldUpdate,
+}, ref) => {
+  const setFieldValueRef = useRef<((field: string, value: any) => void) | null>(null)
+
+  useImperativeHandle(ref, () => ({
+    setFieldValue: (fieldName: string, value: any) => {
+      if (setFieldValueRef.current) {
+        setFieldValueRef.current(fieldName, value)
+      }
+    }
+  }), [])
   if (!initialValues) {
     return (
       <Card className={cardClassName || "max-w-2xl"}>
@@ -69,7 +86,11 @@ export function WarehouseForm({
           validationSchema={validationSchema}
           onSubmit={onSubmit}
         >
-          {({ values, handleChange, setFieldValue, isSubmitting }) => (
+          {({ values, handleChange, setFieldValue, isSubmitting }) => {
+            // Store the setFieldValue function for external access
+            setFieldValueRef.current = setFieldValue
+            
+            return (
             <Form className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {fields.map(field => (
@@ -91,6 +112,7 @@ export function WarehouseForm({
                         type={field.type}
                         value={values[field.name]}
                         onChange={handleChange}
+                        onFocus={field.onFocus}
                         placeholder={field.placeholder}
                       />
                     )}
@@ -107,11 +129,14 @@ export function WarehouseForm({
                 </Button>
               </div>
             </Form>
-          )}
+            )
+          }}
         </Formik>
       </CardContent>
     </Card>
   )
-}
+})
+
+WarehouseForm.displayName = 'WarehouseForm'
 
 export default WarehouseForm

@@ -2,9 +2,10 @@
 
 import { MarketForm } from "@/components/dashboard/MarketForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
+import { FormWithLocationModal } from "@/components/dashboard/FormWithLocationModal";
+import { createAddressFieldConfig } from "@/lib/field-configs";
 import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
-import { useGetLocationsQuery } from "@/store/locations";
 import { useCreateMarketMutation } from "@/store/markets";
 import { useGetWarehousesQuery } from "@/store/warehouses";
 import { useRouter } from "next/navigation";
@@ -13,24 +14,22 @@ import * as Yup from "yup";
 export default function CreateMarketPage() {
   const router = useRouter();
   const [createMarket, { isLoading }] = useCreateMarketMutation();
-  const { data: locationsData, isLoading: locationsLoading } = useGetLocationsQuery();
   const { data: warehousesData, isLoading: warehousesLoading } = useGetWarehousesQuery();
 
   const initialValues = {
     name: "",
     description: "",
     type: "",
+    address: "",
     location_id: "",
     warehouse_id: "",
   };
-
-  const locations: { uuid: string; full_location: string }[] = Array.isArray(locationsData) ? locationsData : [];
 
   const validationSchema = Yup.object({
     name: Yup.string().required("Name is required"),
     description: Yup.string(),
     type: Yup.string().oneOf(["InMarket", "OutMarket"]).required("Type is required"),
-    location_id: Yup.string().required("Location is required"),
+    address: Yup.string().required("Address is required"),
     warehouse_id: Yup.string().required("Warehouse is required"),
   });
 
@@ -49,7 +48,7 @@ export default function CreateMarketPage() {
     }
   };
 
-  const fields = [
+  const createFields = (setLocationModalOpen: (open: boolean) => void) => [
     {
       name: "name",
       label: "Name",
@@ -75,16 +74,6 @@ export default function CreateMarketPage() {
       placeholder: "Select type",
     },
     {
-      name: "location_id",
-      label: "Location",
-      type: "selectWithFetch" as const,
-      required: true,
-      fetchUrl: "/locations",
-      valueKey: "uuid",
-      labelKey: "full_location",
-      placeholder: "Select location",
-    },
-    {
       name: "warehouse_id",
       label: "Warehouse",
       type: "selectWithFetch" as const,
@@ -94,6 +83,7 @@ export default function CreateMarketPage() {
       labelKey: "warehouse_code",
       placeholder: "Select warehouse",
     },
+    createAddressFieldConfig(() => setLocationModalOpen(true), "text"),
   ];
 
   return (
@@ -102,17 +92,23 @@ export default function CreateMarketPage() {
         title="Create Market"
         description="Add a new market to the system"
       />
-      <MarketForm
-        title="Market Information"
-        description="Add a new market to the system"
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        fields={fields}
-        isLoading={isLoading || locationsLoading || warehousesLoading}
-        onSubmit={handleSubmit}
-        submitLabel="Create Market"
-        onCancel={() => router.back()}
-      />
+      <FormWithLocationModal>
+        {({ onFieldUpdate, setFormRef, setLocationModalOpen }) => (
+          <MarketForm
+            title="Market Information"
+            description="Add a new market to the system"
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            fields={createFields(setLocationModalOpen)}
+            isLoading={isLoading || warehousesLoading}
+            onSubmit={handleSubmit}
+            submitLabel="Create Market"
+            onCancel={() => router.back()}
+            onFieldUpdate={onFieldUpdate}
+            ref={setFormRef}
+          />
+        )}
+      </FormWithLocationModal>
     </>
   );
 }

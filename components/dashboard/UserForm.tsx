@@ -43,6 +43,7 @@ interface FieldConfig {
   colSpan?: number
   onCreateNew?: () => void
   createButtonText?: string
+  onFocus?: () => void
 }
 
 interface UserFormProps {
@@ -140,6 +141,7 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
                             name={field.name}
                             value={values[field.name]}
                             onChange={handleChange}
+                            onFocus={field.onFocus}
                             placeholder={field.placeholder}
                             rows={field.rows || 3}
                           />
