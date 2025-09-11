@@ -51,7 +51,7 @@ export default function RoleForm({
   submitButtonText,
 }: RoleFormProps) {
   const [permissions, setPermissions] = useState<{ uuid: string; name: string }[]>([])
-  const [isLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const router = useRouter()
   const [updateRole] = useUpdateRoleMutation()
