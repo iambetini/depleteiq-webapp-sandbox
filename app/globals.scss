@@ -162,7 +162,8 @@ body {
       background: #12b636;
     }
 
-    &.pending {
+    &.pending,
+    &.pending_approval {
       color: #000000;
       background: #ff660014;
     }
@@ -170,6 +171,16 @@ body {
     &.rejected {
       color: #ffffff;
       background: #ffb800;
+    }
+
+    &.awaiting {
+      color: #000000;
+      background: #f2f2f2;
+    }
+
+    &.delivered {
+      color: #ffffff;
+      background: #12b636;
     }
   }
 }

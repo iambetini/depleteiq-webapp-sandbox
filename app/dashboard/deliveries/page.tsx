@@ -5,24 +5,24 @@ import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { StatusBadge } from "@/components/ui/status-badge"
 import { toast } from "@/hooks/use-toast"
 import { handleDelete } from "@/lib/handleDelete"
-import { formatLabelToTitleCase } from "@/lib/label-formatters"
 import { useUpdateVehicleMutation } from "@/store/vehicles"
 import type { Delivery } from "@/types/delivery"
 import { ArrowLeftRight, Car, CheckCircle2, Edit, Eye, MoreHorizontal, RefreshCw, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import React, { useRef } from "react"
-
+import React, { useRef, useCallback } from "react"
+import { createColumnHelper } from "@tanstack/react-table"
 
 export default function DeliveriesPage() {
   const router = useRouter()
   const dataTableRef = useRef<{ refresh: () => void }>(null);
   const [updateVehicle] = useUpdateVehicleMutation();
 
-  const refreshTable = () => {
+  const refreshTable = useCallback(() => {
     dataTableRef.current?.refresh()
-  }
+  }, [])
 
   const columns = React.useMemo(
     () => {
@@ -67,6 +67,8 @@ export default function DeliveriesPage() {
 }
 
 export function getColumns(router: any, refreshTable: () => void, handleUpdateVehicle: (id: string, data: Partial<Delivery>) => void): ColumnDef<Delivery>[] {
+  const columnHelper = createColumnHelper<Delivery>()
+  
   return [
     {
       accessorKey: "order.ref",
@@ -75,22 +77,26 @@ export function getColumns(router: any, refreshTable: () => void, handleUpdateVe
       cell: ({ row }) => <div className="text-sm">{row.original.order?.ref}</div>,
     },
     {
-      accessorKey: "vehicle.vehicle_number",
-      header: "Vehicle Number",
-      width: 150,
-      cell: ({ row }) => <div className="text-sm">{row.original.vehicle?.vehicle_number}</div>,
-    },
-    {
-      accessorKey: "vehicle.type",
-      header: "Vehicle Type",
-      width: 130,
-      cell: ({ row }) => <div className="text-sm">{row.original.vehicle?.type}</div>,
+      id: "vehicle",
+      header: "Recommended Vehicle",
+      columns: [
+        {
+          accessorKey: "vehicle.vehicle_number",
+          header: "Veh. Number",
+          cell: ({ row }) => <div className="text-sm">{row.original.vehicle?.vehicle_number}</div>,
+        },
+        {
+          accessorKey: "vehicle.type",
+          header: "Veh. Type",
+          cell: ({ row }) => <div className="text-sm">{row.original.vehicle?.type}</div>,
+        },
+      ],
     },
     {
       accessorKey: "status",
       header: "Status",
-      width: 120,
-      cell: ({ row }) => <div className="text-sm">{formatLabelToTitleCase(row.original.status)}</div>,
+      width: 150,
+      cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
       accessorKey: "distance",
