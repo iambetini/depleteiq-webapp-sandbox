@@ -104,6 +104,13 @@ export function getColumns(router: any, refreshTable: () => void, handleUpdateVe
       cell: ({ row }) => <div className="text-sm">{row.original.delivery_burn_rate}</div>,
     },
     {
+      accessorKey: "comment",
+      header: "Comment",
+      width: 125,
+      showByDefault: false,
+      cell: ({ row }) => <div className="text-sm">{row.original.comment}</div>,
+    },
+    {
       accessorKey: "created_at",
       header: "Created At",
       width: 185,

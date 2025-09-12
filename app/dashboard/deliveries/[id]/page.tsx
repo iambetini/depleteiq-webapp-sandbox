@@ -1,7 +1,7 @@
 "use client";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { Card, CardContent } from "@/components/ui/card";
-import { Boxes, Calendar, Flame, Package, Percent, Ruler, Scale, Truck, MapPin } from "lucide-react";
+import { Boxes, Calendar, Flame, Package, Percent, Ruler, Scale, Truck, MapPin, MessageSquare } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import type { ComponentType, SVGProps } from "react";
@@ -29,6 +29,7 @@ export default function DeliveryDetailPage() {
     orderWeight: Scale,
     status: Calendar,
     createdAt: Calendar,
+    comment: MessageSquare,
   };
 
   const userRole = user?.role?.toLowerCase() || ""
@@ -141,6 +142,18 @@ export default function DeliveryDetailPage() {
               </div>
             </div>
           </div>
+          {/* Comment Section */}
+          {delivery.comment && (
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <div className="flex items-start space-x-3">
+                <Icon name="comment" />
+                <div className="flex-1">
+                  <p className="text-sm text-[#ababab] mb-2">Comment</p>
+                  <p className="font-medium text-[#444444] whitespace-pre-wrap">{delivery.comment}</p>
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
