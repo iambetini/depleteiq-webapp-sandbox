@@ -1,4 +1,4 @@
-"use client";;
+"use client";
 import { LocationForm } from "@/components/dashboard/LocationForm";
 import { catchError } from "@/lib/utils";
 import { useCreateLocationMutation } from "@/store/locations";
@@ -50,11 +50,31 @@ export function LocationModal({ open, onClose, onLocationCreated }: LocationModa
         latitude: parseFloat(values.latitude.toString()),
         longitude: parseFloat(values.longitude.toString()),
       }
-      const result = await createLocation(locationData).unwrap();
+      const result = await createLocation({ data: locationData, config: { showToast: false } }).unwrap();
       helpers.resetForm();
       onLocationCreated(locationData, result.uuid);
       onClose();
     } catch (error: any) {
+      // Check if the error is about location already existing
+      if (error?.status === "CUSTOM_ERROR" && error?.data?.[0]?.data?.uuid) {
+        const existingLocation = error.data[0].data;
+        const existingLocationData = {
+          street: existingLocation.street,
+          city: existingLocation.city,
+          state: existingLocation.state,
+          region: existingLocation.region,
+          country: existingLocation.country,
+          postal_code: existingLocation.postal_code || "", // Not provided in error response
+          latitude: parseFloat(existingLocation.latitude),
+          longitude: parseFloat(existingLocation.longitude),
+        };
+
+        helpers.resetForm();
+        onLocationCreated(existingLocationData, existingLocation.uuid);
+        onClose();
+        return;
+      }
+
       catchError(error, helpers.setFieldError);
     } finally {
       helpers.setSubmitting(false);

@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { BrandPackage } from "@/types/brand";
 import { ErrorMessage, FieldArray, Form, Formik } from "formik";
 import { Plus, Save, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 interface BrandFormProps {
   mode: "create" | "edit";
@@ -30,32 +30,38 @@ export function BrandForm({
   onBack,
 }: BrandFormProps) {
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const currentUrlRef = useRef<string | null>(null);
 
-  // Cleanup object URL when component unmounts or image changes
+  // Cleanup object URL when component unmounts
   useEffect(() => {
     return () => {
-      if (imagePreviewUrl) {
-        URL.revokeObjectURL(imagePreviewUrl);
+      if (currentUrlRef.current) {
+        URL.revokeObjectURL(currentUrlRef.current);
       }
     };
-  }, [imagePreviewUrl]);
+  }, []);
 
   // Update preview URL when imageFile changes
   useEffect(() => {
-    if (imageFile) {
-      // Clean up previous URL
-      if (imagePreviewUrl) {
-        URL.revokeObjectURL(imagePreviewUrl);
-      }
-      // Create new URL
-      setImagePreviewUrl(URL.createObjectURL(imageFile));
-    } else {
-      if (imagePreviewUrl) {
-        URL.revokeObjectURL(imagePreviewUrl);
+    // Clean up previous URL
+    if (currentUrlRef.current) {
+      URL.revokeObjectURL(currentUrlRef.current);
+      currentUrlRef.current = null;
+    }
+
+    if (imageFile && imageFile instanceof File) {
+      try {
+        const newUrl = URL.createObjectURL(imageFile);
+        currentUrlRef.current = newUrl;
+        setImagePreviewUrl(newUrl);
+      } catch (error) {
+        console.error('Error creating object URL:', error);
         setImagePreviewUrl(null);
       }
+    } else {
+      setImagePreviewUrl(null);
     }
-  }, [imageFile, imagePreviewUrl]);
+  }, [imageFile]);
   return (
     <div className="space-y-6">
       <Formik
@@ -103,10 +109,10 @@ export function BrandForm({
                 />
 
                 <label htmlFor="image" className="flex items-center justify-center relative group">
-                  {imageFile ? (
+                  {imageFile && imagePreviewUrl ? (
                     <>
                       <Image
-                        src={imagePreviewUrl || ""}
+                        src={imagePreviewUrl}
                         alt="Preview"
                         width={64}
                         height={64}
@@ -116,7 +122,7 @@ export function BrandForm({
                         <span className="text-white text-xs font-medium">Click to change</span>
                       </div>
                     </>
-                  ) : values.image ? (
+                  ) : values.image && values.image.trim() !== "" ? (
                     <>
                       <Image
                         src={values.image}

@@ -37,7 +37,7 @@ export default function PerformanceMetricsCard({
         </div>
         <Separator />
         <div className="flex justify-between items-center">
-          <span className="text-[#ababab]">Target Volume</span>
+          <span className="text-[#ababab]">Target</span>
           <span className="font-bold text-[#444444]">
             {targetVolume.toLocaleString()}{volumeUnit}
           </span>
