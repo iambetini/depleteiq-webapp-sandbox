@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { notFound } from "next/navigation";
 import { usePathname, useRouter } from "next/navigation";
-import { ImeVssProvider, useImeVssContext, useImeVssInfo } from "./ime-vss-context";
+import { ImeVssProvider, useImeVssContext } from "./ime-vss-context";
 import { ViewPageHeader } from "@/components/dashboard/ViewPageHeader";
 
 function ImeVssLayoutContent({
@@ -17,7 +17,6 @@ function ImeVssLayoutContent({
   const pathname = usePathname()
   const router = useRouter()
   const { imeVss, isLoading } = useImeVssContext()
-  const imeVssInfo = useImeVssInfo()
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -31,14 +30,12 @@ function ImeVssLayoutContent({
   const getActiveTab = () => {
     if (pathname.includes('/edit')) return 'edit'
     if (pathname.includes('/orders')) return 'orders'
-    if (pathname.includes('/target')) return 'target'
     return 'view'
   }
 
   const tabs = [
     { id: 'view', label: 'Overview', path: `/dashboard/ime-vss/${params.id}` },
     { id: 'orders', label: 'Orders', path: `/dashboard/ime-vss/${params.id}/orders` },
-    { id: 'target', label: 'Target', path: `/dashboard/ime-vss/${params.id}/target` },
     { id: 'edit', label: 'Manage', path: `/dashboard/ime-vss/${params.id}/edit` },
   ]
 
@@ -47,8 +44,8 @@ function ImeVssLayoutContent({
   return (
     <div>
       <ViewPageHeader
-        title={imeVssInfo.full_name || "IME-VSS"}
-        description={imeVssInfo.email || ""}
+        title={imeVss?.full_name || "IME-VSS"}
+        description={imeVss?.email || ""}
         showDeleteButton={true}
         deleteOptions={{
           storeName: "imeVss",
