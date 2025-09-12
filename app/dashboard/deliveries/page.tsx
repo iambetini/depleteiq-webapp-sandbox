@@ -13,7 +13,6 @@ import type { Delivery } from "@/types/delivery"
 import { ArrowLeftRight, Car, CheckCircle2, Edit, Eye, MoreHorizontal, RefreshCw, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import React, { useRef, useCallback } from "react"
-import { createColumnHelper } from "@tanstack/react-table"
 
 export default function DeliveriesPage() {
   const router = useRouter()
@@ -67,8 +66,6 @@ export default function DeliveriesPage() {
 }
 
 export function getColumns(router: any, refreshTable: () => void, handleUpdateVehicle: (id: string, data: Partial<Delivery>) => void): ColumnDef<Delivery>[] {
-  const columnHelper = createColumnHelper<Delivery>()
-  
   return [
     {
       accessorKey: "order.ref",
@@ -77,20 +74,41 @@ export function getColumns(router: any, refreshTable: () => void, handleUpdateVe
       cell: ({ row }) => <div className="text-sm">{row.original.order?.ref}</div>,
     },
     {
-      id: "vehicle",
-      header: "Recommended Vehicle",
-      columns: [
-        {
-          accessorKey: "vehicle.vehicle_number",
-          header: "Veh. Number",
-          cell: ({ row }) => <div className="text-sm">{row.original.vehicle?.vehicle_number}</div>,
-        },
-        {
-          accessorKey: "vehicle.type",
-          header: "Veh. Type",
-          cell: ({ row }) => <div className="text-sm">{row.original.vehicle?.type}</div>,
-        },
-      ],
+      accessorKey: "total_order_volume",
+      header: "Volume(m³)",
+      width: 110,
+      cell: ({ row }) => <div className="text-sm">{row.original.total_order_volume}</div>,
+    },
+    {
+      accessorKey: "total_order_weight",
+      header: "Weight(kg)",
+      width: 110,
+      cell: ({ row }) => <div className="text-sm">{row.original.total_order_weight}</div>,
+    },
+    {
+      accessorKey: "distance",
+      header: "Distance (km)",
+      width: 130,
+      cell: ({ row }) => <div className="text-sm">{row.original.distance}</div>,
+    },
+    {
+      accessorKey: "cost_ratio",
+      header: "Cost Ratio",
+      width: 125,
+      cell: ({ row }) => <div className="text-sm">{row.original.cost_ratio}</div>,
+    },
+    {
+      accessorKey: "delivery_burn_rate",
+      header: "Burn Rate",
+      width: 125,
+      cell: ({ row }) => <div className="text-sm">{row.original.delivery_burn_rate}</div>,
+    },
+    {
+      accessorKey: "created_at",
+      header: "Created At",
+      width: 185,
+      showByDefault: false,
+      cell: ({ row }) => row.original.created_at,
     },
     {
       accessorKey: "status",
@@ -99,43 +117,20 @@ export function getColumns(router: any, refreshTable: () => void, handleUpdateVe
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
-      accessorKey: "distance",
-      header: "Distance (km)",
-      width: 130,
-      showByDefault: false,
-      cell: ({ row }) => <div className="text-sm">{row.original.distance}</div>,
-    },
-    {
-      accessorKey: "cost_ratio",
-      header: "Cost Ratio",
-      width: 125,
-      showByDefault: false,
-      cell: ({ row }) => <div className="text-sm">{row.original.cost_ratio}</div>,
-    },
-    {
-      accessorKey: "delivery_burn_rate",
-      header: "Burn Rate",
-      width: 125,
-      showByDefault: false,
-      cell: ({ row }) => <div className="text-sm">{row.original.delivery_burn_rate}</div>,
-    },
-    {
-      accessorKey: "total_order_volume",
-      header: "Order Vol (m³)",
-      width: 175,
-      cell: ({ row }) => <div className="text-sm">{row.original.total_order_volume}</div>,
-    },
-    {
-      accessorKey: "total_order_weight",
-      header: "Order Weight (kg)",
-      width: 175,
-      cell: ({ row }) => <div className="text-sm">{row.original.total_order_weight}</div>,
-    },
-    {
-      accessorKey: "created_at",
-      header: "Created At",
-      width: 185,
-      cell: ({ row }) => row.original.created_at,
+      id: "vehicle",
+      header: "Recommended Vehicle",
+      columns: [
+        {
+          accessorKey: "vehicle.vehicle_number",
+          header: "Vehicle No.",
+          cell: ({ row }) => <div className="text-sm bg-green-50 p-2">{row.original.vehicle?.vehicle_number}</div>,
+        },
+        {
+          accessorKey: "vehicle.type",
+          header: "Type",
+          cell: ({ row }) => <div className="text-sm bg-green-50 p-2">{row.original.vehicle?.type}</div>,
+        },
+      ],
     },
     {
       id: "actions",
