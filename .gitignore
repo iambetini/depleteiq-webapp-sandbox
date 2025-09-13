@@ -36,3 +36,5 @@ nginx.conf
 # docker config
 Dockerfile
 docker-compose.yml
+
+.vscode
