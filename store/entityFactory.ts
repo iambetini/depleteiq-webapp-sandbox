@@ -69,7 +69,7 @@ const extractMutationArgs = <T>(arg: MutationArg<T>): { data: T; config?: ApiReq
 };
 
 // API method handlers
-const createApiHandler = (method: 'get' | 'post' | 'put' | 'delete', dataExtractor: (result: any) => any) => {
+const createApiHandler = (method: 'get' | 'post' | 'put' | 'patch' | 'delete', dataExtractor: (result: any) => any) => {
   return (url: string, bodyOrConfig?: any, config?: ApiRequestConfig) => {
     const actualConfig = bodyOrConfig && typeof bodyOrConfig === 'object' && 'showToast' in bodyOrConfig 
       ? bodyOrConfig 
@@ -88,6 +88,7 @@ const apiHandlers = {
   GET_BY_ID: createApiHandler('get', (result) => result?.data?.item),
   POST: createApiHandler('post', (result) => result?.data?.item),
   PUT: createApiHandler('put', (result) => result?.data?.item),
+  PATCH: createApiHandler('patch', (result) => result?.data?.item),
   DELETE: createApiHandler('delete', (result) => result?.data || { success: true })
 } as const;
 
@@ -118,7 +119,7 @@ const customBaseQuery = async ({
     }
     
     // Handle different method signatures
-    const needsBody = ['POST', 'PUT'].includes(methodKey);
+    const needsBody = ['POST', 'PUT', 'PATCH'].includes(methodKey);
     return needsBody 
       ? await handler(url, body, config)
       : await handler(url, config);
@@ -193,6 +194,15 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
         query: ({ id, data, config }) => ({
           url: `/${entityEndpoint}/${id}`,
           method: "PUT",
+          body: data,
+          config,
+        }),
+      }),
+      
+      patch: builder.mutation<T, { id: string; data: UpdateT; config?: ApiRequestConfig }>({
+        query: ({ id, data, config }) => ({
+          url: `/${entityEndpoint}/${id}`,
+          method: "PATCH",
           body: data,
           config,
         }),

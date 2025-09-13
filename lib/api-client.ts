@@ -200,7 +200,7 @@ class ApiClient {
   }
 
   private async makeRequest<T>(
-    method: 'get' | 'post' | 'put' | 'delete',
+    method: 'get' | 'post' | 'put' | 'patch' | 'delete',
     endpoint: string,
     data?: any,
     config?: ApiRequestConfig,
@@ -220,6 +220,10 @@ class ApiClient {
 
   async put<T>(endpoint: string, data?: any, config?: ApiRequestConfig): Promise<ApiResponse<T>> {
     return this.makeRequest<T>('put', endpoint, data, config);
+  }
+
+  async patch<T>(endpoint: string, data?: any, config?: ApiRequestConfig): Promise<ApiResponse<T>> {
+    return this.makeRequest<T>('patch', endpoint, data, config);
   }
 
   async delete<T>(endpoint: string, config?: ApiRequestConfig): Promise<ApiResponse<T>> {
