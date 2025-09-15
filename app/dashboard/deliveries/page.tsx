@@ -8,7 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { StatusBadge } from "@/components/ui/status-badge"
 import { toast } from "@/hooks/use-toast"
 import { handleDelete } from "@/lib/handleDelete"
-import { useUpdateVehicleMutation } from "@/store/vehicles"
+import { useUpdateDeliveryMutation } from "@/store/deliveries"
 import type { Delivery } from "@/types/delivery"
 import { ArrowLeftRight, Car, CheckCircle2, Edit, Eye, MoreHorizontal, RefreshCw, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -17,7 +17,7 @@ import React, { useRef, useCallback } from "react"
 export default function DeliveriesPage() {
   const router = useRouter()
   const dataTableRef = useRef<{ refresh: () => void }>(null);
-  const [updateVehicle] = useUpdateVehicleMutation();
+  const [updateDelivery] = useUpdateDeliveryMutation();
 
   const refreshTable = useCallback(() => {
     dataTableRef.current?.refresh()
@@ -25,19 +25,19 @@ export default function DeliveriesPage() {
 
   const columns = React.useMemo(
     () => {
-      const handleUpdateVehicle = (id: string, data: Partial<Delivery>) => {
-        updateVehicle({ id, data }).unwrap().then(() => {
+      const handleUpdateDelivery = (id: string, data: Partial<Delivery>) => {
+        updateDelivery({ id, data }).unwrap().then(() => {
           toast({
             title: "Success",
-            description: "Vehicle updated successfully",
+            description: "Delivery updated successfully",
           });
           refreshTable();
         });
       };
 
-      return getColumns(router, refreshTable, handleUpdateVehicle);
+      return getColumns(router, refreshTable, handleUpdateDelivery);
     },
-    [router, refreshTable, updateVehicle]
+    [router, refreshTable, updateDelivery]
   )
 
   // Filter config for deliveries
@@ -65,7 +65,7 @@ export default function DeliveriesPage() {
   )
 }
 
-export function getColumns(router: any, refreshTable: () => void, handleUpdateVehicle: (id: string, data: Partial<Delivery>) => void): ColumnDef<Delivery>[] {
+export function getColumns(router: any, refreshTable: () => void, handleUpdateDelivery: (id: string, data: Partial<Delivery>) => void): ColumnDef<Delivery>[] {
   return [
     {
       accessorKey: "order.ref",
@@ -154,11 +154,11 @@ export function getColumns(router: any, refreshTable: () => void, handleUpdateVe
               <Eye className="mr-2 h-4 w-4" />
               View Details
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleUpdateVehicle(row.original.vehicle?.uuid, { status: 'approved' })}>
+            <DropdownMenuItem onClick={() => handleUpdateDelivery(row.original.uuid, { status: 'approved' })}>
               <CheckCircle2 className="mr-2 h-4 w-4" />
               Approve
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleUpdateVehicle(row.original.vehicle?.uuid, { status: 'update_requested' })}>
+            <DropdownMenuItem onClick={() => handleUpdateDelivery(row.original.uuid, { status: 'update_requested' })}>
               <RefreshCw className="mr-2 h-4 w-4" />
               Request Update
             </DropdownMenuItem>
