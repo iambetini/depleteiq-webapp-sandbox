@@ -25,5 +25,6 @@ export interface Delivery {
   vehicle_max_density: number; // vehicle maximum density in kg/m^3
   vehicle_coverage: number; // vehicle coverage in km
   status: deliveryStatus;
+  comment: string;
   created_at: string;
 }
