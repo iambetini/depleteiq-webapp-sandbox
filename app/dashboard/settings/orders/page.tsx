@@ -23,9 +23,7 @@ export default function OrdersSettingsPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [settings, setSettings] = useState<KeyValuePair[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Configuration variable to control add/remove functionality
-  const allowModifyPairs = true; // Set to false to disable adding/removing pairs
+  const allowModifyPairs = (process.env.NEXT_PUBLIC_ALLOW_MODIFY_PAIRS ?? "true") === "true";
 
   // Fetch settings using the orders store with extraPath
   const { data: settingsData, isLoading: isLoadingData, refetch } = orders.useGetSingleQuery({
