@@ -1,5 +1,5 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { apiClient, ApiRequestConfig } from "../lib/api-client";
+import { apiClient, ApiRequestConfig } from "@/lib/api-client";
 
 // Types
 type EntityApiOptions<T, CreateT = Partial<T>, UpdateT = Partial<T>> = {
@@ -8,9 +8,9 @@ type EntityApiOptions<T, CreateT = Partial<T>, UpdateT = Partial<T>> = {
   tagTypes?: string[];
 };
 
-type QueryArg<T = any> = T | { params?: T; config?: ApiRequestConfig };
-type MutationArg<T = any> = { data: T; config?: ApiRequestConfig } | T;
-type IdArg = { id: string; config?: ApiRequestConfig };
+type QueryArg<T = any> = T | { params?: T; config?: ApiRequestConfig; extraPath?: string };
+type MutationArg<T = any> = { data: T; config?: ApiRequestConfig; extraPath?: string } | T;
+type IdArg = { id: string | number; config?: ApiRequestConfig; extraPath?: string } | string | number;
 
 // URL utilities
 const substituteUrlParams = (endpoint: string, params: Record<string, any> = {}): string => {
@@ -21,7 +21,15 @@ const getUrlParamNames = (endpoint: string): string[] => {
   return endpoint.match(/:(\w+)/g)?.map(match => match.substring(1)) || [];
 };
 
-const buildUrl = (endpoint: string, params: Record<string, any> = {}): string => {
+// Helper function to build URLs with extra path segments
+const buildUrl = (baseUrl: string, extraPath?: string): string => {
+  if (!extraPath) return baseUrl;
+  const normalizedExtraPath = extraPath.startsWith('/') ? extraPath : `/${extraPath}`;
+  return `${baseUrl}${normalizedExtraPath}`;
+};
+
+// Helper function to build URLs with parameters and extra path segments
+const buildUrlWithParams = (endpoint: string, params: Record<string, any> = {}, extraPath?: string): string => {
   const urlParamNames = getUrlParamNames(endpoint);
   const queryParams = Object.entries(params)
     .filter(([key, value]) => 
@@ -36,6 +44,13 @@ const buildUrl = (endpoint: string, params: Record<string, any> = {}): string =>
   
   let url = `/${substituteUrlParams(endpoint, params)}`;
   
+  // Append extra path if provided
+  if (extraPath) {
+    // Ensure extraPath starts with / if it doesn't already
+    const normalizedExtraPath = extraPath.startsWith('/') ? extraPath : `/${extraPath}`;
+    url += normalizedExtraPath;
+  }
+  
   if (Object.keys(queryParams).length > 0) {
     url += `?${new URLSearchParams(queryParams).toString()}`;
   }
@@ -44,28 +59,35 @@ const buildUrl = (endpoint: string, params: Record<string, any> = {}): string =>
 };
 
 // Argument extractors
-const extractQueryArgs = <T>(arg: QueryArg<T> | void): { params: T; config?: ApiRequestConfig } => {
+const extractQueryArgs = <T>(arg: QueryArg<T> | void): { params: T; config?: ApiRequestConfig; extraPath?: string } => {
   if (!arg) return { params: {} as T };
   
   if (typeof arg === 'object' && 'params' in arg) {
-    return { params: arg.params || ({} as T), config: arg.config };
+    return { params: arg.params || ({} as T), config: arg.config, extraPath: arg.extraPath };
   }
   
-  return { params: arg as T, config: undefined };
+  // Handle case where extraPath is passed directly in the object
+  if (typeof arg === 'object' && 'extraPath' in arg) {
+    const { extraPath, config, ...params } = arg as any;
+    return { params: params as T, config, extraPath };
+  }
+  
+  return { params: arg as T, config: undefined, extraPath: undefined };
 };
 
-const extractIdArgs = (arg: IdArg | string): { id: string; config?: ApiRequestConfig } => {
-  return typeof arg === 'string' 
-    ? { id: arg, config: undefined }
-    : { id: arg.id, config: arg.config };
+const extractIdArgs = (arg: IdArg): { id: string; config?: ApiRequestConfig; extraPath?: string } => {
+  if (typeof arg === 'string' || typeof arg === 'number') {
+    return { id: String(arg), config: undefined, extraPath: undefined };
+  }
+  return { id: String(arg.id), config: arg.config, extraPath: arg.extraPath };
 };
 
-const extractMutationArgs = <T>(arg: MutationArg<T>): { data: T; config?: ApiRequestConfig } => {
+const extractMutationArgs = <T>(arg: MutationArg<T>): { data: T; config?: ApiRequestConfig; extraPath?: string } => {
   if (typeof arg === 'object' && arg !== null && 'data' in arg) {
-    return { data: arg.data, config: arg.config };
+    return { data: arg.data, config: arg.config, extraPath: arg.extraPath };
   }
   
-  return { data: arg as T, config: undefined };
+  return { data: arg as T, config: undefined, extraPath: undefined };
 };
 
 // API method handlers
@@ -147,20 +169,21 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
     endpoints: (builder) => ({
       getAll: builder.query<T[], QueryArg<Record<string, any>> | void>({
         query: (arg) => {
-          const { params, config } = extractQueryArgs(arg);
+          const { params, config, extraPath } = extractQueryArgs(arg);
           return {
-            url: buildUrl(entityEndpoint, params),
+            url: buildUrlWithParams(entityEndpoint, params, extraPath),
             method: "GET_ALL",
             config,
           };
         },
       }),
       
-      getById: builder.query<T, IdArg | string>({
+      getById: builder.query<T, IdArg>({
         query: (arg) => {
-          const { id, config } = extractIdArgs(arg);
+          const { id, config, extraPath } = extractIdArgs(arg);
+          const baseUrl = `/${entityEndpoint}/${id}`;
           return {
-            url: `/${entityEndpoint}/${id}`,
+            url: buildUrl(baseUrl, extraPath),
             method: "GET_BY_ID",
             config,
           };
@@ -169,9 +192,9 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
       
       getSingle: builder.query<T, QueryArg<Record<string, any>> | void>({
         query: (arg) => {
-          const { params, config } = extractQueryArgs(arg);
+          const { params, config, extraPath } = extractQueryArgs(arg);
           return {
-            url: buildUrl(entityEndpoint, params),
+            url: buildUrlWithParams(entityEndpoint, params, extraPath),
             method: "GET_SINGLE",
             config,
           };
@@ -180,9 +203,10 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
       
       create: builder.mutation<T, MutationArg<CreateT>>({
         query: (arg) => {
-          const { data, config } = extractMutationArgs(arg);
+          const { data, config, extraPath } = extractMutationArgs(arg);
+          const baseUrl = `/${entityEndpoint}`;
           return {
-            url: `/${entityEndpoint}`,
+            url: buildUrl(baseUrl, extraPath),
             method: "POST",
             body: data,
             config,
@@ -190,30 +214,40 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
         },
       }),
       
-      update: builder.mutation<T, { id: string; data: UpdateT; config?: ApiRequestConfig }>({
-        query: ({ id, data, config }) => ({
-          url: `/${entityEndpoint}/${id}`,
-          method: "PUT",
-          body: data,
-          config,
-        }),
+      update: builder.mutation<T, { id: string | number; data: UpdateT; config?: ApiRequestConfig; extraPath?: string }>({
+        query: ({ id, data, config, extraPath }) => {
+          const baseUrl = `/${entityEndpoint}/${id}`;
+          return {
+            url: buildUrl(baseUrl, extraPath),
+            method: "PUT",
+            body: data,
+            config,
+          };
+        },
       }),
       
-      patch: builder.mutation<T, { id: string; data: UpdateT; config?: ApiRequestConfig }>({
-        query: ({ id, data, config }) => ({
-          url: `/${entityEndpoint}/${id}`,
-          method: "PATCH",
-          body: data,
-          config,
-        }),
+      patch: builder.mutation<T, { id: string | number; data: UpdateT; config?: ApiRequestConfig; extraPath?: string }>({
+        query: ({ id, data, config, extraPath }) => {
+          const baseUrl = `/${entityEndpoint}/${id}`;
+          return {
+            url: buildUrl(baseUrl, extraPath),
+            method: "PATCH",
+            body: data,
+            config,
+          };
+        },
       }),
       
       delete: builder.mutation<{ success: boolean }, IdArg>({
-        query: ({ id, config }) => ({
-          url: `/${entityEndpoint}/${id}`,
-          method: "DELETE",
-          config,
-        }),
+        query: (arg) => {
+          const { id, config, extraPath } = extractIdArgs(arg);
+          const baseUrl = `/${entityEndpoint}/${id}`;
+          return {
+            url: buildUrl(baseUrl, extraPath),
+            method: "DELETE",
+            config,
+          };
+        },
       }),
     }),
   });
