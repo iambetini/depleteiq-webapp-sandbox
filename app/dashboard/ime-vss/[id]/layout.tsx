@@ -46,11 +46,6 @@ function ImeVssLayoutContent({
       <ViewPageHeader
         title={imeVss?.full_name || "IME-VSS"}
         description={imeVss?.email || ""}
-        showDeleteButton={true}
-        deleteOptions={{
-          storeName: "imeVss",
-          uuid: params.id,
-        }}
       />
 
       {/* Tab Navigation */}

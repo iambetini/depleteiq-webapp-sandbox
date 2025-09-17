@@ -57,13 +57,13 @@ export function DashboardHeader() {
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/settings/account?tab=profile" className="flex items-center cursor-pointer">
+                <Link href="/dashboard/settings/profile" className="flex items-center cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   Profile
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/settings/account?tab=security" className="flex items-center cursor-pointer">
+                <Link href="/dashboard/settings/security" className="flex items-center cursor-pointer">
                   <Key className="mr-2 h-4 w-4" />
                   Change Password
                 </Link>

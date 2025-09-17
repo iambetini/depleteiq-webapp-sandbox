@@ -48,11 +48,6 @@ function DistributorLayoutContent({
       <ViewPageHeader
         title={distributorInfo.business_name || "Distributor"}
         description={<DistributorUserName />}
-        showDeleteButton={true}
-        deleteOptions={{
-          storeName: "distributors",
-          uuid: params.id,
-        }}
       />
 
       {/* Tab Navigation */}

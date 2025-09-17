@@ -29,7 +29,7 @@ export function ImeVssProvider({ imeVssId, children }: { imeVssId: string; child
   useEffect(() => {
     const fetchPerformance = async () => {
       try {
-        const { data: { items: performance } } = await apiClient.get(`/ime_vss/${imeVssId}/performance`) as any;
+        const { data: { item: performance } } = await apiClient.get(`/ime_vss/${imeVssId}/performance`) as any;
         setPerformance(performance || null);
       } catch (error) {
         console.error('Failed to fetch IME-VSS performance:', error);

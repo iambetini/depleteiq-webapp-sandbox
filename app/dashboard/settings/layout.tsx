@@ -8,14 +8,16 @@ function SettingsLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter()
 
   const getActiveTab = () => {
-    if (pathname.includes('/account')) return 'account'
+    if (pathname.includes('/profile')) return 'profile'
+    if (pathname.includes('/security')) return 'security'
     if (pathname.includes('/deliveries')) return 'deliveries'
     if (pathname.includes('/orders')) return 'orders'
-    return 'account'
+    return 'profile'
   }
 
   const tabs = [
-    { id: 'account', label: 'Account', path: `/dashboard/settings/account` },
+    { id: 'profile', label: 'Profile', path: `/dashboard/settings/profile` },
+    { id: 'security', label: 'Security', path: `/dashboard/settings/security` },
     { id: 'deliveries', label: 'Deliveries', path: `/dashboard/settings/deliveries` },
     { id: 'orders', label: 'Orders', path: `/dashboard/settings/orders` },
   ]
