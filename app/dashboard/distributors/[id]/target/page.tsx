@@ -13,12 +13,11 @@ import { Form, Formik } from "formik";
 import { Save } from "lucide-react";
 import { useCallback, useMemo } from "react";
 import * as Yup from "yup";
-import { useDistributor, useDistributorUser } from "../distributor-context";
+import { useDistributorData } from "@/hooks/use-entity-data";
 
 
 export default function DistributorTargetPage() {
-    const { distributor } = useDistributor()
-  const distributorUser = useDistributorUser()
+  const { entity: distributor } = useDistributorData()
   const [createTarget] = useCreateTargetMutation();
   const [updateTarget] = useUpdateTargetMutation();
 
@@ -68,17 +67,17 @@ export default function DistributorTargetPage() {
       helpers: { setSubmitting: (isSubmitting: boolean) => void; setFieldError: (field: string, message: string) => void; resetForm: () => void }
     ) => {
       const { setSubmitting, setFieldError, resetForm } = helpers;
-      if (!distributorUser?.uuid) {
+      if (!distributor?.user?.uuid) {
         setFieldError("type", "Distributor information not available");
         setSubmitting(false);
         return;
       }
       try {
         if (existingTarget?.uuid) {
-          await updateTarget({ id: existingTarget.uuid, data: { ...values, user_id: distributorUser.uuid } }).unwrap();
+          await updateTarget({ id: existingTarget.uuid, data: { ...values, user_id: distributor.user.uuid } }).unwrap();
           toast({ title: "Success", description: "Target updated successfully" });
         } else {
-          await createTarget({ ...values, user_id: distributorUser.uuid }).unwrap();
+          await createTarget({ ...values, user_id: distributor.user.uuid }).unwrap();
           toast({ title: "Success", description: "Target created successfully" });
         }
         resetForm();
@@ -88,7 +87,7 @@ export default function DistributorTargetPage() {
         setSubmitting(false);
       }
     },
-    [distributorUser?.uuid, createTarget, updateTarget, existingTarget?.uuid]
+    [distributor?.user?.uuid, createTarget, updateTarget, existingTarget?.uuid]
   );
 
   const normalizeDate = (dateStr?: string) => {
@@ -101,7 +100,7 @@ export default function DistributorTargetPage() {
   const getInitialValues = useCallback((): Omit<Target, 'id' | 'uuid' | 'created_at' | 'updated_at'> => {
     if (existingTarget) {
       return {
-        user_id: existingTarget.user_id || distributorUser?.uuid || '0',
+        user_id: existingTarget.user_id || distributor?.user?.uuid || '0',
         type: existingTarget.type || "yearly_sales",
         goal_type: existingTarget.goal_type || "amount",
         amount: Number(existingTarget.amount || 0),
@@ -111,7 +110,7 @@ export default function DistributorTargetPage() {
       }
     }
     return {
-      user_id: distributorUser?.uuid || '0',
+      user_id: distributor?.user?.uuid || '0',
       type: "yearly_sales",
       goal_type: "amount",
       amount: 0,
@@ -119,9 +118,9 @@ export default function DistributorTargetPage() {
       start_date: new Date().toISOString().split('T')[0],
       end_date: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
     }
-  }, [existingTarget, distributorUser?.uuid])
+  }, [existingTarget, distributor?.user?.uuid])
 
-  if (!distributor || !distributorUser) { return null; }
+  if (!distributor || !distributor.user) { return null; }
 
   if (isTargetLoading) {
     return (

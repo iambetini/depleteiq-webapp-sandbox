@@ -70,19 +70,19 @@ export function getColumns(router: any, refreshTable: () => void, handleUpdateDe
     {
       accessorKey: "order.ref",
       header: "Order Ref",
-      width: 125,
+      width: 110,
       cell: ({ row }) => <div className="text-sm">{row.original.order?.ref}</div>,
     },
     {
       accessorKey: "total_order_volume",
       header: "Volume(m³)",
-      width: 110,
+      width: 75,
       cell: ({ row }) => <div className="text-sm">{row.original.total_order_volume}</div>,
     },
     {
       accessorKey: "total_order_weight",
       header: "Weight(kg)",
-      width: 110,
+      width: 75,
       cell: ({ row }) => <div className="text-sm">{row.original.total_order_weight}</div>,
     },
     {
@@ -94,13 +94,13 @@ export function getColumns(router: any, refreshTable: () => void, handleUpdateDe
     {
       accessorKey: "cost_ratio",
       header: "Cost Ratio",
-      width: 125,
+      width: 105,
       cell: ({ row }) => <div className="text-sm">{row.original.cost_ratio}</div>,
     },
     {
       accessorKey: "delivery_burn_rate",
-      header: "Burn Rate",
-      width: 125,
+      header: "Burn Rate (₦)",
+      width: 135,
       cell: ({ row }) => <div className="text-sm">{row.original.delivery_burn_rate}</div>,
     },
     {
@@ -120,12 +120,13 @@ export function getColumns(router: any, refreshTable: () => void, handleUpdateDe
     {
       accessorKey: "status",
       header: "Status",
-      width: 150,
+      width: 115,
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
       id: "vehicle",
       header: "Recommended Vehicle",
+      width: 220,
       columns: [
         {
           accessorKey: "vehicle.vehicle_number",
@@ -154,14 +155,18 @@ export function getColumns(router: any, refreshTable: () => void, handleUpdateDe
               <Eye className="mr-2 h-4 w-4" />
               View Details
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleUpdateDelivery(row.original.uuid, { status: 'approved' })}>
-              <CheckCircle2 className="mr-2 h-4 w-4" />
-              Approve
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleUpdateDelivery(row.original.uuid, { status: 'update_requested' })}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Request Update
-            </DropdownMenuItem>
+            {row.original.status !== 'approved' && row.original.status !== 'delivered' && (
+              <DropdownMenuItem onClick={() => handleUpdateDelivery(row.original.uuid, { status: 'approved' })}>
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                Approve
+              </DropdownMenuItem>
+            )}
+            {row.original.status !== 'update_requested' && row.original.status !== 'delivered' && (
+              <DropdownMenuItem onClick={() => handleUpdateDelivery(row.original.uuid, { status: 'update_requested' })}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Request Update
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => { }}>
               <span className="relative inline-block mr-2 h-4 w-4">
                 <Car className="h-5 w-5" />
@@ -181,7 +186,7 @@ export function getColumns(router: any, refreshTable: () => void, handleUpdateDe
                   onSuccess: refreshTable,
                 })
               }
-              className="text-red-600"
+              className="text-red-600 hidden"
             >
               <Trash2 className="mr-2 h-4 w-4" />
               Delete

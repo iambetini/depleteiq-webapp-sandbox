@@ -1,79 +1,86 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Save, X, Plus, Trash2 } from "lucide-react";
-import { deliveries } from "@/store/deliveries";
+import { settings } from "@/store/settings";
 import { toast } from "@/hooks/use-toast";
-
-interface KeyValuePair {
-  key: string;
-  value: string;
-}
-
-interface DeliverySettings {
-  [key: string]: string;
-}
+import { Setting } from "@/types/setting";
 
 export default function DeliveriesSettingsPage() {
   const [isEditing, setIsEditing] = useState(false);
-  const [settings, setSettings] = useState<KeyValuePair[]>([]);
+  const [settingsList, setSettingsList] = useState<Setting[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const allowModifyPairs = (process.env.NEXT_PUBLIC_ALLOW_MODIFY_PAIRS ?? "true") === "true";
+  
+  const allowModifyPairs = useMemo(() => 
+    (process.env.NEXT_PUBLIC_ALLOW_MODIFY_PAIRS ?? "true") === "true", 
+    []
+  );
 
-  // Fetch settings using the deliveries store with extraPath
-  const { data: settingsData, isLoading: isLoadingData, refetch } = deliveries.useGetSingleQuery({
-    extraPath: "settings"
+  const { data } = settings.useGetAllQuery({
+    params: { key: "delivery" }
   });
 
-  // Update settings mutation
-  const [updateSettings] = deliveries.useCreateMutation();
+  const settingsData = (data as any)?.data?.items;
+  const [createSettings] = settings.useCreateMutation();
+  const [deleteSettings] = settings.useDeleteMutation();
 
-  // Initialize settings when data loads
+  // Helper function to map API data to Setting objects
+  const mapToSettings = useCallback((data: Setting[]) => 
+    data.map((setting: Setting) => ({
+      uuid: setting.uuid,
+      key: setting.key,
+      sub_key: setting.sub_key,
+      value: setting.value,
+      description: setting.description || "",
+      status: setting.status || "active",
+      created_at: setting.created_at
+    })), []
+  );
+
   React.useEffect(() => {
-    if (settingsData && !isLoadingData) {
-      const keyValuePairs: KeyValuePair[] = Object.entries(settingsData).map(([key, value]) => ({
-        key,
-        value: String(value)
-      }));
-      setSettings(keyValuePairs);
-    }
-  }, [settingsData, isLoadingData]);
-
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    // Reset to original data
     if (settingsData) {
-      const keyValuePairs: KeyValuePair[] = Object.entries(settingsData).map(([key, value]) => ({
-        key,
-        value: String(value)
-      }));
-      setSettings(keyValuePairs);
+      setSettingsList(mapToSettings(settingsData));
     }
-  };
+  }, [settingsData, mapToSettings]);
 
-  const handleSave = async () => {
+  const handleEdit = useCallback(() => {
+    setIsEditing(true);
+  }, []);
+
+  const handleCancel = useCallback(() => {
+    setIsEditing(false);
+    if (settingsData) {
+      setSettingsList(mapToSettings(settingsData));
+    }
+  }, [settingsData, mapToSettings]);
+
+  const handleSave = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Convert key-value pairs back to object
-      const settingsObject: DeliverySettings = settings.reduce((acc, { key, value }) => {
-        if (key.trim()) {
-          acc[key.trim()] = value.trim();
-        }
-        return acc;
-      }, {} as DeliverySettings);
+      const settingsPayload = settingsList
+        .filter(setting => setting.sub_key.trim() && setting.value.trim())
+        .map(setting => ({
+          key: "delivery",
+          sub_key: setting.sub_key.trim(),
+          value: setting.value.trim()
+        }));
 
-      await updateSettings({
-        data: settingsObject,
-        extraPath: "settings"
+      if (settingsPayload.length === 0) {
+        toast({
+          title: "Error",
+          description: "Please add at least one setting",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      await createSettings({
+        data: { settings: settingsPayload } as any
       }).unwrap();
 
       toast({
@@ -81,58 +88,159 @@ export default function DeliveriesSettingsPage() {
         description: "Delivery settings updated successfully",
       });
 
+      setIsLoading(false);
       setIsEditing(false);
-      refetch(); // Refresh data
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error?.message || "Failed to update settings",
-        variant: "destructive",
-      });
-    } finally {
       setIsLoading(false);
     }
-  };
+  }, [settingsList, createSettings]);
 
-  const handleKeyChange = (index: number, newKey: string) => {
-    const updatedSettings = [...settings];
-    updatedSettings[index].key = newKey;
-    setSettings(updatedSettings);
-  };
-
-  const handleValueChange = (index: number, newValue: string) => {
-    const updatedSettings = [...settings];
-    updatedSettings[index].value = newValue;
-    setSettings(updatedSettings);
-  };
-
-  const handleAddField = () => {
-    setSettings([...settings, { key: "", value: "" }]);
-  };
-
-  const handleRemoveField = (index: number) => {
-    const updatedSettings = settings.filter((_, i) => i !== index);
-    setSettings(updatedSettings);
-  };
-
-  if (isLoadingData) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading delivery settings...</p>
-        </div>
-      </div>
+  const handleSubKeyChange = useCallback((index: number, newSubKey: string) => {
+    setSettingsList(prev => 
+      prev.map((setting, i) => 
+        i === index ? { ...setting, sub_key: newSubKey } : setting
+      )
     );
-  }
+  }, []);
+
+  const handleValueChange = useCallback((index: number, newValue: string) => {
+    setSettingsList(prev => 
+      prev.map((setting, i) => 
+        i === index ? { ...setting, value: newValue } : setting
+      )
+    );
+  }, []);
+
+  const handleAddField = useCallback(() => {
+    const newSetting: Setting = {
+      uuid: "",
+      key: "delivery",
+      sub_key: "",
+      value: "",
+      description: "",
+      status: "active",
+      created_at: new Date().toISOString()
+    };
+    setSettingsList(prev => [...prev, newSetting]);
+  }, []);
+
+  const handleRemoveField = useCallback(async (index: number) => {
+    const settingToRemove = settingsList[index];
+
+    if (settingToRemove.uuid) {
+      try {
+        await deleteSettings({ id: settingToRemove.uuid }).unwrap();
+        toast({
+          title: "Success",
+          description: "Setting deleted successfully",
+        });
+      } catch (error: any) {
+        return;
+      }
+    }
+
+    setSettingsList(prev => prev.filter((_, i) => i !== index));
+  }, [settingsList, deleteSettings]);
+
+  const renderEditingMode = () => (
+    <div className="space-y-4">
+      {settingsList.map((setting, index) => (
+        <div key={index} className="flex items-end space-x-4 p-4 border rounded-lg bg-gray-50">
+          <div className="flex-1 grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor={`sub_key-${index}`}>Setting Name</Label>
+              <Input
+                id={`sub_key-${index}`}
+                value={setting.sub_key}
+                onChange={(e) => handleSubKeyChange(index, e.target.value)}
+                placeholder="e.g., minimum_order_delivery"
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor={`value-${index}`}>Value</Label>
+              <Input
+                id={`value-${index}`}
+                value={setting.value}
+                onChange={(e) => handleValueChange(index, e.target.value)}
+                placeholder="Enter setting value"
+                className="mt-1"
+              />
+            </div>
+          </div>
+          {allowModifyPairs && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleRemoveField(index)}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      ))}
+
+      {allowModifyPairs && (
+        <Button
+          variant="outline"
+          onClick={handleAddField}
+          className="w-full border-dashed border-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-50"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Add New Setting
+        </Button>
+      )}
+
+      <div className="flex items-center justify-end space-x-4 pt-6 border-t">
+        <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
+          <X className="mr-2 h-4 w-4" />
+          Cancel
+        </Button>
+        <Button onClick={handleSave} disabled={isLoading} className="btn-primary">
+          <Save className="mr-2 h-4 w-4" />
+          {isLoading ? "Saving..." : "Save Changes"}
+        </Button>
+      </div>
+    </div>
+  );
+
+  const renderViewMode = () => (
+    <div className="space-y-3">
+      {settingsList.length > 0 ? (
+        settingsList.map((setting, index) => (
+          <div key={index} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
+            <div className="flex-1">
+              <div className="flex items-center space-x-4">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-gray-900 truncate">
+                    {setting.sub_key}
+                  </p>
+                  <p className="text-sm text-gray-500 truncate">
+                    {setting.value}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))
+      ) : (
+        <div className="text-center py-8 text-gray-500">
+          <p>No delivery settings configured yet.</p>
+          <p className="text-sm mt-1">
+            Click &quot;Edit Settings&quot; to {allowModifyPairs ? 'add configuration parameters' : 'view configuration parameters'}.
+          </p>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="space-y-6">
-      {/* Settings Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Configuration Settings</span>
+            <span>Delivery Settings</span>
             {isEditing ? (
               <Badge variant="outline" className="text-orange-600 border-orange-200">
                 Editing Mode
@@ -145,123 +253,14 @@ export default function DeliveriesSettingsPage() {
             )}
           </CardTitle>
           <CardDescription>
-            {isEditing 
+            {isEditing
               ? `Modify the delivery settings below. You can ${allowModifyPairs ? 'add, remove, and ' : ''}edit key-value pairs.`
               : "View current delivery configuration settings."
             }
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isEditing ? (
-            <div className="space-y-4">
-              {settings.map((setting, index) => (
-                <div key={index} className="flex items-center space-x-4 p-4 border rounded-lg bg-gray-50">
-                  <div className="flex-1 grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor={`key-${index}`}>Key</Label>
-                      <Input
-                        id={`key-${index}`}
-                        value={setting.key}
-                        onChange={(e) => handleKeyChange(index, e.target.value)}
-                        placeholder="Enter setting key"
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor={`value-${index}`}>Value</Label>
-                      <Input
-                        id={`value-${index}`}
-                        value={setting.value}
-                        onChange={(e) => handleValueChange(index, e.target.value)}
-                        placeholder="Enter setting value"
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                  {allowModifyPairs && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleRemoveField(index)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-              
-              {allowModifyPairs && (
-                <Button
-                  variant="outline"
-                  onClick={handleAddField}
-                  className="w-full border-dashed border-gray-300 text-gray-600 hover:text-gray-700 hover:bg-gray-50"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add New Setting
-                </Button>
-              )}
-
-              <div className="flex items-center justify-end space-x-4 pt-6 border-t">
-                <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
-                  <X className="mr-2 h-4 w-4" />
-                  Cancel
-                </Button>
-                <Button onClick={handleSave} disabled={isLoading} className="btn-primary">
-                  <Save className="mr-2 h-4 w-4" />
-                  {isLoading ? "Saving..." : "Save Changes"}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {settings.length > 0 ? (
-                settings.map((setting, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-4">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {setting.key}
-                          </p>
-                          <p className="text-sm text-gray-500 truncate">
-                            {setting.value}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <p>No settings configured yet.</p>
-                  <p className="text-sm mt-1">
-                    Click "Edit Settings" to {allowModifyPairs ? 'add configuration parameters' : 'view configuration parameters'}.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Additional Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">About Delivery Settings</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-sm text-gray-600 space-y-2">
-            <p>
-              Delivery settings allow you to configure various parameters that affect how deliveries are processed and managed in the system.
-            </p>
-            <ul className="list-disc list-inside space-y-1 ml-4">
-              <li>Configure delivery time windows and constraints</li>
-              <li>Set up cost calculation parameters</li>
-              <li>Define delivery status workflows</li>
-              <li>Manage notification preferences</li>
-            </ul>
-          </div>
+          {isEditing ? renderEditingMode() : renderViewMode()}
         </CardContent>
       </Card>
     </div>

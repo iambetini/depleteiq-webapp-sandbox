@@ -4,17 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building, CreditCard, Mail, MapPin, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo } from "react";
-import {
-    useDistributor,
-    useDistributorInfo,
-    useDistributorPerformance,
-    useDistributorUser
-} from "./distributor-context";
+import { useDistributorData } from "@/hooks/use-entity-data";
 import PerformanceMetricsCard from "@/components/dashboard/PerformanceMetricsCard";
 
 const BusinessAndContactInformationCard = memo(() => {
-  const distributorInfo = useDistributorInfo()
-  const user = useDistributorUser()
+  const { entity: distributor } = useDistributorData()
+
+  if (!distributor) return null
 
   return (
     <Card>
@@ -22,12 +18,12 @@ const BusinessAndContactInformationCard = memo(() => {
         <div>
           <CardTitle className="text-[#444444]">Distributor Details</CardTitle>
         </div>
-        {user && (
+        {distributor.user && (
           <Badge
-            variant={user.status === "active" ? "default" : "destructive"}
-            className={`status ${user.status === "active" ? "active" : "inactive"} mt-1`}
+            variant={distributor.user.status === "active" ? "default" : "destructive"}
+            className={`status ${distributor.user.status === "active" ? "active" : "inactive"} mt-1`}
           >
-            {user.status}
+            {distributor.user.status}
           </Badge>
         )}
       </CardHeader>
@@ -37,34 +33,34 @@ const BusinessAndContactInformationCard = memo(() => {
             <Building className="h-5 w-5 text-[#ababab]" />
             <div>
               <p className="text-sm text-[#ababab]">Business Name</p>
-              <p className="font-medium text-[#444444]">{distributorInfo.business_name}</p>
+              <p className="font-medium text-[#444444]">{distributor.business_name}</p>
             </div>
           </div>
           <div>
             <p className="text-sm text-[#ababab]">Contact Person</p>
             <p className="font-medium text-[#444444]">
-              {user?.first_name} {user?.last_name}
+              {distributor.user?.first_name} {distributor.user?.last_name}
             </p>
           </div>
           <div className="hidden items-center space-x-0">
-            <Badge variant="secondary">{distributorInfo.business_type}</Badge>
+            <Badge variant="secondary">{distributor.business_type}</Badge>
           </div>
           <RegistrationInfo />
         </div>
-        {user && (
+        {distributor.user && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center space-x-3">
               <Mail className="h-5 w-5 text-[#ababab]" />
               <div>
                 <p className="text-sm text-[#ababab]">Email</p>
-                <p className="font-medium text-[#444444]">{user.email}</p>
+                <p className="font-medium text-[#444444]">{distributor.user.email}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <Phone className="h-5 w-5 text-[#ababab]" />
               <div>
                 <p className="text-sm text-[#ababab]">Phone</p>
-                <p className="font-medium text-[#444444]">{user.phone}</p>
+                <p className="font-medium text-[#444444]">{distributor.user.phone}</p>
               </div>
             </div>
           </div>
@@ -74,7 +70,7 @@ const BusinessAndContactInformationCard = memo(() => {
             <MapPin className="h-5 w-5 text-[#ababab] mt-1" />
             <div>
               <p className="text-sm text-[#ababab]">Address</p>
-              <p className="font-medium text-[#444444]">{distributorInfo.address}</p>
+              <p className="font-medium text-[#444444]">{distributor.address}</p>
             </div>
           </div>
         </div>
@@ -86,7 +82,7 @@ const BusinessAndContactInformationCard = memo(() => {
 BusinessAndContactInformationCard.displayName = 'BusinessAndContactInformationCard'
 
 const RegistrationInfo = memo(() => {
-  const { distributor } = useDistributor()
+  const { entity: distributor } = useDistributorData()
 
   if (!distributor?.registration_number && !distributor?.tax_id) return null
 
@@ -110,7 +106,7 @@ const RegistrationInfo = memo(() => {
 RegistrationInfo.displayName = 'RegistrationInfo'
 
 const BankingInformationCard = memo(() => {
-  const { distributor } = useDistributor()
+  const { entity: distributor } = useDistributorData()
 
   if (!distributor?.bank_name && !distributor?.account_number) return null
 
@@ -151,10 +147,9 @@ BankingInformationCard.displayName = 'BankingInformationCard'
 
 
 
-export default function DistributorDetailPage({ params }: { params: { id: string } }) {
+export default function DistributorDetailPage() {
   const router = useRouter()
-  const { distributor } = useDistributor()
-  const performance = useDistributorPerformance()
+  const { entity: distributor, performance } = useDistributorData()
 
   return (
     <div>

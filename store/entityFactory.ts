@@ -108,9 +108,9 @@ const apiHandlers = {
   GET_ALL: createApiHandler('get', (result) => result),
   GET_SINGLE: createApiHandler('get', (result) => result?.data?.items),
   GET_BY_ID: createApiHandler('get', (result) => result?.data?.item),
-  POST: createApiHandler('post', (result) => result?.data?.item),
-  PUT: createApiHandler('put', (result) => result?.data?.item),
-  PATCH: createApiHandler('patch', (result) => result?.data?.item),
+  POST: createApiHandler('post', (result) => result?.data?.item || result?.data),
+  PUT: createApiHandler('put', (result) => result?.data?.item || result?.data),
+  PATCH: createApiHandler('patch', (result) => result?.data?.item || result?.data),
   DELETE: createApiHandler('delete', (result) => result?.data || { success: true })
 } as const;
 

@@ -12,6 +12,7 @@ function DistributorLayoutContent({ children, }: { children: React.ReactNode }) 
     if (pathname.includes('/orders')) return 'orders'
     if (pathname.includes('/sales')) return 'sales'
     if (pathname.includes('/ime-vss')) return 'ime-vss'
+    if (pathname.includes('/deliveries')) return 'deliveries'
     return 'view'
   }
 
@@ -19,6 +20,7 @@ function DistributorLayoutContent({ children, }: { children: React.ReactNode }) 
     { id: 'orders', label: 'Order Lead Time', path: `/dashboard/reports/orders` },
     { id: 'sales', label: 'Sales', path: `/dashboard/reports/sales` },
     { id: 'ime-vss', label: 'IME/VSS Performance', path: `/dashboard/reports/ime-vss` },
+    { id: 'deliveries', label: 'Delivery Lead Time', path: `/dashboard/reports/deliveries` },
   ]
 
   const activeTab = getActiveTab()

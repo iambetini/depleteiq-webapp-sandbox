@@ -30,7 +30,7 @@ export default function ProfileSettingsPage() {
       {/* Profile Header */}
       <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-8 text-white">
         <div className="flex items-center space-x-4">
-          <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
+          <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
             <User className="h-10 w-10 text-white" />
           </div>
           <div>
@@ -41,7 +41,7 @@ export default function ProfileSettingsPage() {
               }
             </h1>
             <p className="text-orange-100 text-lg mt-1">{session.user.email}</p>
-            <Badge className="bg-white/20 text-white border-white/30 mt-2">
+            <Badge className="bg-white/20 text-white border-white/30 mt-2 backdrop-blur-sm">
               {roleDisplay}
             </Badge>
           </div>

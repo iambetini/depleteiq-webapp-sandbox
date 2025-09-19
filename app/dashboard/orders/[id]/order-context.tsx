@@ -31,7 +31,7 @@ export function OrderProvider({ orderId, children }: { orderId: string; children
         variant: "destructive",
       });
     }
-  }, [error, toast]);
+  }, [error]);
 
   const fetchOrder = useCallback(() => {
     refetch();

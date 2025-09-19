@@ -8,7 +8,7 @@ import { useUpdateIMEVSSMutation } from "@/store/ime-vss"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import * as Yup from "yup"
-import { useImeVssContext } from "../ime-vss-context"
+import { useImeVssData } from "@/hooks/use-entity-data"
 
 export default function EditImeVssPage() {
   const [initialValues, setInitialValues] = useState({
@@ -21,7 +21,7 @@ export default function EditImeVssPage() {
     status: "active",
   })
   const { roles, isLoading: isRolesLoading } = useRoles()
-  const { imeVss, fetchImeVss } = useImeVssContext()
+  const { entity: imeVss, refetch } = useImeVssData()
   const router = useRouter()
   const [updateIMEVSS] = useUpdateIMEVSSMutation()
 
@@ -123,7 +123,7 @@ export default function EditImeVssPage() {
         title: "Success",
         description: "IME-VSS updated successfully",
       })
-      fetchImeVss()
+      refetch()
       router.push(`/dashboard/ime-vss/${imeVss.uuid}`)
     } catch (error: any) {
       catchError(error, setFieldError);
