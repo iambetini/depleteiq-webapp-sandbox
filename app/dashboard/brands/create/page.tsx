@@ -11,8 +11,6 @@ import * as Yup from "yup";
 
 export default function CreateBrandPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-
   const router = useRouter();
   
   const [createBrand] = useCreateBrandMutation();
@@ -66,8 +64,9 @@ export default function CreateBrandPage() {
       const formData = new FormData();
       formData.append("name", values.name);
       formData.append("category", values.category);
-      if (imageFile) {
-        formData.append("image", imageFile);
+      // Image URL is already included in values.image from the upload
+      if (values.image) {
+        formData.append("image", values.image);
       }
       const filteredPackages = values.packages.filter((pkg: any) => pkg.type && pkg.quantity > 0);
       filteredPackages.forEach((pkg: any, idx: number) => {
@@ -81,7 +80,6 @@ export default function CreateBrandPage() {
         description: "Brand created successfully",
       });
       helpers.resetForm();
-      setImageFile(null);
     } catch (error: any) {
       catchError(error, helpers.setFieldError);
     } finally {
@@ -97,8 +95,6 @@ export default function CreateBrandPage() {
         initialValues={initialValues}
         validationSchema={validationSchema}
         isLoading={isLoading}
-        imageFile={imageFile}
-        setImageFile={setImageFile}
         onSubmit={handleSubmit}
         onBack={() => router.back()}
       />

@@ -5,14 +5,13 @@ import { catchError } from "@/lib/utils";
 import { useUpdateBrandMutation } from "@/store/brands";
 import { BrandPackage } from "@/types/brand";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import * as Yup from "yup";
 import { useBrandContext } from "../brand-context";
 import { toast } from "@/hooks/use-toast";
 
 export default function EditBrandPage() {
   const { brand, isLoading, fetchBrand } = useBrandContext();
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const router = useRouter();
   
   const [updateBrand] = useUpdateBrandMutation();
@@ -69,8 +68,9 @@ export default function EditBrandPage() {
       formData.append("name", values.name);
       formData.append("_method", "PUT");
       formData.append("category", values.category);
-      if (imageFile) {
-        formData.append("image", imageFile);
+      // Image URL is already included in values.image from the upload
+      if (values.image) {
+        formData.append("image", values.image);
       }
       const filteredPackages = values.packages.filter((pkg: BrandPackage) => pkg.type && pkg.quantity > 0);
       filteredPackages.forEach((pkg: BrandPackage, idx: number) => {
@@ -111,8 +111,6 @@ export default function EditBrandPage() {
         initialValues={initialValues}
         validationSchema={validationSchema}
         isLoading={isLoading}
-        imageFile={imageFile}
-        setImageFile={setImageFile}
         onSubmit={handleSubmit}
         onBack={() => router.back()}
       />
