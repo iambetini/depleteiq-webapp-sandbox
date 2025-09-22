@@ -91,7 +91,7 @@ export default function ReportsPage() {
     <div>
       <DataTable
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
-        store="orderBrands"
+        store="reports"
         filters={[
           {
             type: "select",
@@ -129,6 +129,7 @@ export default function ReportsPage() {
         searchKey="order_ref"
         searchPlaceholder="Search..."
         exportFileName={`Sales`}
+        extraPath="sales"
       />
     </div>
   );

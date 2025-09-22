@@ -31,7 +31,7 @@ export function VehicleProvider({ vehicleId, children }: { vehicleId: string; ch
         variant: "destructive",
       });
     }
-  }, [error, toast]);
+  }, [error]);
 
   const fetchVehicle = useCallback(() => {
     refetch();

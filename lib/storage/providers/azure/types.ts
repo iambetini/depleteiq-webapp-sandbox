@@ -1,6 +1,6 @@
 // File: lib/storage/providers/azure/types.ts
 
-import { StorageConfig } from '../../storage-provider';
+import { StorageConfig } from "../../storage-provider";
 
 export interface AzureBlobConfig extends StorageConfig {
   accountName: string;

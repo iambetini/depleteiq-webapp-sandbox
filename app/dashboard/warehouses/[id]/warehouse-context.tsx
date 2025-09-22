@@ -30,7 +30,7 @@ export function WarehouseProvider({ warehouseId, children }: { warehouseId: stri
         variant: "destructive",
       });
     }
-  }, [error, toast]);
+  }, [error]);
 
   const fetchWarehouse = useCallback(() => {
     refetch();

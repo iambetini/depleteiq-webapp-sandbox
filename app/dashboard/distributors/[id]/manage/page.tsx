@@ -95,7 +95,7 @@ export default function ManageDistributorPage() {
     } finally {
       setSubmitting(false);
     }
-  }, [distributor?.uuid, distributor, refetch, updateDistributorMutation])
+  }, [distributor, refetch, updateDistributorMutation])
 
   const handleDeleteClick = useCallback(() => {
     if (!distributor) return;

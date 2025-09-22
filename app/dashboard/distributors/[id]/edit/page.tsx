@@ -81,7 +81,7 @@ export default function EditDistributorPage({ params }: { params: { id: string }
     } finally {
       setSubmitting(false);
     }
-  }, [params.id, distributor, updateDistributorMutation, router])
+  }, [params.id, updateDistributorMutation, router])
 
   const createFields = (setLocationModalOpen: (open: boolean) => void) => [
     {

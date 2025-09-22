@@ -3,32 +3,32 @@
 import { MonthYearPicker } from "@/components/dashboard/MonthYearPicker";
 import { Button } from "@/components/ui/button";
 import {
-    DropdownMenu,
-    DropdownMenuCheckboxItem,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { SelectWithFetch } from "@/components/ui/select";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { apiClient } from "@/lib/api-client";
 import {
-    type ColumnFiltersState,
-    type SortingState,
-    type VisibilityState,
-    flexRender,
-    getCoreRowModel,
-    getFilteredRowModel,
-    getPaginationRowModel,
-    getSortedRowModel,
-    useReactTable,
+  type ColumnFiltersState,
+  type SortingState,
+  type VisibilityState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
 } from "@tanstack/react-table";
 import { ChevronDown, Download, Filter, RefreshCw, Search } from "lucide-react";
 import * as React from "react";
@@ -71,6 +71,7 @@ interface DataTableProps<TData, TValue> {
   filters?: FilterConfig[];
   params?: Record<string, any>; // URL parameters for parameterized endpoints
   fixedQuery?: Record<string, any>; // Query string parameters
+  extraPath?: string; // Extra path for reports store
   customExportFn?: (data: TData[], table: any, exportFileName: string, scope: "current_page" | "all") => void;
 }
 
@@ -179,6 +180,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     filters = [],
     params = {},
     fixedQuery = {},
+    extraPath,
     customExportFn,
   }: DataTableProps<TData, TValue>,
   ref: React.Ref<{ refresh: () => void }>
@@ -209,7 +211,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     if (filterDropdownOpen) {
       setPendingFilterState(filterState);
     }
-  }, [filterDropdownOpen]);
+  }, [filterDropdownOpen, filterState]);
 
   // Store-based data fetching
   let tableData: TData[] = [];
@@ -229,14 +231,24 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   const storeParams = React.useMemo(() => {
     if (!store) return undefined;
 
-    return {
+    const baseParams = {
       ...params,
       ...fixedQuery,
       ...filterParams,
       page: pageIndex + 1,
       per_page: pageSize,
     };
-  }, [store, params, fixedQuery, filterParams, pageIndex, pageSize]);
+
+    // Add extraPath for reports store
+    if (extraPath) {
+      return {
+        ...baseParams,
+        extraPath,
+      };
+    }
+
+    return baseParams;
+  }, [store, params, fixedQuery, filterParams, pageIndex, pageSize, extraPath]);
 
   const storeQuery = store ? storeApis[store]?.useGetAllQuery(storeParams ?? skipToken) : undefined;
 

@@ -1,6 +1,6 @@
 // File: lib/storage/providers/cloudinary/types.ts
 
-import { StorageConfig } from '../../storage-provider';
+import { StorageConfig } from "../../storage-provider";
 
 export interface CloudinaryConfig extends StorageConfig {
   cloudName: string;

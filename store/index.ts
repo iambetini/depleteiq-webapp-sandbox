@@ -9,11 +9,8 @@ import dashboardFiltersReducer from "./dashboard-filters";
 import { deliveries } from "./deliveries";
 import { distributorOrders } from "./distributor-orders";
 import { distributorTargets } from "./distributor-targets";
-import { imeVssPerformance } from "./ime-vss-performance";
 import { locations } from "./locations";
 import { markets } from "./markets";
-import { orderBrands } from "./order-brands";
-import { orderEvents } from "./order-events";
 import { reports } from "./reports";
 import { roles } from "./roles";
 import { settings } from "./settings";
@@ -73,11 +70,8 @@ export const store = configureStore({
     [distributorTargets.reducerPath]: distributorTargets.reducer,
     [distributors.reducerPath]: distributors.reducer,
     [imeVss.reducerPath]: imeVss.reducer,
-    [imeVssPerformance.reducerPath]: imeVssPerformance.reducer,
     [locations.reducerPath]: locations.reducer,
     [markets.reducerPath]: markets.reducer,
-    [orderBrands.reducerPath]: orderBrands.reducer,
-    [orderEvents.reducerPath]: orderEvents.reducer,
     [orders.reducerPath]: orders.reducer,
     [reports.reducerPath]: reports.reducer,
     [roles.reducerPath]: roles.reducer,
@@ -99,11 +93,8 @@ export const store = configureStore({
       distributorTargets.middleware,
       distributors.middleware,
       imeVss.middleware,
-      imeVssPerformance.middleware,
       locations.middleware,
       markets.middleware,
-      orderBrands.middleware,
-      orderEvents.middleware,
       orders.middleware,
       reports.middleware,
       roles.middleware,
@@ -124,11 +115,8 @@ export const storeApis = {
   distributorTargets,
   distributors,
   imeVss,
-  imeVssPerformance,
   locations,
   markets,
-  orderBrands,
-  orderEvents,
   orders,
   reports,
   roles,

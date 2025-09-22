@@ -11,7 +11,7 @@ export interface AddressFieldConfig {
 export function createAddressFieldConfig(
   onFocus: () => void,
   type: "text" | "textarea" = "text",
-  rows?: number
+  rows?: number,
 ): AddressFieldConfig {
   return {
     name: "address",

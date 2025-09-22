@@ -26,11 +26,12 @@ function EntityLayoutContent({ children, entityType, tabs }: EntityLayoutProps) 
   const params = useParams()
   const entityId = params.id as string
 
-  // Use the appropriate hook based on entity type
-  const distributorData = entityType === 'distributor' ? useDistributorData() : null
-  const imeVssData = entityType === 'ime-vss' ? useImeVssData() : null
+  // Always call both hooks to avoid conditional hook calls
+  const distributorData = useDistributorData()
+  const imeVssData = useImeVssData()
   
-  const { entity, isLoading, error } = distributorData || imeVssData || { entity: null, isLoading: false, error: null }
+  // Select the appropriate data based on entity type
+  const { entity, isLoading, error } = entityType === 'distributor' ? distributorData : imeVssData
 
   if (isLoading) {
     return <LoadingSkeleton />

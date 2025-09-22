@@ -43,7 +43,7 @@ const createError = (message: string, errors?: any[]): Error => {
 
 const formatErrorMessages = (errors: any[]): string => {
   return errors
-    .map(err => typeof err === "string" ? err : err?.message || "")
+    .map((err) => (typeof err === "string" ? err : err?.message || ""))
     .filter(Boolean)
     .join("\n");
 };
@@ -72,31 +72,29 @@ class ApiClient {
   }
 
   private setupInterceptors(): void {
-    this.axiosInstance.interceptors.request.use(
-      this.handleRequest.bind(this)
-    );
-    
+    this.axiosInstance.interceptors.request.use(this.handleRequest.bind(this));
+
     this.axiosInstance.interceptors.response.use(
       this.handleSuccessResponse.bind(this),
-      this.handleErrorResponse.bind(this)
+      this.handleErrorResponse.bind(this),
     );
   }
 
   private async handleRequest(config: any): Promise<any> {
     const token = await this.getValidToken();
-    
+
     if (token) {
       if (!config.headers) {
         config.headers = {} as any;
       }
       config.headers["Authorization"] = `Bearer ${token}`;
     }
-    
+
     // Handle FormData - remove Content-Type header to let browser set it with boundary
     if (config.data instanceof FormData) {
       delete config.headers["Content-Type"];
     }
-    
+
     return config;
   }
 
@@ -104,20 +102,20 @@ class ApiClient {
     if (response.data?.status === "success") {
       return response.data;
     }
-    
+
     return this.createErrorFromResponse(response);
   }
 
   private handleErrorResponse(error: any): Promise<never> {
     const message = this.extractErrorMessage(error);
-    
+
     if (message === "Unauthenticated.") {
       this.handleAuthError();
     }
-    
+
     const config = (error.config || {}) as ApiRequestConfig;
     this.showErrorIfNeeded(config, error.response?.data?.errors, message);
-    
+
     return Promise.reject(createError(message, error.response?.data?.errors));
   }
 
@@ -125,19 +123,25 @@ class ApiClient {
     const message = response.data?.message || "API returned an error status";
     const errors = response.data?.errors;
     const config = response.config as ApiRequestConfig;
-    
+
     this.showErrorIfNeeded(config, errors, message);
-    
+
     return Promise.reject(createError(message, errors));
   }
 
   private extractErrorMessage(error: any): string {
-    return error.response?.data?.message || 
-           (error.request ? "No response from server" : error.message) || 
-           "An error occurred";
+    return (
+      error.response?.data?.message ||
+      (error.request ? "No response from server" : error.message) ||
+      "An error occurred"
+    );
   }
 
-  private showErrorIfNeeded(config: ApiRequestConfig, errors: any, message: string): void {
+  private showErrorIfNeeded(
+    config: ApiRequestConfig,
+    errors: any,
+    message: string,
+  ): void {
     const showToast = config.showToast !== false;
     if (!showToast) return;
 
@@ -162,7 +166,7 @@ class ApiClient {
 
     // Create new session request
     this.sessionPromise = this.createSessionRequest();
-    
+
     try {
       const session = await this.sessionPromise;
       const token = session?.accessToken || null;
@@ -179,8 +183,8 @@ class ApiClient {
   }
 
   private createSessionRequest(): Promise<any> {
-    return typeof window === "undefined" 
-      ? getServerSession(authOptions) 
+    return typeof window === "undefined"
+      ? getServerSession(authOptions)
       : getSession();
   }
 
@@ -200,7 +204,7 @@ class ApiClient {
   }
 
   private async makeRequest<T>(
-    method: 'get' | 'post' | 'put' | 'patch' | 'delete',
+    method: "get" | "post" | "put" | "patch" | "delete",
     endpoint: string,
     data?: any,
     config?: ApiRequestConfig,
@@ -210,24 +214,42 @@ class ApiClient {
   }
 
   // Public API methods
-  async get<T>(endpoint: string, config?: ApiRequestConfig): Promise<ApiResponse<T>> {
-    return this.makeRequest<T>('get', endpoint, undefined, config);
+  async get<T>(
+    endpoint: string,
+    config?: ApiRequestConfig,
+  ): Promise<ApiResponse<T>> {
+    return this.makeRequest<T>("get", endpoint, undefined, config);
   }
 
-  async post<T>(endpoint: string, data?: any, config?: ApiRequestConfig): Promise<ApiResponse<T>> {
-    return this.makeRequest<T>('post', endpoint, data, config);
+  async post<T>(
+    endpoint: string,
+    data?: any,
+    config?: ApiRequestConfig,
+  ): Promise<ApiResponse<T>> {
+    return this.makeRequest<T>("post", endpoint, data, config);
   }
 
-  async put<T>(endpoint: string, data?: any, config?: ApiRequestConfig): Promise<ApiResponse<T>> {
-    return this.makeRequest<T>('put', endpoint, data, config);
+  async put<T>(
+    endpoint: string,
+    data?: any,
+    config?: ApiRequestConfig,
+  ): Promise<ApiResponse<T>> {
+    return this.makeRequest<T>("put", endpoint, data, config);
   }
 
-  async patch<T>(endpoint: string, data?: any, config?: ApiRequestConfig): Promise<ApiResponse<T>> {
-    return this.makeRequest<T>('patch', endpoint, data, config);
+  async patch<T>(
+    endpoint: string,
+    data?: any,
+    config?: ApiRequestConfig,
+  ): Promise<ApiResponse<T>> {
+    return this.makeRequest<T>("patch", endpoint, data, config);
   }
 
-  async delete<T>(endpoint: string, config?: ApiRequestConfig): Promise<ApiResponse<T>> {
-    return this.makeRequest<T>('delete', endpoint, undefined, config);
+  async delete<T>(
+    endpoint: string,
+    config?: ApiRequestConfig,
+  ): Promise<ApiResponse<T>> {
+    return this.makeRequest<T>("delete", endpoint, undefined, config);
   }
 }
 

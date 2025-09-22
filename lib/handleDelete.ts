@@ -4,7 +4,7 @@ import { store, storeApis } from "@/store/index";
 /**
  * Handles deletion of an entity using the appropriate store's delete mutation.
  * This function now returns a confirmation handler that can be used with a modal.
- * 
+ *
  * @param storeName - The name of the store (e.g., "vehicles", "brands")
  * @param uuid - The UUID of the entity to delete
  * @param entityLabel - Optional label for the entity (e.g., "vehicle", "brand")

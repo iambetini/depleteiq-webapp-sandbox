@@ -5,7 +5,7 @@ export const reports = createEntity<any>({
   entityEndpoint: "reports",
 });
 
-export const { 
+export const {
   useGetSingleQuery: useGetReportQuery,
-  useGetAllQuery: useGetReportsQuery 
+  useGetAllQuery: useGetReportsQuery,
 } = reports;

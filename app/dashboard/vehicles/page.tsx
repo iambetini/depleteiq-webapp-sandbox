@@ -26,7 +26,7 @@ export default function VehiclesPage() {
 
   const columns = React.useMemo(
     () => getColumns(session, router, toast),
-    [session, router, toast]
+    [session, router]
   )
 
   // Filter config for vehicles

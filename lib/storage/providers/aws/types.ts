@@ -1,6 +1,6 @@
 // File: lib/storage/providers/aws/types.ts
 
-import { StorageConfig } from '../../storage-provider';
+import { StorageConfig } from "../../storage-provider";
 
 export interface AwsS3Config extends StorageConfig {
   bucket: string;

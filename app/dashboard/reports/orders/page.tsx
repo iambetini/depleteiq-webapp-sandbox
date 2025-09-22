@@ -129,10 +129,11 @@ export default function ReportsPage() {
     <div>
       <DataTable
         columns={columns}
-        store="orderEvents"
+        store="reports"
         searchKey="distributor"
         searchPlaceholder="Search by reference"
         exportFileName={`LeadTime`}
+        extraPath="order_events"
       />
     </div>
   );

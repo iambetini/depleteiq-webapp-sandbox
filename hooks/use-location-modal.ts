@@ -21,9 +21,9 @@ export function useLocationModal(): LocationModalHook {
         locationData.city,
         locationData.state,
         locationData.country,
-        locationData.postal_code
+        locationData.postal_code,
       ].filter(Boolean);
-      
+
       const formattedAddress = addressParts.join(", ");
       formRef.setFieldValue("address", formattedAddress);
       formRef.setFieldValue("location_id", locationId);

@@ -24,8 +24,10 @@ export function Map({ latitude, longitude, title, className = "", height = "400p
 
     if (!mapRef.current) return
 
+    const currentMapRef = mapRef.current
+
     // Create map instance
-    const map = new google.maps.Map(mapRef.current, {
+    const map = new google.maps.Map(currentMapRef, {
       center: { lat: latitude, lng: longitude },
       zoom: 15,
       mapTypeId: google.maps.MapTypeId.ROADMAP,
@@ -70,8 +72,8 @@ export function Map({ latitude, longitude, title, className = "", height = "400p
       }
       if (mapInstanceRef.current) {
         // Google Maps doesn't have a destroy method, just clear the div
-        if (mapRef.current) {
-          mapRef.current.innerHTML = ''
+        if (currentMapRef) {
+          currentMapRef.innerHTML = ''
         }
       }
     }

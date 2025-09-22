@@ -2,10 +2,9 @@
 import { Badge } from "@/components/ui/badge";
 import { DataTable, FilterConfig } from "@/components/ui/data-table";
 import { ColumnDef } from "@/components/ui/data-table-types";
-import { useGetIMEVSSsPerformanceQuery } from "@/store/ime-vss-performance";
 import { IMEVSSPerformance } from "@/types/ime-vss-performance";
 import { Row } from "@tanstack/react-table";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import * as XLSX from "xlsx-js-style";
 
 type IMEVSSRow = Row<IMEVSSPerformance>;
@@ -174,8 +173,6 @@ const exportIMEVSSPerformance = (
 };
 
 export default function ReportsPage() {
-  const { data: storeData, isLoading } = useGetIMEVSSsPerformanceQuery({});
-
   const columnsRef = useRef<any>(columns);
 
   const getDynamicColumns = (data: IMEVSSPerformance[] | undefined) => {
@@ -189,13 +186,6 @@ export default function ReportsPage() {
     }
     return columns as ColumnDef<IMEVSSPerformance>[];
   };
-
-  useEffect(() => {
-    let performanceData: IMEVSSPerformance[] | undefined = (storeData as any)?.data?.items;
-    if (performanceData && performanceData.length > 0) {
-      columnsRef.current = getDynamicColumns(performanceData);
-    }
-  }, [storeData]);
 
   // Define filters
   const filters: FilterConfig[] = [
@@ -215,12 +205,13 @@ export default function ReportsPage() {
       </div>
       <DataTable
         columns={columnsRef.current}
-        store="imeVssPerformance"
+        store="reports"
         searchKey="user"
         searchPlaceholder="Search by ime/vss"
         exportFileName={`IME-VSS-Performance`}
         filters={filters}
         per_page={20}
+        extraPath="ime_vss_performance"
         customExportFn={(data: unknown[], table, exportFileName, scope) => {
           let maxDays = 21;
           if (data && data.length > 0 && (data[0] as IMEVSSPerformance).performance_by_day) {

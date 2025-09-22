@@ -1,22 +1,23 @@
 "use client";
 
 import React, { useCallback, useRef, useState } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import {
-    Upload,
-    X,
-    File,
-    Image,
-    FileText,
-    Download,
-    Trash2,
-    RefreshCw,
-    CheckCircle,
-    AlertCircle,
-    CloudUpload
+  Upload,
+  X,
+  File,
+  Image as ImageIcon,
+  FileText,
+  Download,
+  Trash2,
+  RefreshCw,
+  CheckCircle,
+  AlertCircle,
+  CloudUpload
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useFileUpload, FileUploadConfig } from '@/hooks/use-file-upload';
@@ -36,7 +37,7 @@ interface FileUploadProps {
 
 const getFileIcon = (fileType: string) => {
   if (fileType.startsWith('image/')) {
-    return <Image className="h-8 w-8 text-blue-500" />;
+    return <ImageIcon className="h-8 w-8 text-blue-500" />;
   }
   if (fileType.includes('pdf') || fileType.includes('document')) {
     return <FileText className="h-8 w-8 text-red-500" />;
@@ -341,9 +342,11 @@ export function FileUpload({
                 <div key={file.id} className="border rounded-lg p-3">
                   {file.type.startsWith('image/') ? (
                     <div className="aspect-square rounded-md overflow-hidden mb-2">
-                      <img
+                      <Image
                         src={file.url}
                         alt={file.name}
+                        width={200}
+                        height={200}
                         className="w-full h-full object-cover"
                       />
                     </div>
