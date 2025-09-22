@@ -17,7 +17,7 @@ export default function DeliveriesSettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
   
   const allowModifyPairs = useMemo(() => 
-    (process.env.NEXT_PUBLIC_ALLOW_MODIFY_PAIRS ?? "true") === "true", 
+    (process.env.NEXT_PUBLIC_ALLOW_MODIFY_PAIRS ?? "false") === "true", 
     []
   );
 
