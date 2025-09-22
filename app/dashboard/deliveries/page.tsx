@@ -167,13 +167,15 @@ export function getColumns(router: any, refreshTable: () => void, handleUpdateDe
                 Request Update
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={() => { }}>
-              <span className="relative inline-block mr-2 h-4 w-4">
-                <Car className="h-5 w-5" />
-                <ArrowLeftRight className="h-3 w-3 absolute -right-1 -bottom-1" />
-              </span>
-              Change Vehicle
-            </DropdownMenuItem>
+            {row.original.status !== 'approved' && (
+              <DropdownMenuItem onClick={() => { }}>
+                <span className="relative inline-block mr-2 h-4 w-4">
+                  <Car className="h-5 w-5" />
+                  <ArrowLeftRight className="h-3 w-3 absolute -right-1 -bottom-1" />
+                </span>
+                Change Vehicle
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => router.push(`/dashboard/deliveries/${row.original.uuid}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />
               Edit
