@@ -8,7 +8,7 @@ import { useUpdateDistributorMutation } from "@/store/distributors";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import * as Yup from "yup";
-import { useDistributor } from "../distributor-context";
+import { useDistributorData } from "@/hooks/use-entity-data";
 import { catchError } from "@/lib/utils";
 
 interface Distributor {
@@ -20,11 +20,12 @@ interface Distributor {
   address: string
   ime_vss_user_id: string
   send_notification: boolean
+  category: string
 }
 
 export default function EditDistributorPage({ params }: { params: { id: string } }) {
   const router = useRouter()
-  const { distributor, updateDistributor } = useDistributor()
+  const { entity: distributor } = useDistributorData()
   const [updateDistributorMutation] = useUpdateDistributorMutation()
 
   const initialValues = useMemo<Distributor>(() => {
@@ -70,18 +71,6 @@ export default function EditDistributorPage({ params }: { params: { id: string }
   const handleSubmit = useCallback(async (values: Distributor, { setSubmitting, setFieldError }: any) => {
     try {
       await updateDistributorMutation({ id: params.id, data: values }).unwrap();
-      updateDistributor({
-        business_name: values.business_name,
-        address: values.address,
-        user: {
-          ...distributor?.user!,
-          first_name: values.first_name,
-          last_name: values.last_name,
-          email: values.email,
-          phone: values.phone,
-        },
-        ime_vss: distributor?.ime_vss
-      });
       toast({
         title: "Success",
         description: "Distributor updated successfully",
@@ -92,7 +81,7 @@ export default function EditDistributorPage({ params }: { params: { id: string }
     } finally {
       setSubmitting(false);
     }
-  }, [params.id, distributor, updateDistributor, toast, router, updateDistributorMutation])
+  }, [params.id, distributor, updateDistributorMutation, router])
 
   const createFields = (setLocationModalOpen: (open: boolean) => void) => [
     {

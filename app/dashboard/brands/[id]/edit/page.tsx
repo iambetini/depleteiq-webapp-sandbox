@@ -1,4 +1,4 @@
-"use client";;
+"use client";
 import BrandForm from "@/components/dashboard/BrandForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { catchError } from "@/lib/utils";

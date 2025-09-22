@@ -20,8 +20,6 @@ export default function EditWarehousePage() {
   const router = useRouter()
   const [updateWarehouse] = useUpdateWarehouseMutation()
 
-  if (!warehouse) { return null; }
-
   const validationSchema = useMemo(() => Yup.object({
     warehouse_code: Yup.string().required("Warehouse code is required"),
     address: Yup.string().required("Address is required"),
@@ -44,6 +42,8 @@ export default function EditWarehousePage() {
       setSubmitting(false);
     }
   }, [warehouse, updateWarehouse, fetchWarehouse, router]);
+
+  if (!warehouse) { return null; }
 
   const createFields = (setLocationModalOpen: (open: boolean) => void) => [
     { 

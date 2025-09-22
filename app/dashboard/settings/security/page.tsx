@@ -67,14 +67,14 @@ export default function SecuritySettingsPage() {
   return (
     <div className="space-y-6">
       {/* Security Header */}
-      <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-xl p-8 text-white">
+      <div className="bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 rounded-xl p-8 text-white shadow-2xl">
         <div className="flex items-center space-x-4">
-          <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center">
-            <Shield className="h-10 w-10 text-white" />
+          <div className="w-20 h-20 bg-gradient-to-br from-orange-500/20 to-orange-600/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-orange-500/30">
+            <Shield className="h-10 w-10 text-orange-400" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Security Center</h1>
-            <p className="text-red-100 text-lg mt-1">Protect your account with strong security measures</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-orange-200 bg-clip-text text-transparent">Security Center</h1>
+            <p className="text-slate-300 text-lg mt-1">Protect your account with strong security measures</p>
           </div>
         </div>
       </div>
@@ -85,8 +85,8 @@ export default function SecuritySettingsPage() {
           <Card className="border-0 shadow-lg">
             <CardHeader className="pb-4">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                  <Key className="h-4 w-4 text-red-600" />
+                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <Key className="h-4 w-4 text-orange-600" />
                 </div>
                 <CardTitle className="text-lg">Change Password</CardTitle>
               </div>
@@ -140,7 +140,7 @@ export default function SecuritySettingsPage() {
 
                     <Button 
                       type="submit" 
-                      className="w-full bg-red-600 hover:bg-red-700 text-white h-11" 
+                      className="w-full btn-primary h-11" 
                       disabled={isPasswordLoading}
                     >
                       {isPasswordLoading ? "Updating Password..." : "Update Password"}

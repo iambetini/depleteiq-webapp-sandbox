@@ -14,6 +14,7 @@ import { locations } from "./locations";
 import { markets } from "./markets";
 import { orderBrands } from "./order-brands";
 import { orderEvents } from "./order-events";
+import { reports } from "./reports";
 import { roles } from "./roles";
 import { settings } from "./settings";
 import { targets } from "./targets";
@@ -78,6 +79,7 @@ export const store = configureStore({
     [orderBrands.reducerPath]: orderBrands.reducer,
     [orderEvents.reducerPath]: orderEvents.reducer,
     [orders.reducerPath]: orders.reducer,
+    [reports.reducerPath]: reports.reducer,
     [roles.reducerPath]: roles.reducer,
     [settings.reducerPath]: settings.reducer,
     [targets.reducerPath]: targets.reducer,
@@ -103,6 +105,7 @@ export const store = configureStore({
       orderBrands.middleware,
       orderEvents.middleware,
       orders.middleware,
+      reports.middleware,
       roles.middleware,
       settings.middleware,
       targets.middleware,
@@ -127,6 +130,7 @@ export const storeApis = {
   orderBrands,
   orderEvents,
   orders,
+  reports,
   roles,
   settings,
   targets,

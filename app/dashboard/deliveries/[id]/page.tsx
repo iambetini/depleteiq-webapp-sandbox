@@ -1,5 +1,6 @@
 "use client";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
+import DeliveryPdfExportButton from "@/components/dashboard/DeliveryPdfExportButton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Boxes, Calendar, Flame, Package, Percent, Ruler, Scale, Truck, MapPin, MessageSquare } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -32,7 +33,7 @@ export default function DeliveryDetailPage() {
     comment: MessageSquare,
   };
 
-  const userRole = user?.role?.toLowerCase() || ""
+  const userRole = (user as any)?.role?.toLowerCase() || ""
 
   const Icon = ({ name }: { name: keyof typeof icons }) => {
     const Cmp = icons[name];
@@ -51,6 +52,9 @@ export default function DeliveryDetailPage() {
           storeName: "deliveries",
           uuid: delivery.uuid,
         }}
+        actions={
+          <DeliveryPdfExportButton delivery={delivery} />
+        }
       />
       {/* Main Content */}
       <Card className="w-full max-w-3xl">
@@ -116,7 +120,7 @@ export default function DeliveryDetailPage() {
             <div className="flex items-center space-x-3">
               <Icon name="burnRate" />
               <div>
-                <p className="text-sm text-[#ababab]">Burn Rate</p>
+                <p className="text-sm text-[#ababab]">Burn Rate (₦)</p>
                 <p className="font-medium text-[#444444]">{delivery.delivery_burn_rate}</p>
               </div>
             </div>

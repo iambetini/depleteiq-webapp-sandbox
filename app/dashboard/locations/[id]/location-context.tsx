@@ -31,7 +31,7 @@ export function LocationProvider({ locationId, children }: { locationId: string;
         variant: "destructive",
       });
     }
-  }, [error, toast]);
+  }, [error]);
 
   const fetchLocation = useCallback(() => {
     refetch();

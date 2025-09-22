@@ -32,7 +32,7 @@ export function DeliveryProvider({ deliveryId, children }: { deliveryId: string;
         variant: "destructive",
       });
     }
-  }, [error, toast]);
+  }, [error]);
 
   const fetchDelivery = useCallback(() => {
     refetch();

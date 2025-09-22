@@ -46,6 +46,7 @@ export const ViewPageHeader: React.FC<ViewPageHeaderProps> = ({
         </div>
       </div>
       <div className="flex gap-2">
+        {actions}
         {showEditButton && editHref && (
           <Button variant="outline" onClick={() => router.push(editHref)}>
             <Edit className="mr-2 h-4 w-4" />
@@ -67,7 +68,6 @@ export const ViewPageHeader: React.FC<ViewPageHeaderProps> = ({
             Delete
           </Button>
         )}
-        {actions}
       </div>
     </div>
   );
