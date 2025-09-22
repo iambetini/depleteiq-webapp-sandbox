@@ -8,6 +8,10 @@ interface PerformanceMetricsCardProps {
   targetVolume?: number;
   currency?: string;
   volumeUnit?: string;
+  // IME/VSS specific fields
+  cummulativePerformance?: number;
+  dailyTarget?: number;
+  monthlyTarget?: number;
 }
 
 export default function PerformanceMetricsCard({
@@ -16,7 +20,10 @@ export default function PerformanceMetricsCard({
   totalOrderValue = 0,
   targetVolume = 0,
   currency = "₦",
-  volumeUnit = ""
+  volumeUnit = "",
+  cummulativePerformance,
+  dailyTarget,
+  monthlyTarget
 }: PerformanceMetricsCardProps) {
   return (
     <Card>
@@ -24,24 +31,39 @@ export default function PerformanceMetricsCard({
         <CardTitle className="text-[#444444]">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex justify-between items-center">
-          <span className="text-[#ababab]">Total Orders</span>
-          <span className="font-bold text-[#444444]">{totalOrders}</span>
-        </div>
-        <Separator />
-        <div className="flex justify-between items-center">
-          <span className="text-[#ababab]">Total Value</span>
-          <span className="font-bold text-[#444444]">
-            {currency}{totalOrderValue.toLocaleString()}
-          </span>
-        </div>
-        <Separator />
-        <div className="flex justify-between items-center">
-          <span className="text-[#ababab]">Target</span>
-          <span className="font-bold text-[#444444]">
-            {currency}{targetVolume.toLocaleString()}{volumeUnit}
-          </span>
-        </div>
+        {cummulativePerformance !== undefined && (
+          <>
+            <div className="flex justify-between items-center">
+              <span className="text-[#ababab]">Cumulative Performance</span>
+              <span className="font-bold text-[#444444]">
+                {cummulativePerformance.toLocaleString()}%
+              </span>
+            </div>
+            <Separator />
+          </>
+        )}
+        {dailyTarget !== undefined && (
+          <>
+            <div className="flex justify-between items-center">
+              <span className="text-[#ababab]">Daily Target</span>
+              <span className="font-bold text-[#444444]">
+                {currency}{dailyTarget.toLocaleString()}
+              </span>
+            </div>
+            <Separator />
+          </>
+        )}
+        {monthlyTarget !== undefined && (
+          <>
+            <div className="flex justify-between items-center">
+              <span className="text-[#ababab]">Monthly Target</span>
+              <span className="font-bold text-[#444444]">
+                {currency}{monthlyTarget.toLocaleString()}
+              </span>
+            </div>
+            <Separator />
+          </>
+        )}
       </CardContent>
     </Card>
   );

@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useGetDistributorQuery } from "@/store/distributors";
 import { useGetIMEVSSQuery } from "@/store/ime-vss";
-import { useGetIMEVSSsPerformanceQuery } from "@/store/ime-vss-performance";
+import { useGetReportQuery } from "@/store/reports";
 import { useMemo } from "react";
 
 interface PerformanceData {
@@ -12,6 +12,10 @@ interface PerformanceData {
   total_order_value: string | number
   total_orders?: number
   target_volume?: number
+  // IME/VSS specific fields
+  cummulative_performance?: number
+  daily_target?: number
+  monthly_target?: number
 }
 
 interface DistributorPerformanceResponse {
@@ -77,27 +81,27 @@ export function useImeVssData() {
   
   const { data: imeVss, isLoading, error, refetch } = useGetIMEVSSQuery(imeVssId)
   
-  // Fetch IME-VSS performance data separately
-  const { data: performanceData } = useGetIMEVSSsPerformanceQuery({})
+  // Fetch IME-VSS performance data using reports store with extraPath
+  const { data: performanceData } = useGetReportQuery({
+    id: imeVssId,
+    extraPath: `ime_vss_performance/${imeVssId}`
+  })
   
   // Extract performance data for the specific IME-VSS
   const performance = useMemo(() => {
     if (!performanceData || !imeVss) return null
     
-    const performanceItems = (performanceData as any)?.data?.items || []
-    const userPerformance = performanceItems.find((item: any) => 
-      item.user?.uuid === imeVss.uuid
-    )
-    
-    if (!userPerformance) return null
-    
-    // Map IMEVSSPerformance to the expected PerformanceData format
+    // Map the API response to the expected PerformanceData format
     return {
-      target: userPerformance.monthly_target || 0,
+      target: performanceData.monthly_target || 0,
       total_order_count: 0, // This might need to be calculated differently
-      total_order_value: userPerformance.cummulative_performance || 0,
+      total_order_value: performanceData.cummulative_performance || 0,
       total_orders: 0, // This might need to be calculated differently
-      target_volume: userPerformance.monthly_target || 0,
+      target_volume: performanceData.monthly_target || 0,
+      // Add the new fields for IME/VSS specific metrics
+      cummulative_performance: performanceData.cummulative_performance || 0,
+      daily_target: performanceData.daily_target || 0,
+      monthly_target: performanceData.monthly_target || 0,
     }
   }, [performanceData, imeVss])
   
