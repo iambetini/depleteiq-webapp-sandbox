@@ -6,30 +6,30 @@ import { StatusBadge } from "@/components/ui/status-badge";
 
 const columns: ColumnDef<unknown, unknown>[] = [
     {
-        accessorKey: "order.order_ref",
+        accessorKey: "order.ref",
         header: "Order Ref",
-        width: 150,
+        width: 100,
         cell: ({ row }) => {
             const delivery = row.original as Delivery;
-            return <span>{delivery.order?.order_ref || "-"}</span>;
+            return <span>{delivery.order?.ref || "-"}</span>;
         },
     },
     {
-        accessorKey: "order.distributor.business_name",
+        accessorKey: "order.distributor_user.distributor_details.business_name",
         header: "Distributor",
-        width: 200,
+        width: 190,
         cell: ({ row }) => {
             const delivery = row.original as Delivery;
-            return <span>{delivery.order?.distributor?.business_name || "-"}</span>;
+            return <span>{delivery.order?.distributor_user?.distributor_details?.business_name || "-"}</span>;
         },
     },
     {
-        accessorKey: "vehicle.vehicle_code",
+        accessorKey: "vehicle.vehicle_number",
         header: "Vehicle Code",
-        width: 150,
+        width: 125,
         cell: ({ row }) => {
             const delivery = row.original as Delivery;
-            return <span>{delivery.vehicle?.vehicle_code || "-"}</span>;
+            return <span>{delivery.vehicle?.vehicle_number || "-"}</span>;
         },
     },
     {
@@ -38,19 +38,19 @@ const columns: ColumnDef<unknown, unknown>[] = [
         width: 300,
         columns: [
             {
-                accessorKey: "from.full_name",
+                accessorKey: "from.full_location",
                 header: "From",
                 cell: ({ row }) => {
                     const delivery = row.original as Delivery;
-                    return <div className="text-sm bg-blue-50 p-2 text-center">{delivery.from?.full_name || "-"}</div>;
+                    return <div className="text-sm bg-blue-50 p-2 text-center">{delivery.from?.full_location || "-"}</div>;
                 },
             },
             {
-                accessorKey: "to.full_name",
+                accessorKey: "to.full_location",
                 header: "To",
                 cell: ({ row }) => {
                     const delivery = row.original as Delivery;
-                    return <div className="text-sm bg-blue-50 p-2 text-center">{delivery.to?.full_name || "-"}</div>;
+                    return <div className="text-sm bg-blue-50 p-2 text-center">{delivery.to?.full_location || "-"}</div>;
                 },
             },
         ],
@@ -101,11 +101,12 @@ const columns: ColumnDef<unknown, unknown>[] = [
         width: 120,
         showByDefault: false,
         cell: ({ row }) => {
-            const delivery = row.original as Delivery;
+            const delivery = row.original as any;
             const costRatio = delivery.cost_ratio;
             if (!costRatio) return "-";
 
-            const isHighCost = costRatio > 0.8;
+            const numericCostRatio = typeof costRatio === 'string' ? parseFloat(costRatio) : costRatio;
+            const isHighCost = numericCostRatio > 0.8;
             return (
                 <span className={isHighCost ? "bg-red-100 text-red-800 px-2 py-1 rounded" : ""}>
                     {costRatio}
@@ -119,26 +120,36 @@ const columns: ColumnDef<unknown, unknown>[] = [
         width: 150,
         showByDefault: false,
         cell: ({ row }) => {
-            const delivery = row.original as Delivery;
+            const delivery = row.original as any;
             const burnRate = delivery.delivery_burn_rate;
             if (!burnRate) return "-";
 
             // Highlight high burn rates (over 1000 NGN)
-            const isHighBurnRate = burnRate > 1000;
+            const numericBurnRate = typeof burnRate === 'string' ? parseFloat(burnRate) : burnRate;
+            const isHighBurnRate = numericBurnRate > 1000;
             return (
                 <span className={isHighBurnRate ? "bg-orange-100 text-orange-800 px-2 py-1 rounded" : ""}>
-                    ₦{burnRate.toLocaleString()}
+                    ₦{numericBurnRate.toLocaleString()}
                 </span>
             );
         },
     },
     {
-        accessorKey: "vehicle_coverage",
-        header: "Coverage (km)",
+        accessorKey: "vehicle_volume_coverage",
+        header: "Volume Coverage",
         width: 150,
         cell: ({ row }) => {
-            const delivery = row.original as Delivery;
-            return <span>{delivery.vehicle_coverage || "-"}</span>;
+            const delivery = row.original as any;
+            return <span>{delivery.vehicle_volume_coverage || "-"}</span>;
+        },
+    },
+    {
+        accessorKey: "vehicle_weight_coverage",
+        header: "Weight Coverage",
+        width: 150,
+        cell: ({ row }) => {
+            const delivery = row.original as any;
+            return <span>{delivery.vehicle_weight_coverage || "-"}</span>;
         },
     },
     {
@@ -189,11 +200,11 @@ export default function DeliveryReportsPage() {
                         label: "Distributor",
                         param: "distributor",
                         fetchUrl: "/distributors",
-                        valueKey: "user.uuid",
-                        labelKey: "business_name",
+                        valueKey: "uuid",
+                        labelKey: "distributor_details.business_name",
                         searchParam: "search",
                         placeholder: "Select distributor...",
-                        labelFormatter: (item: any) => `${item.business_name}`,
+                        labelFormatter: (item: any) => `${item.distributor_details?.business_name || item.business_name}`,
                     },
                     {
                         type: "selectWithFetch",
@@ -201,10 +212,10 @@ export default function DeliveryReportsPage() {
                         param: "vehicle",
                         fetchUrl: "/vehicles",
                         valueKey: "uuid",
-                        labelKey: "vehicle_code",
+                        labelKey: "vehicle_number",
                         searchParam: "search",
                         placeholder: "Select vehicle...",
-                        labelFormatter: (item: any) => `${item.vehicle_code}`,
+                        labelFormatter: (item: any) => `${item.vehicle_number}`,
                     },
                 ]}
                 exportFileName="DeliveryReport"
