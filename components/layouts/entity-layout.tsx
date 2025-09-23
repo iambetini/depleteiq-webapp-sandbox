@@ -27,8 +27,8 @@ function EntityLayoutContent({ children, entityType, tabs }: EntityLayoutProps) 
   const entityId = params.id as string
 
   // Always call both hooks to avoid conditional hook calls
-  const distributorData = useDistributorData()
-  const imeVssData = useImeVssData()
+  const distributorData = useDistributorData(entityType === 'distributor')
+  const imeVssData = useImeVssData(entityType === 'ime-vss')
   
   // Select the appropriate data based on entity type
   const { entity, isLoading, error } = entityType === 'distributor' ? distributorData : imeVssData

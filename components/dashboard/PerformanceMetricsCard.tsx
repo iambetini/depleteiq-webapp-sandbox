@@ -16,9 +16,9 @@ interface PerformanceMetricsCardProps {
 
 export default function PerformanceMetricsCard({
   title = "Performance Metrics",
-  totalOrders = 0,
-  totalOrderValue = 0,
-  targetVolume = 0,
+  totalOrders = undefined,
+  totalOrderValue = undefined,
+  targetVolume = undefined,
   currency = "₦",
   volumeUnit = "",
   cummulativePerformance,
@@ -31,6 +31,39 @@ export default function PerformanceMetricsCard({
         <CardTitle className="text-[#444444]">{title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {totalOrders !== undefined && (
+          <>
+            <div className="flex justify-between items-center">
+              <span className="text-[#ababab]">Total Orders</span>
+              <span className="font-bold text-[#444444]">
+                {totalOrders.toLocaleString()}
+              </span>
+            </div>
+            <Separator />
+          </>
+        )}
+        {totalOrderValue !== undefined && (
+          <>
+            <div className="flex justify-between items-center">
+              <span className="text-[#ababab]">Total Order Value</span>
+              <span className="font-bold text-[#444444]">
+                {currency}{Number(totalOrderValue).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <Separator />
+          </>
+        )}
+        {targetVolume !== undefined && (
+          <>
+            <div className="flex justify-between items-center">
+              <span className="text-[#ababab]">Target Volume</span>
+              <span className="font-bold text-[#444444]">
+                {targetVolume.toLocaleString()} {volumeUnit}
+              </span>
+            </div>
+            <Separator />
+          </>
+        )}
         {cummulativePerformance !== undefined && (
           <>
             <div className="flex justify-between items-center">
@@ -58,7 +91,7 @@ export default function PerformanceMetricsCard({
             <div className="flex justify-between items-center">
               <span className="text-[#ababab]">Monthly Target</span>
               <span className="font-bold text-[#444444]">
-                {currency}{monthlyTarget.toLocaleString()}
+                {currency}{monthlyTarget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
             <Separator />

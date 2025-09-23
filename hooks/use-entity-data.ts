@@ -36,7 +36,7 @@ interface EntityContextValue<T> {
 }
 
 // Distributor-specific hook
-export function useDistributorData() {
+export function useDistributorData(enabled: boolean = true) {
   const params = useParams();
   const distributorId = params.id as string;
 
@@ -45,28 +45,34 @@ export function useDistributorData() {
     isLoading,
     error,
     refetch,
-  } = useGetDistributorQuery(distributorId);
+  } = useGetDistributorQuery(distributorId, { skip: !enabled });
 
   // Fetch distributor performance data using the distributor store with extraPath
-  const { data: performanceData } = useGetDistributorQuery({
-    id: distributorId,
-    extraPath: "performance",
-  });
+  const { data: performanceData } = useGetDistributorQuery(
+    {
+      id: distributorId,
+      extraPath: "performance",
+    } as any,
+    { skip: !enabled }
+  );
 
   // Extract performance data for the specific distributor
   const performance = useMemo(() => {
     if (!performanceData || !distributor) return null;
 
-    const perfData =
-      performanceData as unknown as DistributorPerformanceResponse;
+    // Due to different handlers, the response might be the raw ApiResponse
+    // or the data payload directly. Normalize to the item shape provided.
+    const apiLike: any = performanceData as any;
+    const payload: any = apiLike?.data || performanceData;
+    const perfData = (payload as unknown) as DistributorPerformanceResponse;
 
     // Map the API response to the expected PerformanceData format
     return {
-      target: perfData.target_volume || 0,
-      total_order_count: 0, // API doesn't provide order count
-      total_order_value: perfData.total_order_value || 0,
-      total_orders: 0, // API doesn't provide order count
-      target_volume: perfData.target_volume || 0,
+      target: perfData?.target_volume || 0,
+      total_order_count: 0,
+      total_order_value: perfData?.total_order_value || 0,
+      total_orders: 0,
+      target_volume: perfData?.target_volume || 0,
     };
   }, [performanceData, distributor]);
 
@@ -80,7 +86,7 @@ export function useDistributorData() {
 }
 
 // IME-VSS-specific hook
-export function useImeVssData() {
+export function useImeVssData(enabled: boolean = true) {
   const params = useParams();
   const imeVssId = params.id as string;
 
@@ -89,13 +95,16 @@ export function useImeVssData() {
     isLoading,
     error,
     refetch,
-  } = useGetIMEVSSQuery(imeVssId);
+  } = useGetIMEVSSQuery(imeVssId, { skip: !enabled });
 
   // Fetch IME-VSS performance data using reports store with extraPath
-  const { data: performanceData } = useGetReportQuery({
-    id: imeVssId,
-    extraPath: `ime_vss_performance/${imeVssId}`,
-  });
+  const { data: performanceData } = useGetReportQuery(
+    {
+      id: imeVssId,
+      extraPath: `ime_vss_performance/${imeVssId}`,
+    } as any,
+    { skip: !enabled }
+  );
 
   // Extract performance data for the specific IME-VSS
   const performance = useMemo(() => {

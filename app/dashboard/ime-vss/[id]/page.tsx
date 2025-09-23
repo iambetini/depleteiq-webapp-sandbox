@@ -78,9 +78,6 @@ export default function ImeVssDetailPage() {
 
       <div>
         <PerformanceMetricsCard
-          totalOrders={performance?.total_order_count || 0}
-          totalOrderValue={parseFloat(performance?.total_order_value || "0")}
-          targetVolume={performance?.target || 0}
           cummulativePerformance={performance?.cummulative_performance || 0}
           dailyTarget={performance?.daily_target || 0}
           monthlyTarget={performance?.monthly_target || 0}
