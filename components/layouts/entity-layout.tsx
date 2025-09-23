@@ -24,7 +24,6 @@ function EntityLayoutContent({ children, entityType, tabs }: EntityLayoutProps) 
   const pathname = usePathname()
   const router = useRouter()
   const params = useParams()
-  const entityId = params.id as string
 
   // Always call both hooks to avoid conditional hook calls
   const distributorData = useDistributorData(entityType === 'distributor')
@@ -43,9 +42,10 @@ function EntityLayoutContent({ children, entityType, tabs }: EntityLayoutProps) 
 
   // Determine the active tab based on the current path
   const getActiveTab = () => {
-    if (pathname.includes('/manage')) return 'manage'
-    if (pathname.includes('/orders')) return 'orders'
-    if (pathname.includes('/target')) return 'target'
+    if (pathname.endsWith('/manage')) return 'manage'
+    if (pathname.endsWith('/orders')) return 'orders'
+    if (pathname.endsWith('/distributors')) return 'distributors'
+    if (pathname.endsWith('/target')) return 'target'
     return 'view'
   }
 
@@ -129,6 +129,7 @@ export function ImeVssLayout({ children }: { children: React.ReactNode }) {
   const tabs: TabConfig[] = [
     { id: 'view', label: 'Overview', path: `/dashboard/ime-vss/${imeVssId}` },
     { id: 'orders', label: 'Orders', path: `/dashboard/ime-vss/${imeVssId}/orders` },
+    { id: 'distributors', label: 'Distributors', path: `/dashboard/ime-vss/${imeVssId}/distributors` },
     { id: 'manage', label: 'Manage', path: `/dashboard/ime-vss/${imeVssId}/manage` },
   ]
 
