@@ -137,11 +137,11 @@ export function getDistributorColumns({ router, refreshTable }: ColumnProps): Co
       header: "Address",
       cell: ({ row }) => <AddressCell address={row.original.address} />,
     },
-    {
-      accessorKey: "performance",
-      header: "Performance",
-      cell: ({ row }) => <PerformanceCell performance={row.original.performance} />,
-    },
+    // {
+    //   accessorKey: "performance",
+    //   header: "Performance",
+    //   cell: ({ row }) => <PerformanceCell performance={row.original.performance} />,
+    // },
     {
       accessorKey: "user.status",
       header: "Status",
