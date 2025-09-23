@@ -9,10 +9,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import SuccessIcon from "@/images/success.svg";
 import { apiClient } from "@/lib/api-client";
-import { catchError } from "@/lib/utils";
-import { DeliveryForm } from "@/components/dashboard/DeliveryForm";
-import { useCreateDeliveryMutation } from "@/store/deliveries";
-import * as Yup from "yup";
 import type { Order } from "@/types/order";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -25,12 +21,10 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
   const user = session?.user;
   const { order, fetchOrder } = useOrderContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDeliveryModalOpen, setIsDeliveryModalOpen] = useState(false);
   const [updateMessage, setUpdateMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [messages, setMessages] = useState<any[]>([]);
   const [isMessagesLoading, setIsMessagesLoading] = useState(true);
-  const [createDelivery, { isLoading: isCreatingDelivery }] = useCreateDeliveryMutation();
 
   const fetchMessages = useCallback(() => {
     const fetch = async () => {
@@ -217,14 +211,6 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
               >
                 View Tracks
               </Link>
-              {["manager","delivery-manager", "super-admin"].includes(userRole) && order.status === "confirmed" && !order.self_pickup && !order?.delivery?.uuid && (
-                <Button
-                  onClick={() => setIsDeliveryModalOpen(true)}
-                  className="ml-2 px-3 py-1 h-7 rounded bg-[#27A3D8] text-white text-sm font-semibold hover:bg-[#096ae0] transition-colors"
-                >
-                  Assign Vehicle
-                </Button>
-              )}
             </div>
           </div>
           {/* Order Information Grid */}
@@ -388,55 +374,6 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
             {isSubmitting ? "Sending..." : "Send Request"}
           </Button>
         </div>
-      </Modal>
-
-      {/* Assign Vehicle Modal */}
-      <Modal open={isDeliveryModalOpen} onClose={() => setIsDeliveryModalOpen(false)} size="lg-center" title="Assign Vehicle">
-        <DeliveryForm
-          title="Delivery Information"
-          description={`Assign a vehicle for order #${order.ref}`}
-          initialValues={{ order_id: order.uuid, vehicle_id: "" }}
-          validationSchema={Yup.object({
-            order_id: Yup.string().required("Order is required"),
-            vehicle_id: Yup.string().required("Vehicle is required"),
-          })}
-          fields={[
-            {
-              name: "vehicle_id",
-              label: "Vehicle",
-              type: "selectWithFetch",
-              required: true,
-              fetchUrl: "/vehicles",
-              valueKey: "uuid",
-              labelKey: "type",
-              placeholder: "Select vehicle",
-            },
-          ]}
-          isLoading={isCreatingDelivery}
-          onSubmit={async (values, helpers) => {
-            const payload = {
-              order_id: values.order_id,
-              vehicle_id: values.vehicle_id,
-            }
-            try {
-              await createDelivery(payload as any).unwrap()
-              toast({
-                title: "Success",
-                description: "Delivery created successfully",
-              })
-              setIsDeliveryModalOpen(false)
-              helpers.resetForm()
-              fetchOrder()
-            } catch (error: any) {
-              catchError(error, helpers.setFieldError)
-            } finally {
-              helpers.setSubmitting(false)
-            }
-          }}
-          submitLabel="Create Delivery"
-          onCancel={() => setIsDeliveryModalOpen(false)}
-          cardClassName="shadow-none border-0"
-        />
       </Modal>
     </div>
   )

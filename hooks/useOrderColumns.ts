@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, usePathname } from "next/navigation";
 import { useUpdateOrderMutation } from "@/store/orders";
-import { getOrderColumns } from "@/components/dashboard/OrderColumns";
+import { getOrderColumns } from "@/components/dashboard/columns/OrderColumns";
 
 export function useOrderColumns() {
   const { data: session } = useSession();
