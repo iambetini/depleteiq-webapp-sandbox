@@ -1,7 +1,7 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building, CreditCard, Mail, MapPin, Phone } from "lucide-react";
+import { Building, CreditCard, Mail, MapPin, Phone, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo } from "react";
 import { useDistributorData } from "@/hooks/use-entity-data";
@@ -36,11 +36,14 @@ const BusinessAndContactInformationCard = memo(() => {
               <p className="font-medium text-[#444444]">{distributor.business_name}</p>
             </div>
           </div>
-          <div>
-            <p className="text-sm text-[#ababab]">Contact Person</p>
-            <p className="font-medium text-[#444444]">
-              {distributor.user?.first_name} {distributor.user?.last_name}
-            </p>
+          <div className="flex items-center space-x-3">
+            <User className="h-5 w-5 text-[#ababab]" />
+            <div>
+              <p className="text-sm text-[#ababab]">Contact Person</p>
+              <p className="font-medium text-[#444444]">
+                {distributor.user?.first_name} {distributor.user?.last_name}
+              </p>
+            </div>
           </div>
           <div className="hidden items-center space-x-0">
             <Badge variant="secondary">{distributor.business_type}</Badge>
