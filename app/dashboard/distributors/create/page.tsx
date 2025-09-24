@@ -111,7 +111,7 @@ export default function CreateDistributorPage() {
     },
     {
       name: "ime_vss_user_id",
-      label: "Assign IME/VSS Team",
+      label: "Assign IME/VSS",
       type: "selectWithFetch" as const,
       required: true,
       fetchUrl: "/users?roles=ime,vss",

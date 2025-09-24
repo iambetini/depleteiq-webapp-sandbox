@@ -53,7 +53,7 @@ export function useDistributorData(enabled: boolean = true) {
       id: distributorId,
       extraPath: "performance",
     } as any,
-    { skip: !enabled }
+    { skip: !enabled },
   );
 
   // Extract performance data for the specific distributor
@@ -64,7 +64,7 @@ export function useDistributorData(enabled: boolean = true) {
     // or the data payload directly. Normalize to the item shape provided.
     const apiLike: any = performanceData as any;
     const payload: any = apiLike?.data || performanceData;
-    const perfData = (payload as unknown) as DistributorPerformanceResponse;
+    const perfData = payload as unknown as DistributorPerformanceResponse;
 
     // Map the API response to the expected PerformanceData format
     return {
@@ -103,7 +103,7 @@ export function useImeVssData(enabled: boolean = true) {
       id: imeVssId,
       extraPath: `ime_vss_performance/${imeVssId}`,
     } as any,
-    { skip: !enabled }
+    { skip: !enabled },
   );
 
   // Extract performance data for the specific IME-VSS
