@@ -1,8 +1,9 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building, CreditCard, Mail, MapPin, Phone, User } from "lucide-react";
+import { Building, CreditCard, Mail, MapPin, Phone, User, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { memo } from "react";
 import { useDistributorData } from "@/hooks/use-entity-data";
 import PerformanceMetricsCard from "@/components/dashboard/PerformanceMetricsCard";
@@ -43,6 +44,22 @@ const BusinessAndContactInformationCard = memo(() => {
               <p className="font-medium text-[#444444]">
                 {distributor.user?.first_name} {distributor.user?.last_name}
               </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Users className="h-5 w-5 text-[#ababab]" />
+            <div>
+              <p className="text-sm text-[#ababab]">IME/VSS</p>
+              {distributor.ime_vss?.uuid ? (
+                <Link
+                  href={`/dashboard/ime-vss/${distributor.ime_vss.uuid}`}
+                  className="font-medium text-[#444444] hover:underline"
+                >
+                  {distributor.ime_vss.first_name} {distributor.ime_vss.last_name} ({distributor.ime_vss.email})
+                </Link>
+              ) : (
+                <p className="font-medium text-[#444444]">Not assigned</p>
+              )}
             </div>
           </div>
           <div className="hidden items-center space-x-0">

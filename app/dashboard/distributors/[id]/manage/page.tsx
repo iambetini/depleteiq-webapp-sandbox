@@ -147,7 +147,7 @@ export default function ManageDistributorPage() {
     },
     {
       name: "ime_vss_user_id",
-      label: "Assign IME/VSS Team",
+      label: "Assign IME/VSS",
       type: "selectWithFetch" as const,
       required: true,
       fetchUrl: "/users?roles=ime,vss",
@@ -262,7 +262,7 @@ export default function ManageDistributorPage() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-[#ababab]">IME/VSS Team</p>
+                <p className="text-sm text-[#ababab]">IME/VSS</p>
                 <p className="font-medium text-[#444444]">
                   {distributor.ime_vss?.email || "Not assigned"}
                 </p>
