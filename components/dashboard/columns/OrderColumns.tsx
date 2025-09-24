@@ -150,7 +150,7 @@ export function getOrderColumns({ session, router, updateOrder, currentPath }: C
     {
       accessorKey: "ref",
       header: "Order Ref",
-      width: 125,
+      width: 100,
       cell: ({ row }) => <OrderRefCell orderRef={row.original.ref} />,
     },
     {
@@ -162,14 +162,13 @@ export function getOrderColumns({ session, router, updateOrder, currentPath }: C
     {
       accessorKey: "ime_vss.full_name",
       header: "IME/VSS",
-      width: 175,
+      width: 135,
       cell: ({ row }) => <ImeVssCell imeVss={row.original.ime_vss} />,
     },
     {
       accessorKey: "market",
       header: "Market",
       width: 150,
-      showByDefault: false,
       cell: ({ row }) => <MarketCell market={row.original.market} />,
     },
     {
@@ -189,13 +188,13 @@ export function getOrderColumns({ session, router, updateOrder, currentPath }: C
     {
       accessorKey: "total_amount",
       header: "Value",
-      width: 150,
+      width: 125,
       cell: ({ row }) => <ValueCell totalAmount={row.original.total_amount} />,
     },
     {
       accessorKey: "created_at",
       header: "Created At",
-      width: 200,
+      width: 180,
       cell: ({ row }) => <CreatedAtCell createdAt={row.original.created_at} />,
     },
     {
