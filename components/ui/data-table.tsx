@@ -814,7 +814,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                       <TableCell
                         key={cell.id}
                         className={(isDailyCell ? "border-l border-gray-300 " : "") + (isCumCell ? "border-r border-gray-300 " : "")}
-                        style={width ? { width } : undefined}
+                        style={width ? { minWidth: width } : undefined}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
