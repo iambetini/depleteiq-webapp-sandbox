@@ -61,20 +61,14 @@ export default function CreateBrandPage() {
 
   const handleSubmit = async (values: typeof initialValues, helpers: any) => {
     try {
-      const formData = new FormData();
-      formData.append("name", values.name);
-      formData.append("category", values.category);
-      // Image URL is already included in values.image from the upload
-      if (values.image) {
-        formData.append("image", values.image);
-      }
       const filteredPackages = values.packages.filter((pkg: any) => pkg.type && pkg.quantity > 0);
-      filteredPackages.forEach((pkg: any, idx: number) => {
-        Object.entries(pkg).forEach(([key, val]) => {
-          formData.append(`packages[${idx}][${key}]`, String(val));
-        });
-      });
-      await createBrand(formData as any).unwrap();
+      const data = {
+        name: values.name,
+        category: values.category,
+        image: values.image,
+        packages: filteredPackages,
+      };
+      await createBrand(data).unwrap();
       toast({
         title: "Success",
         description: "Brand created successfully",

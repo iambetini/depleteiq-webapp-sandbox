@@ -6,7 +6,7 @@ import { createAddressFieldConfig } from "@/lib/field-configs";
 import { toast } from "@/hooks/use-toast";
 import { useUpdateDistributorMutation } from "@/store/distributors";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, use } from "react";
 import * as Yup from "yup";
 import { useDistributorData } from "@/hooks/use-entity-data";
 import { catchError } from "@/lib/utils";
@@ -23,7 +23,8 @@ interface Distributor {
   category: string
 }
 
-export default function EditDistributorPage({ params }: { params: { id: string } }) {
+export default function EditDistributorPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter()
   const { entity: distributor } = useDistributorData()
   const [updateDistributorMutation] = useUpdateDistributorMutation()
@@ -70,18 +71,18 @@ export default function EditDistributorPage({ params }: { params: { id: string }
 
   const handleSubmit = useCallback(async (values: Distributor, { setSubmitting, setFieldError }: any) => {
     try {
-      await updateDistributorMutation({ id: params.id, data: values }).unwrap();
+      await updateDistributorMutation({ id, data: values }).unwrap();
       toast({
         title: "Success",
         description: "Distributor updated successfully",
       });
-      router.push(`/dashboard/distributors/${params.id}`);
+      router.push(`/dashboard/distributors/${id}`);
     } catch (error: any) {
       catchError(error, setFieldError);
     } finally {
       setSubmitting(false);
     }
-  }, [params.id, updateDistributorMutation, router])
+  }, [id, updateDistributorMutation, router])
 
   const createFields = (setLocationModalOpen: (open: boolean) => void) => [
     {

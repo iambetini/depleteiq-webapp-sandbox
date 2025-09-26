@@ -6,9 +6,11 @@ import { useMarketContext } from "./market-context"
 import { handleDelete } from "@/lib/handleDelete"
 import { ArrowLeft, Calendar, Edit, MapPin, Store, Trash2, Type } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { use } from "react"
 import { Map } from "@/components/ui/map"
 
-export default function MarketDetailPage({ params }: { params: { id: string } }) {
+export default function MarketDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter()
   const { market } = useMarketContext()
 
@@ -36,7 +38,7 @@ export default function MarketDetailPage({ params }: { params: { id: string } })
           </Button>
           <Button variant="destructive" onClick={() => handleDelete({
             storeName: "markets",
-            uuid: params.id,
+            uuid: id,
             onSuccess: () => router.push("/dashboard/markets"),
           })}>
             <Trash2 className="mr-2 h-4 w-4" />

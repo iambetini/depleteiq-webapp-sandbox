@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRoleContext } from "./role-context";
 import { Calendar, FileText, Laptop, Shield, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { use } from "react";
 
-export default function RoleDetailPage({ params }: { params: { id: string } }) {
+export default function RoleDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter()
   const { role } = useRoleContext()
 
@@ -22,7 +24,7 @@ export default function RoleDetailPage({ params }: { params: { id: string } }) {
         showDeleteButton={true}
         deleteOptions={{
           storeName: "roles",
-          uuid: params.id,
+          uuid: id,
         }}
       />
 

@@ -1,6 +1,7 @@
 "use client";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { notFound } from "next/navigation";
+import { use } from "react";
 import { VehicleProvider, useVehicleContext } from "./vehicle-context";
 
 function VehicleLayoutContent({ children }: { children: React.ReactNode }) {
@@ -17,9 +18,11 @@ function VehicleLayoutContent({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export default function VehicleLayout({ children, params }: { children: React.ReactNode; params: { id: string } }) {
+export default function VehicleLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  
   return (
-    <VehicleProvider vehicleId={params.id}>
+    <VehicleProvider vehicleId={id}>
       <VehicleLayoutContent>
         {children}
       </VehicleLayoutContent>

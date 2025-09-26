@@ -1,6 +1,7 @@
 "use client";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { notFound } from "next/navigation";
+import { use } from "react";
 import { MarketProvider, useMarketContext } from "./market-context";
 
 function MarketLayoutContent({ children }: { children: React.ReactNode }) {
@@ -17,9 +18,11 @@ function MarketLayoutContent({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export default function MarketLayout({ children, params }: { children: React.ReactNode; params: { id: string } }) {
+export default function MarketLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  
   return (
-    <MarketProvider marketId={params.id}>
+    <MarketProvider marketId={id}>
       <MarketLayoutContent>
         {children}
       </MarketLayoutContent>

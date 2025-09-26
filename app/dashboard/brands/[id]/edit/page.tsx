@@ -64,21 +64,14 @@ export default function EditBrandPage() {
 
   const handleSubmit = async (values: any, { setSubmitting, setFieldError }: any) => {
     try {
-      const formData = new FormData();
-      formData.append("name", values.name);
-      formData.append("_method", "PUT");
-      formData.append("category", values.category);
-      // Image URL is already included in values.image from the upload
-      if (values.image) {
-        formData.append("image", values.image);
-      }
       const filteredPackages = values.packages.filter((pkg: BrandPackage) => pkg.type && pkg.quantity > 0);
-      filteredPackages.forEach((pkg: BrandPackage, idx: number) => {
-        Object.entries(pkg).forEach(([key, val]) => {
-          formData.append(`packages[${idx}][${key}]`, String(val));
-        });
-      });
-      await updateBrand({ id: brand.uuid, data: formData as any }).unwrap();
+      const data = {
+        name: values.name,
+        category: values.category,
+        image: values.image,
+        packages: filteredPackages,
+      };
+      await updateBrand({ id: brand.uuid, data }).unwrap();
       toast({
         title: "Success",
         description: "Brand updated successfully",

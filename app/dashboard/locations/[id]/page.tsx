@@ -5,9 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useLocationContext } from "./location-context"
 import { Calendar, MapPin, Navigation, Store, Users } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { use } from "react"
 import { Map } from "@/components/ui/map"
 
-export default function LocationDetailPage({ params }: { params: { id: string } }) {
+export default function LocationDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter()
   const { location } = useLocationContext()
 
@@ -23,7 +25,7 @@ export default function LocationDetailPage({ params }: { params: { id: string } 
         showDeleteButton={true}
         deleteOptions={{
           storeName: "locations",
-          uuid: params.id,
+          uuid: id,
         }}
       />
 
