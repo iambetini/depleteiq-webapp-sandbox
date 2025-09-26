@@ -6,10 +6,12 @@ import { catchError } from "@/lib/utils";
 import { useUpdateDeliveryMutation } from "@/store/deliveries";
 import type { Delivery } from "@/types/delivery";
 import { useRouter } from "next/navigation";
+import { use } from "react";
 import * as Yup from "yup";
 import { useDeliveryContext } from "../delivery-context";
 
-export default function EditDeliveryPage({ params }: { params: { id: string } }) {
+export default function EditDeliveryPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const { delivery, isLoading, fetchDelivery } = useDeliveryContext();
   const router = useRouter()
   const [updateDelivery] = useUpdateDeliveryMutation();
@@ -32,10 +34,10 @@ export default function EditDeliveryPage({ params }: { params: { id: string } })
       vehicle_id: values.vehicle_id,
     } as Partial<Delivery>;
     try {
-      await updateDelivery({ id: params.id, data: payload }).unwrap();
+      await updateDelivery({ id, data: payload }).unwrap();
       toast({ title: "Success", description: "Delivery updated successfully" });
       fetchDelivery();
-      router.push(`/dashboard/deliveries/${params.id}`);
+      router.push(`/dashboard/deliveries/${id}`);
     } catch (error: any) {
       catchError(error, helpers.setFieldError);
     } finally {

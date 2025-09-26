@@ -104,7 +104,7 @@ function getColumns(
       cell: ({ row }) => (
         <div className="flex items-center space-x-1">
           <Package className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm">{row.original.packages?.length || 0} packages</span>
+          <span className="text-sm">{row.original.packages?.length || 0} package{row.original.packages?.length > 1 ? 's' : ''}</span>
         </div>
       ),
     },

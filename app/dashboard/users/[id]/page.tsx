@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useUserContext } from "./user-context";
 import { Calendar, Mail, MapPin, Phone, Shield, User } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { use } from "react";
 
-export default function UserDetailPage({ params }: { params: { id: string } }) {
+export default function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter()
   const { user } = useUserContext()
 
@@ -22,7 +24,7 @@ export default function UserDetailPage({ params }: { params: { id: string } }) {
         showDeleteButton={true}
         deleteOptions={{
           storeName: "users",
-          uuid: params.id,
+          uuid: id,
         }}
       />
 

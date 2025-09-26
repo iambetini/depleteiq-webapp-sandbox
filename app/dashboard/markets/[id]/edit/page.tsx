@@ -53,13 +53,13 @@ export default function EditMarketPage() {
         title: "Success",
         description: "Market updated successfully",
       });
-      helpers.resetForm();
+      router.push(`/dashboard/markets/${market.uuid}`);
     } catch (error: any) {
       catchError(error, helpers.setFieldError);
     } finally {
       helpers.setSubmitting(false);
     }
-  }, [market, updateMarket]);
+  }, [market, updateMarket, router]);
 
   if (!market) { return null; }
 

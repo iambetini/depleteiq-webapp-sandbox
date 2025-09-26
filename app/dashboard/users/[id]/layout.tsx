@@ -1,6 +1,7 @@
 "use client";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { notFound } from "next/navigation";
+import { use } from "react";
 import { UserProvider, useUserContext } from "./user-context";
 
 function UserLayoutContent({ children }: { children: React.ReactNode }) {
@@ -17,9 +18,11 @@ function UserLayoutContent({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export default function UserLayout({ children, params }: { children: React.ReactNode; params: { id: string } }) {
+export default function UserLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  
   return (
-    <UserProvider userId={params.id}>
+    <UserProvider userId={id}>
       <UserLayoutContent>
         {children}
       </UserLayoutContent>

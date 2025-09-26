@@ -57,12 +57,17 @@ export default function EditLocationPage() {
 
   const handleSubmit = async (values: LocationData, helpers: any) => {
     try {
-      await updateLocation({ id: location.uuid, data: values }).unwrap();
+      const data = {
+        ...values,
+        latitude: typeof values.latitude === 'string' ? parseFloat(values.latitude) : values.latitude,
+        longitude: typeof values.longitude === 'string' ? parseFloat(values.longitude) : values.longitude,
+      };
+      await updateLocation({ id: location.uuid, data }).unwrap();
       toast({
         title: "Success",
         description: "Location updated successfully",
       });
-      helpers.resetForm();
+      router.push(`/dashboard/locations/${location.uuid}`);
     } catch (error: any) {
       catchError(error, helpers.setFieldError);
     } finally {

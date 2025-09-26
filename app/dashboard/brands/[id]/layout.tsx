@@ -1,6 +1,7 @@
 "use client";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { notFound } from "next/navigation";
+import { use } from "react";
 import { BrandProvider, useBrandContext } from "./brand-context";
 
 function BrandLayoutContent({ children }: { children: React.ReactNode }) {
@@ -17,9 +18,11 @@ function BrandLayoutContent({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export default function BrandLayout({ children, params }: { children: React.ReactNode; params: { id: string } }) {
+export default function BrandLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  
   return (
-    <BrandProvider brandId={params.id}>
+    <BrandProvider brandId={id}>
       <BrandLayoutContent>
         {children}
       </BrandLayoutContent>

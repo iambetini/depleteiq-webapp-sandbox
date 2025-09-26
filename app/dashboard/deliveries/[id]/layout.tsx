@@ -1,6 +1,7 @@
 "use client";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { notFound } from "next/navigation";
+import { use } from "react";
 import { DeliveryProvider, useDeliveryContext } from "./delivery-context";
 
 function DeliveryLayoutContent({ children }: { children: React.ReactNode }) {
@@ -17,9 +18,11 @@ function DeliveryLayoutContent({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-export default function DeliveryLayout({ children, params }: { children: React.ReactNode; params: { id: string } }) {
+export default function DeliveryLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  
   return (
-    <DeliveryProvider deliveryId={params.id}>
+    <DeliveryProvider deliveryId={id}>
       <DeliveryLayoutContent>
         {children}
       </DeliveryLayoutContent>
