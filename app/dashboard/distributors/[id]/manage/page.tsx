@@ -6,8 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { FormWithLocationModal } from "@/components/dashboard/FormWithLocationModal"
 import UserForm from "@/components/dashboard/UserForm"
 import { createAddressFieldConfig } from "@/lib/field-configs"
-import { useDeleteConfirmation } from "@/hooks/use-delete-confirmation"
-import { ConfirmationModal } from "@/components/ui/confirmation-modal"
+import { handleDelete } from "@/lib/handleDelete"
 import { toast } from "@/hooks/use-toast"
 import { useUpdateDistributorMutation } from "@/store/distributors"
 import { useRouter } from "next/navigation"
@@ -35,11 +34,14 @@ export default function ManageDistributorPage() {
   const [updateDistributorMutation] = useUpdateDistributorMutation()
   const [isEditMode, setIsEditMode] = useState(false)
 
-  const deleteConfirmation = useDeleteConfirmation({
-    storeName: "distributors",
-    entityLabel: "distributor",
-    onSuccess: () => router.push("/dashboard/distributors"),
-  })
+  const deleteHandler = useCallback((uuid: string) => {
+    handleDelete({
+      storeName: "distributors",
+      uuid,
+      entityLabel: "distributor",
+      onSuccess: () => router.push("/dashboard/distributors"),
+    })
+  }, [router])
 
   const initialValues = useMemo<Distributor>(() => {
     if (!distributor) {
@@ -99,8 +101,8 @@ export default function ManageDistributorPage() {
 
   const handleDeleteClick = useCallback(() => {
     if (!distributor) return;
-    deleteConfirmation.showDeleteConfirmation(distributor.uuid);
-  }, [distributor, deleteConfirmation])
+    deleteHandler(distributor.uuid);
+  }, [distributor, deleteHandler])
 
   const createFields = (setLocationModalOpen: (open: boolean) => void) => [
     {
@@ -113,9 +115,14 @@ export default function ManageDistributorPage() {
     {
       name: "category",
       label: "Category",
-      type: "text" as const,
+      type: "select" as const,
       required: true,
-      placeholder: "Enter category",
+      placeholder: "Select category",
+      options: [
+        { label: "Food & Beverage", value: "FnB" },
+        { label: "Personal Care", value: "PC" },
+        { label: "Pharmaceutical", value: "Pharma" },
+      ],
     },
     {
       name: "first_name",
@@ -150,10 +157,12 @@ export default function ManageDistributorPage() {
       label: "Assign IME/VSS",
       type: "selectWithFetch" as const,
       required: true,
-      fetchUrl: "/users?roles=ime,vss",
+      store: "users",
       valueKey: "uuid",
       labelKey: "email",
       placeholder: "Select IME/VSS user",
+      initialSearch: distributor?.ime_vss?.email || "",
+      params: { roles: "ime,vss" },
     },
     createAddressFieldConfig(() => setLocationModalOpen(true), "textarea", 3),
   ]
@@ -178,7 +187,7 @@ export default function ManageDistributorPage() {
           </Button>
         </div>
 
-        <FormWithLocationModal>
+        <FormWithLocationModal existingLocationData={distributor.location}>
           {({ onFieldUpdate, setFormRef, setLocationModalOpen }) => (
             <UserForm
               title="Distributor Information"
@@ -338,19 +347,6 @@ export default function ManageDistributorPage() {
         )}
       </div>
 
-      {deleteConfirmation.pendingDelete && (
-        <ConfirmationModal
-          isOpen={deleteConfirmation.isModalOpen}
-          onClose={deleteConfirmation.handleCancelDelete}
-          onConfirm={deleteConfirmation.handleConfirmDelete}
-          title={deleteConfirmation.confirmTitle || `Delete ${deleteConfirmation.pendingDelete.capitalized}`}
-          description={deleteConfirmation.confirmMessage || `Are you sure you want to delete this ${deleteConfirmation.pendingDelete.displayName}? This action cannot be undone.`}
-          confirmText={deleteConfirmation.confirmText}
-          cancelText={deleteConfirmation.cancelText}
-          variant="destructive"
-          isLoading={deleteConfirmation.isDeleting}
-        />
-      )}
     </div>
   )
 }

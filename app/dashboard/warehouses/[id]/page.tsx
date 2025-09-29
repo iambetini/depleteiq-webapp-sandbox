@@ -2,14 +2,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { useSession } from "next-auth/react";
-import { useWarehouseContext } from "./warehouse-context";
+import { useContext } from "./layout";
 import { Map } from "@/components/ui/map";
 import { MapPin, Navigation, Calendar, Landmark } from "lucide-react";
 
 export default function WarehouseDetailPage() {
   const { data: session } = useSession();
   const user = session?.user;
-  const { warehouse } = useWarehouseContext();
+  const { warehouse } = useContext();
 
   if (!warehouse) { return null; }
 

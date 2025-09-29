@@ -22,7 +22,7 @@ interface FieldConfig {
   rows?: number
 }
 
-interface WarehouseFormProps {
+interface BranchFormProps {
   title: string
   description: string
   initialValues: Record<string, any>
@@ -36,11 +36,11 @@ interface WarehouseFormProps {
   onFieldUpdate?: (fieldName: string, value: any) => void
 }
 
-export interface WarehouseFormRef {
+export interface BranchFormRef {
   setFieldValue: (fieldName: string, value: any) => void
 }
 
-export const WarehouseForm = forwardRef<WarehouseFormRef, WarehouseFormProps>(({
+export const BranchForm = forwardRef<BranchFormRef, BranchFormProps>(({
   title,
   description,
   initialValues,
@@ -89,7 +89,7 @@ export const WarehouseForm = forwardRef<WarehouseFormRef, WarehouseFormProps>(({
           onSubmit={onSubmit}
         >
           {({ values, handleChange, setFieldValue, isSubmitting }) => {
-            // Store the setField_value function for external access
+            // Store the setFieldValue function for external access
             setFieldValueRef.current = setFieldValue
             
             return (
@@ -149,6 +149,6 @@ export const WarehouseForm = forwardRef<WarehouseFormRef, WarehouseFormProps>(({
   )
 })
 
-WarehouseForm.displayName = 'WarehouseForm'
+BranchForm.displayName = 'BranchForm'
 
-export default WarehouseForm
+export default BranchForm

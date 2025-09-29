@@ -9,20 +9,30 @@ interface LocationModalProps {
   open: boolean;
   onClose: () => void;
   onLocationCreated: (locationData: any, locationId: string) => void;
+  existingLocationData?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    region?: string;
+    country?: string;
+    postal_code?: string;
+    latitude?: string | number;
+    longitude?: string | number;
+  } | null;
 }
 
-export function LocationModal({ open, onClose, onLocationCreated }: LocationModalProps) {
+export function LocationModal({ open, onClose, onLocationCreated, existingLocationData }: LocationModalProps) {
   const [createLocation, { isLoading }] = useCreateLocationMutation();
 
   const initialValues = {
-    street: "",
-    city: "",
-    state: "",
-    region: "",
-    country: "",
-    postal_code: "",
-    latitude: "",
-    longitude: "",
+    street: existingLocationData?.street || "",
+    city: existingLocationData?.city || "",
+    state: existingLocationData?.state || "",
+    region: existingLocationData?.region || "",
+    country: existingLocationData?.country || "",
+    postal_code: existingLocationData?.postal_code || "",
+    latitude: existingLocationData?.latitude !== undefined ? existingLocationData.latitude.toString() : "",
+    longitude: existingLocationData?.longitude !== undefined ? existingLocationData.longitude.toString() : "",
   };
 
   const validationSchema = Yup.object({

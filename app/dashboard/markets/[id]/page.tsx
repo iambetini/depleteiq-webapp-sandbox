@@ -2,17 +2,24 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useMarketContext } from "./market-context"
+import { useContext } from "./layout"
 import { handleDelete } from "@/lib/handleDelete"
 import { ArrowLeft, Calendar, Edit, MapPin, Store, Trash2, Type } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { use } from "react"
+import { useCallback } from "react"
 import { Map } from "@/components/ui/map"
 
-export default function MarketDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function MarketDetailPage() {
   const router = useRouter()
-  const { market } = useMarketContext()
+  const { market } = useContext()
+
+  const deleteHandler = useCallback((uuid: string) => {
+    handleDelete({
+      storeName: "markets",
+      uuid,
+      onSuccess: () => router.push("/dashboard/markets"),
+    })
+  }, [router])
 
   if (!market) { return null; }
 
@@ -36,11 +43,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
             <Edit className="mr-2 h-4 w-4" />
             Edit
           </Button>
-          <Button variant="destructive" onClick={() => handleDelete({
-            storeName: "markets",
-            uuid: id,
-            onSuccess: () => router.push("/dashboard/markets"),
-          })}>
+          <Button variant="destructive" onClick={() => deleteHandler(market.uuid)}>
             <Trash2 className="mr-2 h-4 w-4" />
             Delete
           </Button>

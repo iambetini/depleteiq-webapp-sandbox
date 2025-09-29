@@ -2,15 +2,13 @@
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useUserContext } from "./user-context";
+import { useContext } from "./layout";
 import { Calendar, Mail, MapPin, Phone, Shield, User } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { use } from "react";
 
-export default function UserDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function UserDetailPage() {
   const router = useRouter()
-  const { user } = useUserContext()
+  const { user } = useContext()
 
   if (!user) { return null; }
 
@@ -24,7 +22,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
         showDeleteButton={true}
         deleteOptions={{
           storeName: "users",
-          uuid: id,
+          uuid: user.uuid,
         }}
       />
 

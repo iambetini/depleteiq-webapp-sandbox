@@ -1,31 +1,10 @@
 "use client";
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
-import { notFound } from "next/navigation";
-import { use } from "react";
-import { VehicleProvider, useVehicleContext } from "./vehicle-context";
+import { createEntityLayout } from "@/lib/entity-layout-factory";
+import type { Vehicle } from "@/types/vehicle";
 
-function VehicleLayoutContent({ children }: { children: React.ReactNode }) {
-  const { vehicle, isLoading } = useVehicleContext();
+const { Layout, useContext } = createEntityLayout<Vehicle>({
+  storeName: "vehicles",
+});
 
-  if (isLoading) {
-    return <LoadingSkeleton />;
-  }
-
-  if (!vehicle) {
-    notFound();
-  }
-
-  return <>{children}</>;
-}
-
-export default function VehicleLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  
-  return (
-    <VehicleProvider vehicleId={id}>
-      <VehicleLayoutContent>
-        {children}
-      </VehicleLayoutContent>
-    </VehicleProvider>
-  );
-}
+export default Layout;
+export { useContext };

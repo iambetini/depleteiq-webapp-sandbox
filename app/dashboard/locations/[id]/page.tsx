@@ -2,16 +2,14 @@
 
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useLocationContext } from "./location-context"
+import { useContext } from "./layout"
 import { Calendar, MapPin, Navigation, Store, Users } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { use } from "react"
 import { Map } from "@/components/ui/map"
 
-export default function LocationDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function LocationDetailPage() {
   const router = useRouter()
-  const { location } = useLocationContext()
+  const { location } = useContext()
 
   if (!location) { return null; }
 
@@ -25,7 +23,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
         showDeleteButton={true}
         deleteOptions={{
           storeName: "locations",
-          uuid: id,
+          uuid: location.uuid,
         }}
       />
 
@@ -148,7 +146,7 @@ export default function LocationDetailPage({ params }: { params: Promise<{ id: s
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {location.markets.map((market, idx) => (
+                    {location.markets.map((market: any, idx: number) => (
                       <tr key={market.uuid || idx} className="hover:bg-gray-50 transition-colors">
                         <td className="px-4 py-3 text-sm text-[#444444] font-medium">
                           {market.full_name}

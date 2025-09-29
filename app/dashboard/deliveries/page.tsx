@@ -23,6 +23,14 @@ export default function DeliveriesPage() {
     dataTableRef.current?.refresh()
   }, [])
 
+  const deleteHandler = useCallback((uuid: string) => {
+    handleDelete({
+      storeName: "deliveries",
+      uuid,
+      onSuccess: refreshTable,
+    })
+  }, [refreshTable])
+
   const columns = React.useMemo(
     () => {
       const handleUpdateDelivery = (id: string, data: Partial<Delivery>) => {
@@ -35,9 +43,9 @@ export default function DeliveriesPage() {
         });
       };
 
-      return getColumns(router, refreshTable, handleUpdateDelivery);
+      return getColumns(router, deleteHandler, handleUpdateDelivery);
     },
-    [router, refreshTable, updateDelivery]
+    [router, deleteHandler, refreshTable, updateDelivery]
   )
 
   // Filter config for deliveries
@@ -65,7 +73,7 @@ export default function DeliveriesPage() {
   )
 }
 
-export function getColumns(router: any, refreshTable: () => void, handleUpdateDelivery: (id: string, data: Partial<Delivery>) => void): ColumnDef<Delivery>[] {
+export function getColumns(router: any, handleDelete: (uuid: string) => void, handleUpdateDelivery: (id: string, data: Partial<Delivery>) => void): ColumnDef<Delivery>[] {
   return [
     {
       accessorKey: "order.ref",
@@ -181,13 +189,7 @@ export function getColumns(router: any, refreshTable: () => void, handleUpdateDe
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() =>
-                handleDelete({
-                  storeName: "deliveries",
-                  uuid: row.original.uuid,
-                  onSuccess: refreshTable,
-                })
-              }
+              onClick={() => handleDelete(row.original.uuid)}
               className="text-red-600 hidden"
             >
               <Trash2 className="mr-2 h-4 w-4" />

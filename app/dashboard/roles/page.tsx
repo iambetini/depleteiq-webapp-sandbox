@@ -9,10 +9,19 @@ import { handleDelete } from "@/lib/handleDelete"
 import { Role } from "@/types/role"
 import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useCallback } from "react"
 
 
 export default function RolesPage() {
   const router = useRouter()
+
+  const deleteHandler = useCallback((uuid: string) => {
+    handleDelete({
+      storeName: "roles",
+      uuid,
+      onSuccess: () => router.refresh(),
+    })
+  }, [router])
 
   const columns: ColumnDef<Role>[] = [
     {
@@ -62,13 +71,7 @@ export default function RolesPage() {
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() =>
-                handleDelete({
-                  storeName: "roles",
-                  uuid: row.original.uuid,
-                  onSuccess: router.refresh,
-                })
-              }
+              onClick={() => deleteHandler(row.original.uuid)}
               className="text-red-600"
             >
               <Trash2 className="mr-2 h-4 w-4" />

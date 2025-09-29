@@ -8,24 +8,30 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { handleDelete } from "@/lib/handleDelete";
 import type { Warehouse } from "@/types/warehouse";
 import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import React, { useRef } from "react";
+import React, { useRef, useCallback } from "react";
 
 
 export default function WarehousesPage() {
-  const { data: session } = useSession()
   const router = useRouter()
   const [bulkOpen, setBulkOpen] = React.useState(false);
   const dataTableRef = useRef<{ refresh: () => void }>(null);
 
-  const refreshTable = () => {
+  const refreshTable = useCallback(() => {
     dataTableRef.current?.refresh()
-  }
+  }, [])
+
+  const deleteHandler = useCallback((uuid: string) => {
+    handleDelete({
+      storeName: "warehouses",
+      uuid,
+      onSuccess: refreshTable,
+    })
+  }, [refreshTable])
 
   const columns = React.useMemo(
-    () => getColumns(router, refreshTable),
-    [router]
+    () => getColumns(router, deleteHandler),
+    [router, deleteHandler]
   )
 
   // Filter config for warehouses
@@ -65,7 +71,7 @@ export default function WarehousesPage() {
   )
 }
 
-export function getColumns(router: any, refreshTable: () => void): ColumnDef<Warehouse>[] {
+export function getColumns(router: any, handleDelete: (uuid: string) => void): ColumnDef<Warehouse>[] {
   return [
     {
       accessorKey: "warehouse_code",
@@ -107,13 +113,7 @@ export function getColumns(router: any, refreshTable: () => void): ColumnDef<War
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() =>
-                handleDelete({
-                  storeName: "warehouses",
-                  uuid: row.original.uuid,
-                  onSuccess: refreshTable,
-                })
-              }
+              onClick={() => handleDelete(row.original.uuid)}
               className="text-red-600"
             >
               <Trash2 className="mr-2 h-4 w-4" />

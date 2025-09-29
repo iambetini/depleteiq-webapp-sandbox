@@ -8,10 +8,20 @@ import { handleDelete } from "@/lib/handleDelete";
 import { Market } from "@/types/market";
 import { Edit, Eye, MapPin, MoreHorizontal, Trash2, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useCallback } from "react";
 
 
 export default function MarketsPage() {
   const router = useRouter()
+
+  const deleteHandler = useCallback((uuid: string) => {
+    handleDelete({
+      storeName: "markets",
+      uuid,
+      onSuccess: () => router.refresh(),
+    })
+  }, [router])
+
   const columns: ColumnDef<Market>[] = [
     {
       accessorKey: "name",
@@ -88,11 +98,7 @@ export default function MarketsPage() {
 
 
   const onDeleteMarket = (uuid: string) => {
-    handleDelete({
-      storeName: "markets",
-      uuid,
-      onSuccess: router.refresh,
-    })
+    deleteHandler(uuid)
   }
 
   return (

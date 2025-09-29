@@ -23,10 +23,3 @@ export function createAddressFieldConfig(
     onFocus,
   };
 }
-
-export function createLocationIdFieldConfig(): { name: string; value: string } {
-  return {
-    name: "location_id",
-    value: "",
-  };
-}

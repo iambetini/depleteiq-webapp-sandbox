@@ -493,7 +493,7 @@ export function BrandForm({
                       )}
                       {isLoading || isSubmitting
                         ? hasImageChanged && isSubmitting
-                          ? "Uploading & Creating..."
+                          ? "Uploading & Submitting..."
                           : mode === "create"
                             ? "Creating..."
                             : "Updating..."

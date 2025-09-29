@@ -2,7 +2,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { ColumnDef } from "@/components/ui/data-table-types"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { handleDelete } from "@/lib/handleDelete"
 import type { Distributor } from "@/types/distributor"
 import { Edit, Eye, MoreHorizontal, Trash2, TrendingUp } from "lucide-react"
 import React from "react"
@@ -73,11 +72,11 @@ CreatedAtCell.displayName = "CreatedAtCell"
 const ActionsCell = React.memo(({
   row,
   router,
-  refreshTable
+  handleDelete
 }: {
   row: { original: Distributor }
   router: any
-  refreshTable: () => void
+  handleDelete: (uuid: string) => void
 }) => {
   const distributor = row.original
 
@@ -93,22 +92,16 @@ const ActionsCell = React.memo(({
           <Eye className="mr-2 h-4 w-4" />
           View Details
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push(`/dashboard/distributors/${distributor.uuid}/edit`)}>
+        <DropdownMenuItem onClick={() => router.push(`/dashboard/distributors/${distributor.uuid}/manage`)}>
           <Edit className="mr-2 h-4 w-4" />
-          Edit
+          Manage
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => router.push(`/dashboard/distributors/${distributor.uuid}/orders`)}>
           <Eye className="mr-2 h-4 w-4" />
           View Orders
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() =>
-            handleDelete({
-              storeName: "distributors",
-              uuid: distributor.uuid,
-              onSuccess: refreshTable,
-            })
-          }
+          onClick={() => handleDelete(distributor.uuid)}
           className="text-red-600"
         >
           <Trash2 className="mr-2 h-4 w-4" />
@@ -120,7 +113,7 @@ const ActionsCell = React.memo(({
 })
 ActionsCell.displayName = "ActionsCell"
 
-export function getDistributorColumns({ router, refreshTable }: ColumnProps): ColumnDef<Distributor>[] {
+export function getDistributorColumns({ router, handleDelete }: { router: any; handleDelete: (uuid: string) => void }): ColumnDef<Distributor>[] {
   return [
     {
       accessorKey: "business_name",
@@ -150,6 +143,7 @@ export function getDistributorColumns({ router, refreshTable }: ColumnProps): Co
     {
       accessorKey: "created_at",
       header: "Joined",
+      width: 185,
       cell: ({ row }) => <CreatedAtCell createdAt={row.original.created_at} />,
     },
     {
@@ -159,7 +153,7 @@ export function getDistributorColumns({ router, refreshTable }: ColumnProps): Co
         <ActionsCell
           row={row}
           router={router}
-          refreshTable={refreshTable}
+          handleDelete={handleDelete}
         />
       ),
     },

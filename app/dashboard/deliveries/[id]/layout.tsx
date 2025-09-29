@@ -1,31 +1,10 @@
 "use client";
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
-import { notFound } from "next/navigation";
-import { use } from "react";
-import { DeliveryProvider, useDeliveryContext } from "./delivery-context";
+import { createEntityLayout } from "@/lib/entity-layout-factory";
+import type { Delivery } from "@/types/delivery";
 
-function DeliveryLayoutContent({ children }: { children: React.ReactNode }) {
-  const { delivery, isLoading } = useDeliveryContext();
+const { Layout, useContext } = createEntityLayout<Delivery>({
+  storeName: "deliveries",
+});
 
-  if (isLoading) {
-    return <LoadingSkeleton />;
-  }
-
-  if (!delivery) {
-    notFound();
-  }
-
-  return <>{children}</>;
-}
-
-export default function DeliveryLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  
-  return (
-    <DeliveryProvider deliveryId={id}>
-      <DeliveryLayoutContent>
-        {children}
-      </DeliveryLayoutContent>
-    </DeliveryProvider>
-  );
-}
+export default Layout;
+export { useContext };

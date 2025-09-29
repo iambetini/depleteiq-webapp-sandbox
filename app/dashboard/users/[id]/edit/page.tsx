@@ -8,13 +8,13 @@ import { catchError } from "@/lib/utils";
 import { useUpdateUserMutation } from "@/store/users";
 import { useRouter } from "next/navigation";
 import * as Yup from "yup";
-import { useUserContext } from "../user-context";
+import { useContext } from "../layout";
 
 export default function EditUserPage() {
   const { roles, isLoading: isRolesLoading } = useRoles()
   const router = useRouter()
   const [updateUser] = useUpdateUserMutation()
-  const { user, isLoading, fetchUser } = useUserContext();
+  const { user, isLoading, fetchUser } = useContext();
 
   if (!user) { return null; }
 

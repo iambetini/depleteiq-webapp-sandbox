@@ -1,14 +1,25 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getDistributorColumns } from "@/components/dashboard/columns/DistributorColumns";
+import { handleDelete } from "@/lib/handleDelete";
 
 export function useDistributorColumns(refreshTable: () => void) {
   const router = useRouter();
-
-  const columns = useMemo(
-    () => getDistributorColumns({ router, refreshTable }),
-    [router, refreshTable],
+  const deleteHandler = useCallback(
+    (uuid: string) => {
+      handleDelete({
+        storeName: "distributors",
+        uuid,
+        onSuccess: refreshTable,
+      });
+    },
+    [refreshTable],
   );
 
-  return { columns, router };
+  const columns = useMemo(
+    () => getDistributorColumns({ router, handleDelete: deleteHandler }),
+    [router, deleteHandler],
+  );
+
+  return { columns };
 }

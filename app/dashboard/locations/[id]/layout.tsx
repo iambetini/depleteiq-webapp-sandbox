@@ -1,31 +1,10 @@
 "use client";
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
-import { notFound } from "next/navigation";
-import { use } from "react";
-import { LocationProvider, useLocationContext } from "./location-context";
+import { createEntityLayout } from "@/lib/entity-layout-factory";
+import type { Location } from "@/types/location";
 
-function LocationLayoutContent({ children }: { children: React.ReactNode }) {
-  const { location, isLoading } = useLocationContext();
+const { Layout, useContext } = createEntityLayout<Location>({
+  storeName: "locations",
+});
 
-  if (isLoading) {
-    return <LoadingSkeleton />;
-  }
-
-  if (!location) {
-    notFound();
-  }
-
-  return <>{children}</>;
-}
-
-export default function LocationLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  
-  return (
-    <LocationProvider locationId={id}>
-      <LocationLayoutContent>
-        {children}
-      </LocationLayoutContent>
-    </LocationProvider>
-  );
-}
+export default Layout;
+export { useContext };

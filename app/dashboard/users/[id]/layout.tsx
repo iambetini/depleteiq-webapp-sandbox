@@ -1,31 +1,11 @@
 "use client";
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
-import { notFound } from "next/navigation";
-import { use } from "react";
-import { UserProvider, useUserContext } from "./user-context";
+import { createEntityLayout } from "@/lib/entity-layout-factory";
+import type { User } from "@/types/user";
 
-function UserLayoutContent({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useUserContext();
+const { Layout, useContext } = createEntityLayout<User>({
+  storeName: "users",
+  showErrorToast: false,
+});
 
-  if (isLoading) {
-    return <LoadingSkeleton />;
-  }
-
-  if (!user) {
-    notFound();
-  }
-
-  return <>{children}</>;
-}
-
-export default function UserLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  
-  return (
-    <UserProvider userId={id}>
-      <UserLayoutContent>
-        {children}
-      </UserLayoutContent>
-    </UserProvider>
-  );
-}
+export default Layout;
+export { useContext };

@@ -10,11 +10,11 @@ import { handleDelete } from "@/lib/handleDelete"
 import { Location } from "@/types/location"
 import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import React, { useRef } from "react"
+import React, { useRef, useCallback } from "react"
 
 function getColumns(
   router: any,
-  refreshTable: () => void
+  handleDelete: (uuid: string) => void
 ): ColumnDef<Location>[] {
   return [
     {
@@ -89,13 +89,7 @@ function getColumns(
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() =>
-                handleDelete({
-                  storeName: "locations",
-                  uuid: row.original.uuid,
-                  onSuccess: refreshTable,
-                })
-              }
+              onClick={() => handleDelete(row.original.uuid)}
               className="text-red-600"
             >
               <Trash2 className="mr-2 h-4 w-4" />
@@ -112,13 +106,21 @@ export default function LocationsPage() {
   const router = useRouter()
   const dataTableRef = useRef<{ refresh: () => void }>(null)
 
-  const refreshTable = () => {
+  const refreshTable = useCallback(() => {
     dataTableRef.current?.refresh()
-  }
+  }, [])
+
+  const deleteHandler = useCallback((uuid: string) => {
+    handleDelete({
+      storeName: "locations",
+      uuid,
+      onSuccess: refreshTable,
+    })
+  }, [refreshTable])
 
   const columns = React.useMemo(
-    () => getColumns(router, refreshTable),
-    [router]
+    () => getColumns(router, deleteHandler),
+    [router, deleteHandler]
   )
 
   return (

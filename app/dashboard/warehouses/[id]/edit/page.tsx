@@ -8,15 +8,13 @@ import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useUpdateWarehouseMutation } from "@/store/warehouses";
 import type { Warehouse } from "@/types/warehouse";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import * as Yup from "yup";
-import { useWarehouseContext } from "../warehouse-context";
+import { useContext } from "../layout";
 
 export default function EditWarehousePage() {
-  const { warehouse, isLoading, fetchWarehouse } = useWarehouseContext();
-  const { data: session } = useSession()
+  const { warehouse, isLoading, fetchWarehouse } = useContext();
   const router = useRouter()
   const [updateWarehouse] = useUpdateWarehouseMutation()
 
@@ -62,7 +60,7 @@ export default function EditWarehousePage() {
         title="Update Warehouse"
         description="Edit warehouse information below"
       />
-      <FormWithLocationModal>
+      <FormWithLocationModal existingLocationData={warehouse.location}>
         {({ onFieldUpdate, setFormRef, setLocationModalOpen }) => (
           <WarehouseForm
             title="Update Warehouse"

@@ -7,11 +7,11 @@ import { BrandPackage } from "@/types/brand";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import * as Yup from "yup";
-import { useBrandContext } from "../brand-context";
+import { useContext } from "../layout";
 import { toast } from "@/hooks/use-toast";
 
 export default function EditBrandPage() {
-  const { brand, isLoading, fetchBrand } = useBrandContext();
+  const { brand, isLoading, fetchBrand } = useContext();
   const router = useRouter();
   
   const [updateBrand] = useUpdateBrandMutation();

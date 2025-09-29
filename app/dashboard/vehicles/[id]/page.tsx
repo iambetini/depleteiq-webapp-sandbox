@@ -3,12 +3,12 @@ import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Car, Fuel, Gauge, Ruler, Scale, Truck } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useVehicleContext } from "./vehicle-context";
+import { useContext } from "./layout";
 
 export default function VehicleDetailPage() {
   const { data: session } = useSession();
   const user = session?.user;
-  const { vehicle } = useVehicleContext();
+  const { vehicle } = useContext();
 
   if (!vehicle) { return null; }
 

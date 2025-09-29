@@ -5,13 +5,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useRoles } from "@/components/dashboard/RolesContext"
 import UserForm from "@/components/dashboard/UserForm"
-import { useDeleteConfirmation } from "@/hooks/use-delete-confirmation"
-import { ConfirmationModal } from "@/components/ui/confirmation-modal"
+import { handleDelete } from "@/lib/handleDelete"
 import { toast } from "@/hooks/use-toast"
 import { catchError } from "@/lib/utils"
 import { useUpdateIMEVSSMutation } from "@/store/ime-vss"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import * as Yup from "yup"
 import { useImeVssData } from "@/hooks/use-entity-data"
 import { Edit, MapPin, Shield, Trash2, User } from "lucide-react"
@@ -32,11 +31,14 @@ export default function ManageImeVssPage() {
   const router = useRouter()
   const [updateIMEVSS] = useUpdateIMEVSSMutation()
 
-  const deleteConfirmation = useDeleteConfirmation({
-    storeName: "ime-vss",
-    entityLabel: "IME-VSS",
-    onSuccess: () => router.push("/dashboard/ime-vss"),
-  })
+  const deleteHandler = useCallback((uuid: string) => {
+    handleDelete({
+      storeName: "imeVss",
+      uuid,
+      entityLabel: "IME-VSS",
+      onSuccess: () => router.push("/dashboard/ime-vss"),
+    })
+  }, [router])
 
   useEffect(() => {
     if (imeVss && roles.length > 0) {
@@ -147,7 +149,7 @@ export default function ManageImeVssPage() {
 
   const handleDeleteClick = () => {
     if (!imeVss) return;
-    deleteConfirmation.showDeleteConfirmation(imeVss.uuid);
+    deleteHandler(imeVss.uuid);
   }
 
   if (isEditMode) {
@@ -277,19 +279,6 @@ export default function ManageImeVssPage() {
         </Card>
       </div>
 
-      {deleteConfirmation.pendingDelete && (
-        <ConfirmationModal
-          isOpen={deleteConfirmation.isModalOpen}
-          onClose={deleteConfirmation.handleCancelDelete}
-          onConfirm={deleteConfirmation.handleConfirmDelete}
-          title={deleteConfirmation.confirmTitle || `Delete ${deleteConfirmation.pendingDelete.capitalized}`}
-          description={deleteConfirmation.confirmMessage || `Are you sure you want to delete this ${deleteConfirmation.pendingDelete.displayName}? This action cannot be undone.`}
-          confirmText={deleteConfirmation.confirmText}
-          cancelText={deleteConfirmation.cancelText}
-          variant="destructive"
-          isLoading={deleteConfirmation.isDeleting}
-        />
-      )}
     </div>
   )
 }

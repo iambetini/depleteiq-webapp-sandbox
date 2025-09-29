@@ -1,31 +1,11 @@
 "use client";
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
-import { notFound } from "next/navigation";
-import { use } from "react";
-import { RoleProvider, useRoleContext } from "./role-context";
+import { createEntityLayout } from "@/lib/entity-layout-factory";
+import type { Role } from "@/types/role";
 
-function RoleLayoutContent({ children }: { children: React.ReactNode }) {
-  const { role, isLoading } = useRoleContext();
+const { Layout, useContext } = createEntityLayout<Role>({
+  storeName: "roles",
+  showErrorToast: false,
+});
 
-  if (isLoading) {
-    return <LoadingSkeleton />;
-  }
-
-  if (!role) {
-    notFound();
-  }
-
-  return <>{children}</>;
-}
-
-export default function RoleLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  
-  return (
-    <RoleProvider roleId={id}>
-      <RoleLayoutContent>
-        {children}
-      </RoleLayoutContent>
-    </RoleProvider>
-  );
-}
+export default Layout;
+export { useContext };

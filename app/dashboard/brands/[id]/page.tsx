@@ -4,10 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Package, Tag, FileText } from "lucide-react";
 import Image from "next/image";
-import { useBrandContext } from "./brand-context";
+import { useContext } from "./layout";
 
 export default function BrandDetailPage() {
-  const { brand } = useBrandContext();
+  const { brand } = useContext();
   if (!brand) { return null; }
 
   return (
@@ -97,7 +97,7 @@ export default function BrandDetailPage() {
             <CardContent>
               {brand.packages && brand.packages.length > 0 ? (
                 <div className="space-y-4">
-                  {brand.packages.map((pkg, index) => (
+                  {brand.packages.map((pkg: any, index: number) => (
                     <Card key={pkg.uuid || pkg.uuid} className="p-4 bg-[#f8f8f8]">
                       <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                         <div>
