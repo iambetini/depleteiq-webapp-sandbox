@@ -6,7 +6,7 @@ import { catchError } from "@/lib/utils";
 import { useUpdateLocationMutation } from "@/store/locations";
 import { useRouter } from "next/navigation";
 import * as Yup from "yup";
-import { useLocationContext } from "../location-context";
+import { useContext } from "../layout";
 
 interface LocationData {
   street: string
@@ -23,7 +23,7 @@ interface LocationData {
 export default function EditLocationPage() {
   const router = useRouter();
   const [updateLocation] = useUpdateLocationMutation();
-  const { location, isLoading } = useLocationContext();
+  const { location, isLoading } = useContext();
 
   if (!location) { return null; }
 

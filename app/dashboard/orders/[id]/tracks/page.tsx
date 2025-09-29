@@ -8,13 +8,12 @@ import { toast } from "@/hooks/use-toast";
 import { apiClient } from "@/lib/api-client";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, use } from "react";
-import { useOrderContext } from "../order-context";
-export default function OrderTrackingPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+import { useEffect, useState } from "react";
+import { useContext } from "../layout";
+export default function OrderTrackingPage() {
   const [orderEvents, setOrderEvents] = useState<any[]>([]);
   const [isEventsLoading, setIsEventsLoading] = useState(true);
-  const { order } = useOrderContext();
+  const { order } = useContext();
   const router = useRouter();
 
   const [evidenceOpen, setEvidenceOpen] = useState(false);
@@ -23,7 +22,7 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ id: st
     const fetchEvents = async () => {
       setIsEventsLoading(true);
       try {
-        const response = await apiClient.get<{ items: any[] }>(`/orders/${id}/events`);
+        const response = await apiClient.get<{ items: any[] }>(`/orders/${order.uuid}/events`);
         setOrderEvents(response.data.items ?? []);
       } catch (error: any) {
         toast({
@@ -37,7 +36,7 @@ export default function OrderTrackingPage({ params }: { params: Promise<{ id: st
     };
     fetchEvents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [order.uuid]);
 
   if (!order) { return null; }
 

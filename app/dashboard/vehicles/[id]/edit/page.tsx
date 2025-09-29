@@ -8,10 +8,10 @@ import { useUpdateVehicleMutation } from "@/store/vehicles"
 import type { Vehicle } from "@/types/vehicle"
 import { useRouter } from "next/navigation"
 import * as Yup from "yup"
-import { useVehicleContext } from "../vehicle-context"
+import { useContext } from "../layout"
 
 export default function EditVehiclePage() {
-  const { vehicle, isLoading, fetchVehicle } = useVehicleContext();
+  const { vehicle, isLoading, fetchVehicle } = useContext();
   const router = useRouter()
   const [updateVehicle] = useUpdateVehicleMutation()
 

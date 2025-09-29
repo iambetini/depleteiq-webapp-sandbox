@@ -1,11 +1,10 @@
 "use client"
 
-import React, { useRef } from "react"
+import React, { useRef, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
-import { toast } from "@/hooks/use-toast"
 import type { Vehicle } from "@/types/vehicle"
 import { Button } from "@/components/ui/button"
 import { MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react"
@@ -20,13 +19,21 @@ export default function VehiclesPage() {
   const router = useRouter()
   const dataTableRef = useRef<{ refresh: () => void }>(null);
 
-  const refreshTable = () => {
+  const refreshTable = useCallback(() => {
     dataTableRef.current?.refresh()
-  }
+  }, [])
+
+  const deleteHandler = useCallback((uuid: string) => {
+    handleDelete({
+      storeName: "vehicles",
+      uuid,
+      onSuccess: refreshTable,
+    })
+  }, [refreshTable])
 
   const columns = React.useMemo(
-    () => getColumns(session, router, toast),
-    [session, router]
+    () => getColumns(session, router, deleteHandler),
+    [session, router, deleteHandler]
   )
 
   // Filter config for vehicles
@@ -68,7 +75,7 @@ export default function VehiclesPage() {
   )
 }
 
-export function getColumns(session: any, router: any, toast: any): ColumnDef<Vehicle>[] {
+export function getColumns(session: any, router: any, handleDelete: (uuid: string) => void): ColumnDef<Vehicle>[] {
   return [
     {
       accessorKey: "vehicle_number",
@@ -138,12 +145,7 @@ export function getColumns(session: any, router: any, toast: any): ColumnDef<Veh
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() =>
-                handleDelete({
-                  storeName: "vehicles",
-                  uuid: row.original.uuid
-                })
-              }
+              onClick={() => handleDelete(row.original.uuid)}
               className="text-red-600"
             >
               <Trash2 className="mr-2 h-4 w-4" />

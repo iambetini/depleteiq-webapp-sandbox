@@ -4,10 +4,11 @@ A flexible and reusable select component that fetches data from an API endpoint 
 
 ## Features
 
-- **Dynamic data fetching** from any API endpoint
+- **Redux store integration** for efficient data fetching and caching
 - **Search functionality** with debounced input
 - **Flexible label formatting** using custom formatters
-- **Proper URL handling** that preserves existing query parameters
+- **Backward compatibility** with legacy fetchUrl approach
+- **Automatic caching** and request deduplication via Redux Toolkit Query
 - **Loading states** and error handling
 - **TypeScript support** with generic types
 
@@ -16,6 +17,15 @@ A flexible and reusable select component that fetches data from an API endpoint 
 ```tsx
 import { SelectWithFetch } from "@/components/ui/select"
 
+// Store-based approach (recommended)
+<SelectWithFetch
+  store="users"
+  value={selectedUserId}
+  onChange={setSelectedUserId}
+  placeholder="Select a user..."
+/>
+
+// Legacy fetchUrl approach (still supported)
 <SelectWithFetch
   fetchUrl="/api/users"
   value={selectedUserId}
@@ -30,6 +40,19 @@ import { SelectWithFetch } from "@/components/ui/select"
 import { SelectWithFetch } from "@/components/ui/select"
 import { userFullNameEmailFormatter } from "@/lib/label-formatters"
 
+// Store-based approach with parameters
+<SelectWithFetch
+  store="users"
+  value={selectedUserId}
+  onChange={setSelectedUserId}
+  valueKey="uuid"
+  labelFormatter={userFullNameEmailFormatter}
+  searchParam="search"
+  params={{ roles: "admin" }}
+  placeholder="Select an admin user..."
+/>
+
+// Legacy fetchUrl approach
 <SelectWithFetch
   fetchUrl="/api/users?roles=admin"
   value={selectedUserId}
@@ -41,17 +64,35 @@ import { userFullNameEmailFormatter } from "@/lib/label-formatters"
 />
 ```
 
+## Usage with Initial Search
+
+```tsx
+import { SelectWithFetch } from "@/components/ui/select"
+
+<SelectWithFetch
+  fetchUrl="/api/users"
+  value={selectedUserId}
+  onChange={setSelectedUserId}
+  initialSearch="john"
+  searchParam="search"
+  placeholder="Select a user..."
+/>
+```
+
 ## Props
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `fetchUrl` | `string` | - | **Required.** API endpoint to fetch data from |
+| `store` | `keyof typeof storeApis` | - | **Recommended.** Redux store key to use for data fetching |
+| `fetchUrl` | `string` | - | **Legacy.** API endpoint to fetch data from (use `store` instead) |
+| `params` | `Record<string, any>` | `{}` | Query parameters to pass to the store query |
 | `value` | `string` | - | **Required.** Currently selected value |
 | `onChange` | `(value: string) => void` | - | **Required.** Callback when selection changes |
 | `valueKey` | `string` | `"uuid"` | Key to use for option values |
 | `labelKey` | `string` | `"name"` | Key to use for option labels (ignored if `labelFormatter` is provided) |
 | `labelFormatter` | `(item: T) => string` | - | Custom function to format option labels |
 | `searchParam` | `string` | `"search"` | Query parameter name for search |
+| `initialSearch` | `string` | `""` | Initial search string to pre-populate the search input |
 | `placeholder` | `string` | `"Select..."` | Placeholder text |
 | `disabled` | `boolean` | `false` | Whether the select is disabled |
 

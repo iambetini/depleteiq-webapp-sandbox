@@ -11,7 +11,7 @@ import { handleDelete } from "@/lib/handleDelete"
 import { User } from "@/types/user"
 import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import React, { useRef, useState } from "react"
+import React, { useRef, useState, useCallback } from "react"
 
 interface ImeVss extends User { }
 
@@ -19,7 +19,7 @@ const roles = "ime,vss"
 
 function getColumns(
   router: any,
-  refreshTable: () => void
+  handleDelete: (uuid: string) => void
 ): ColumnDef<ImeVss>[] {
   return [
     {
@@ -80,18 +80,12 @@ function getColumns(
               <Eye className="mr-2 h-4 w-4" />
               View Details
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push(`/dashboard/ime-vss/${row.original.uuid}/edit`)}>
+            <DropdownMenuItem onClick={() => router.push(`/dashboard/ime-vss/${row.original.uuid}/manage`)}>
               <Edit className="mr-2 h-4 w-4" />
-              Edit
+              Manage
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() =>
-                handleDelete({
-                  storeName: "imeVss",
-                  uuid: row.original.uuid,
-                  onSuccess: refreshTable,
-                })
-              }
+              onClick={() => handleDelete(row.original.uuid)}
               className="text-red-600"
             >
               <Trash2 className="mr-2 h-4 w-4" />
@@ -108,72 +102,80 @@ export default function ImeVssPage() {
   const router = useRouter()
   const dataTableRef = useRef<{ refresh: () => void }>(null)
 
-  const refreshTable = () => {
+  const refreshTable = useCallback(() => {
     dataTableRef.current?.refresh()
-  }
+  }, [])
+
+  const deleteHandler = useCallback((uuid: string) => {
+    handleDelete({
+      storeName: "imeVss",
+      uuid,
+      onSuccess: refreshTable,
+    })
+  }, [refreshTable])
 
   const columns = React.useMemo(
-    () => getColumns(router, refreshTable),
-    [router]
+    () => getColumns(router, deleteHandler),
+    [router, deleteHandler]
   )
 
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
 
   return (
     <div>
-      <ListPageHeader
-        title="IME-VSS"
-        description="Manage IME-VSSs and their permissions"
-        showAddButton={true}
-        onAdd={() => router.push("/dashboard/ime-vss/create")}
-        addLabel="Add IME-VSS"
-        showBulkAddButton={true}
-        onBulkAdd={() => setBulkModalOpen(true)}
-        bulkAddLabel="Add Bulk IME/VSS"
-      />
+        <ListPageHeader
+          title="IME-VSS"
+          description="Manage IME-VSSs and their permissions"
+          showAddButton={true}
+          onAdd={() => router.push("/dashboard/ime-vss/create")}
+          addLabel="Add IME-VSS"
+          showBulkAddButton={true}
+          onBulkAdd={() => setBulkModalOpen(true)}
+          bulkAddLabel="Add Bulk IME/VSS"
+        />
 
-      <DataTable
-        ref={dataTableRef}
-        columns={columns as unknown as ColumnDef<unknown, unknown>[]}
-        searchKey="first_name"
-        searchPlaceholder="Search IME-VSSs..."
-        store="imeVss"
-        fixedQuery={{ roles }}
-        filters={[
-          {
-            type: "select",
-            label: "Role",
-            param: "roles",
-            options: [
-              { label: "All Roles", value: roles },
-              { label: "IME", value: "ime" },
-              { label: "VSS", value: "vss" },
-            ],
-          },
-          {
-            type: "selectWithFetch",
-            label: "Market",
-            param: "market_id",
-            fetchUrl: "/markets",
-            valueKey: "uuid",
-            labelKey: "full_name",
-            searchParam: "search",
-            placeholder: "Select market...",
-            labelFormatter: (item: any) => `${item.full_name}`,
-          },
-        ]}
-        exportFileName="IME-VSS"
-      />
+        <DataTable
+          ref={dataTableRef}
+          columns={columns as unknown as ColumnDef<unknown, unknown>[]}
+          searchKey="first_name"
+          searchPlaceholder="Search IME-VSSs..."
+          store="imeVss"
+          fixedQuery={{ roles }}
+          filters={[
+            {
+              type: "select",
+              label: "Role",
+              param: "roles",
+              options: [
+                { label: "All Roles", value: roles },
+                { label: "IME", value: "ime" },
+                { label: "VSS", value: "vss" },
+              ],
+            },
+            {
+              type: "selectWithFetch",
+              label: "Market",
+              param: "market_id",
+              fetchUrl: "/markets",
+              valueKey: "uuid",
+              labelKey: "full_name",
+              searchParam: "search",
+              placeholder: "Select market...",
+              labelFormatter: (item: any) => `${item.full_name}`,
+            },
+          ]}
+          exportFileName="IME-VSS"
+        />
 
-      <BulkUploadModal
-        open={bulkModalOpen}
-        onClose={() => setBulkModalOpen(false)}
-        sampleUrl="/sample-ime-vss.xlsx"
-        apiUrl="/users/bulk-store"
-        onSuccess={refreshTable}
-        title="Bulk IME/VSS Upload"
-        label="Upload Bulk IME/VSS (.xlsx)"
-      />
+        <BulkUploadModal
+          open={bulkModalOpen}
+          onClose={() => setBulkModalOpen(false)}
+          sampleUrl="/sample-ime-vss.xlsx"
+          apiUrl="/users/bulk-store"
+          onSuccess={refreshTable}
+          title="Bulk IME/VSS Upload"
+          label="Upload Bulk IME/VSS (.xlsx)"
+        />
     </div>
   )
 }

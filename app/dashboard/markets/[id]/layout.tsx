@@ -1,31 +1,11 @@
 "use client";
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
-import { notFound } from "next/navigation";
-import { use } from "react";
-import { MarketProvider, useMarketContext } from "./market-context";
+import { createEntityLayout } from "@/lib/entity-layout-factory";
+import type { Market } from "@/types/market";
 
-function MarketLayoutContent({ children }: { children: React.ReactNode }) {
-  const { market, isLoading } = useMarketContext();
+const { Layout, useContext } = createEntityLayout<Market>({
+  storeName: "markets",
+  showErrorToast: false,
+});
 
-  if (isLoading) {
-    return <LoadingSkeleton />;
-  }
-
-  if (!market) {
-    notFound();
-  }
-
-  return <>{children}</>;
-}
-
-export default function MarketLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  
-  return (
-    <MarketProvider marketId={id}>
-      <MarketLayoutContent>
-        {children}
-      </MarketLayoutContent>
-    </MarketProvider>
-  );
-}
+export default Layout;
+export { useContext };

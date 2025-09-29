@@ -10,13 +10,13 @@ import { handleDelete } from "@/lib/handleDelete";
 import { User } from "@/types/user";
 import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useCallback } from "react";
 
 const roles = "super-admin,sales-admin,manager,operations,treasury"
 
 function getColumns(
   router: any,
-  refreshTable: () => void
+  handleDelete: (uuid: string) => void
 ): ColumnDef<User>[] {
   return [
     {
@@ -77,13 +77,7 @@ function getColumns(
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() =>
-                handleDelete({
-                  storeName: "users",
-                  uuid: row.original.uuid,
-                  onSuccess: refreshTable,
-                })
-              }
+              onClick={() => handleDelete(row.original.uuid)}
               className="text-red-600"
             >
               <Trash2 className="mr-2 h-4 w-4" />
@@ -100,13 +94,21 @@ export default function UsersPage() {
   const router = useRouter()
   const dataTableRef = useRef<{ refresh: () => void }>(null)
 
-  const refreshTable = () => {
+  const refreshTable = useCallback(() => {
     dataTableRef.current?.refresh()
-  }
+  }, [])
+
+  const deleteHandler = useCallback((uuid: string) => {
+    handleDelete({
+      storeName: "users",
+      uuid,
+      onSuccess: refreshTable,
+    })
+  }, [refreshTable])
 
   const columns = React.useMemo(
-    () => getColumns(router, refreshTable),
-    [router]
+    () => getColumns(router, deleteHandler),
+    [router, deleteHandler]
   )
 
   const [bulkModalOpen, setBulkModalOpen] = useState(false);

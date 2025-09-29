@@ -15,7 +15,7 @@ import { Save } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import * as Yup from "yup";
-import { useOrderContext } from "../order-context";
+import { useContext } from "../layout";
 
 interface OrderData {
   uuid: string
@@ -43,7 +43,7 @@ interface OrderData {
 }
 
 export default function EditOrderPage() {
-  const { order, isLoading, fetchOrder } = useOrderContext();
+  const { order, isLoading, fetchOrder } = useContext();
   const { data: session } = useSession()
   const router = useRouter()
   const [updateOrder] = useUpdateOrderMutation()

@@ -1,31 +1,11 @@
 "use client";
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
-import { notFound } from "next/navigation";
-import { use } from "react";
-import { BrandProvider, useBrandContext } from "./brand-context";
+import { createEntityLayout } from "@/lib/entity-layout-factory";
+import type { Brand } from "@/types/brand";
 
-function BrandLayoutContent({ children }: { children: React.ReactNode }) {
-  const { brand, isLoading } = useBrandContext();
+const { Layout, useContext } = createEntityLayout<Brand>({
+  storeName: "brands",
+  showErrorToast: false,
+});
 
-  if (isLoading) {
-    return <LoadingSkeleton />;
-  }
-
-  if (!brand) {
-    notFound();
-  }
-
-  return <>{children}</>;
-}
-
-export default function BrandLayout({ children, params }: { children: React.ReactNode; params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  
-  return (
-    <BrandProvider brandId={id}>
-      <BrandLayoutContent>
-        {children}
-      </BrandLayoutContent>
-    </BrandProvider>
-  );
-}
+export default Layout;
+export { useContext };

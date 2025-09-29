@@ -12,9 +12,19 @@ interface FormWithLocationModalProps {
     setLocationModalOpen: (open: boolean) => void;
     handleLocationCreated: (locationData: any, locationId: string) => void;
   }) => React.ReactNode;
+  existingLocationData?: {
+    street?: string;
+    city?: string;
+    state?: string;
+    region?: string;
+    country?: string;
+    postal_code?: string;
+    latitude?: string | number;
+    longitude?: string | number;
+  } | null;
 }
 
-export function FormWithLocationModal({ children }: FormWithLocationModalProps) {
+export function FormWithLocationModal({ children, existingLocationData }: FormWithLocationModalProps) {
   const {
     locationModalOpen,
     setLocationModalOpen,
@@ -37,6 +47,7 @@ export function FormWithLocationModal({ children }: FormWithLocationModalProps) 
         open={locationModalOpen}
         onClose={() => setLocationModalOpen(false)}
         onLocationCreated={handleLocationCreated}
+        existingLocationData={existingLocationData}
       />
     </>
   );

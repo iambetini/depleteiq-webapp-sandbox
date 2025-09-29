@@ -1,4 +1,5 @@
 import { Location } from "./location";
+import { User } from "./user";
 import { Warehouse } from "./warehouse";
 
 export interface Market {
@@ -10,6 +11,7 @@ export interface Market {
   description: string;
   region: string;
   status: string;
+  users: User[];
   users_count: number;
   location: Location;
   location_count: number;

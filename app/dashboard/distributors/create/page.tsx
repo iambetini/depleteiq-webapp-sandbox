@@ -70,9 +70,14 @@ export default function CreateDistributorPage() {
     {
       name: "category",
       label: "Category",
-      type: "text" as const,
+      type: "select" as const,
       required: true,
-      placeholder: "Enter category",
+      placeholder: "Select category",
+      options: [
+        { label: "Food & Beverage", value: "FnB" },
+        { label: "Personal Care", value: "PC" },
+        { label: "Pharmaceutical", value: "Pharma" },
+      ],
     },
     {
       name: "first_name",

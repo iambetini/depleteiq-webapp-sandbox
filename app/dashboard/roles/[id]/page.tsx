@@ -2,15 +2,13 @@
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useRoleContext } from "./role-context";
+import { useContext } from "./layout";
 import { Calendar, FileText, Laptop, Shield, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { use } from "react";
 
-export default function RoleDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+export default function RoleDetailPage() {
   const router = useRouter()
-  const { role } = useRoleContext()
+  const { role } = useContext()
 
   if (!role) { return null; }
 
@@ -24,7 +22,7 @@ export default function RoleDetailPage({ params }: { params: Promise<{ id: strin
         showDeleteButton={true}
         deleteOptions={{
           storeName: "roles",
-          uuid: id,
+          uuid: role.uuid,
         }}
       />
 

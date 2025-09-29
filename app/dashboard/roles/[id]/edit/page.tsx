@@ -3,11 +3,11 @@
 import RoleForm, { RoleFormValues } from "@/components/dashboard/RoleForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { useRouter } from "next/navigation";
-import { useRoleContext } from "../role-context";
+import { useContext } from "../layout";
 
 export default function EditRolePage() {
   const router = useRouter();
-  const { role, isLoading } = useRoleContext();
+  const { role, isLoading } = useContext();
   if (!role) { return null; }
 
   const initialValues: RoleFormValues = {

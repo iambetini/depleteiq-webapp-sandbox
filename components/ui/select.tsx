@@ -1,24 +1,27 @@
 "use client"
 
 import { Input } from "@/components/ui/input"
-import { apiClient } from "@/lib/api-client"
 import { cn } from "@/lib/utils"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
 import * as React from "react"
 import { useEffect, useState } from "react"
+import { storeApis } from "@/store"
 
 interface SelectWithFetchProps<T = any> {
-  fetchUrl: string
+  fetchUrl?: string
+  store?: keyof typeof storeApis
   value: string
   onChange: (value: string) => void
   valueKey?: string
   labelKey?: string
   searchParam?: string
+  initialSearch?: string
   placeholder?: string
   disabled?: boolean
   labelFormatter?: (item: T) => string
   className?: string
+  params?: Record<string, any>
 }
 
 
@@ -170,19 +173,22 @@ function getNestedValue(obj: any, path: string): any {
 
 function SelectWithFetch<T = any>({
   fetchUrl,
+  store,
   value,
   onChange,
   valueKey = "uuid",
   labelKey = "name",
   searchParam = "search",
+  initialSearch = "",
   placeholder = "Select...",
   disabled = false,
   labelFormatter,
   className,
+  params = {},
 }: SelectWithFetchProps<T>) {
   const [options, setOptions] = useState<T[]>([])
-  const [search, setSearch] = useState("")
-  const [debouncedSearch, setDebouncedSearch] = useState("")
+  const [search, setSearch] = useState(initialSearch)
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -190,34 +196,64 @@ function SelectWithFetch<T = any>({
     return () => clearTimeout(handler)
   }, [search])
 
+  // Build query parameters with search
+  const queryParams = React.useMemo(() => {
+    const baseParams = { ...params }
+    if (debouncedSearch.trim()) {
+      baseParams[searchParam] = debouncedSearch
+    }
+    return baseParams
+  }, [params, debouncedSearch, searchParam])
+
+  // Store-based query (recommended approach)
+  const storeQuery = store ? storeApis[store]?.useGetAllQuery(queryParams) : undefined
+
   useEffect(() => {
-    if (!fetchUrl) return
+    if (!fetchUrl || store) return
 
     setLoading(true)
 
-    const url = new URL(fetchUrl, window.location.origin)
+    // Dynamic import to avoid bundling apiClient when not needed
+    import("@/lib/api-client").then(({ apiClient }) => {
+      const url = new URL(fetchUrl, window.location.origin)
 
-    if (debouncedSearch.trim()) {
-      url.searchParams.set(searchParam, debouncedSearch)
+      if (debouncedSearch.trim()) {
+        url.searchParams.set(searchParam, debouncedSearch)
+      }
+
+      const finalUrl = url.pathname + url.search
+
+      apiClient
+        .get<{ items: T[] }>(finalUrl)
+        .then(({ data }) => {
+          const items = data.items || data || []
+          const processedItems = Array.isArray(items) ? items : []
+          setOptions(processedItems)
+        })
+        .catch((error) => { setOptions([]) })
+        .finally(() => setLoading(false))
+    })
+  }, [fetchUrl, debouncedSearch, searchParam, store])
+
+  // Determine final options and loading state
+  const finalOptions = React.useMemo(() => {
+    if (store && storeQuery?.data) {
+      const resp = storeQuery.data as any
+      if (Array.isArray(resp)) {
+        return resp as T[]
+      }
+      const items = resp?.data?.items ?? resp?.items ?? []
+      return items as T[]
     }
+    return options
+  }, [store, storeQuery?.data, options])
 
-    const finalUrl = url.pathname + url.search
-
-    apiClient
-      .get<{ items: T[] }>(finalUrl)
-      .then(({ data }) => {
-        const items = data.items || data || []
-        const processedItems = Array.isArray(items) ? items : []
-        setOptions(processedItems)
-      })
-      .catch((error) => { setOptions([]) })
-      .finally(() => setLoading(false))
-  }, [fetchUrl, debouncedSearch, searchParam])
+  const isLoading = store ? (storeQuery?.isLoading ?? false) : loading
 
   return (
     <Select value={value} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger className={className}>
-        <SelectValue placeholder={loading ? "Loading..." : placeholder} />
+        <SelectValue placeholder={isLoading ? "Loading..." : placeholder} />
       </SelectTrigger>
       <SelectContent>
         <div className="p-2">
@@ -228,12 +264,12 @@ function SelectWithFetch<T = any>({
             autoFocus
           />
         </div>
-        {loading && <div className="px-3 py-2 text-gray-400">Searching...</div>}
-        {options.length === 0 && !loading && (
+        {isLoading && <div className="px-3 py-2 text-gray-400">Searching...</div>}
+        {finalOptions.length === 0 && !isLoading && (
           <div className="px-3 py-2 text-gray-400">No options found</div>
         )}
         <div className="max-h-60 overflow-y-auto">
-          {options.map((item: any) => {
+          {finalOptions.map((item: any) => {
             const itemValue = getNestedValue(item, valueKey)
             const displayLabel = labelFormatter
               ? labelFormatter(item)

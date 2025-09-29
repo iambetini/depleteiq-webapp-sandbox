@@ -11,19 +11,27 @@ import { Brand } from "@/types/brand"
 import { Edit, Eye, MoreHorizontal, Package, Trash2 } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import React, { useRef } from "react"
+import React, { useRef, useCallback } from "react"
 
 export default function BrandsPage() {
   const router = useRouter()
   const dataTableRef = useRef<{ refresh: () => void }>(null)
 
-  const refreshTable = () => {
+  const refreshTable = useCallback(() => {
     dataTableRef.current?.refresh()
-  }
+  }, [])
+
+  const deleteHandler = useCallback((uuid: string) => {
+    handleDelete({
+      storeName: "brands",
+      uuid,
+      onSuccess: refreshTable,
+    })
+  }, [refreshTable])
 
   const columns = React.useMemo(
-    () => getColumns(router, refreshTable),
-    [router]
+    () => getColumns(router, deleteHandler),
+    [router, deleteHandler]
   )
 
   return (
@@ -62,7 +70,7 @@ export default function BrandsPage() {
 
 function getColumns(
   router: any,
-  refreshTable: () => void
+  handleDelete: (uuid: string) => void
 ): ColumnDef<Brand>[] {
   return [
     {
@@ -151,13 +159,7 @@ function getColumns(
               Edit
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() =>
-                handleDelete({
-                  storeName: "brands",
-                  uuid: row.original.uuid,
-                  onSuccess: refreshTable,
-                })
-              }
+              onClick={() => handleDelete(row.original.uuid)}
               className="text-red-600"
             >
               <Trash2 className="mr-2 h-4 w-4" />

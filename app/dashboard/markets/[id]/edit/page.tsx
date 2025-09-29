@@ -10,7 +10,7 @@ import { useGetWarehousesQuery } from "@/store/warehouses";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import * as Yup from "yup";
-import { useMarketContext } from "../market-context";
+import { useContext } from "../layout";
 
 interface MarketData {
   name: string
@@ -24,17 +24,32 @@ interface MarketData {
 export default function EditMarketPage() {
   const router = useRouter();
   const [updateMarket] = useUpdateMarketMutation();
-  const { market, isLoading } = useMarketContext();
+  const { market, isLoading } = useContext();
   const { data: warehousesData, isLoading: warehousesLoading } = useGetWarehousesQuery();
 
-  const initialValues: MarketData = useMemo(() => ({
-    name: market?.name || "",
-    description: market?.description || "",
-    type: market?.type || "",
-    address: "", // Market doesn't have address field, will be populated from location
-    location_id: market?.location?.uuid || "",
-    warehouse_id: market?.warehouse?.uuid || "",
-  }), [market]);
+  const initialValues: MarketData = useMemo(() => {
+    // Create formatted address from location data
+    const formatAddress = (location: any) => {
+      if (!location) return "";
+      const addressParts = [
+        location.street,
+        location.city,
+        location.state,
+        location.country,
+        location.postal_code,
+      ].filter(Boolean);
+      return addressParts.join(", ");
+    };
+
+    return {
+      name: market?.name || "",
+      description: market?.description || "",
+      type: market?.type || "",
+      address: formatAddress(market?.location) || "",
+      location_id: market?.location?.uuid || "",
+      warehouse_id: market?.warehouse?.uuid || "",
+    };
+  }, [market]);
 
   const validationSchema = useMemo(() => Yup.object({
     name: Yup.string().required("Name is required"),
@@ -107,7 +122,7 @@ export default function EditMarketPage() {
         title="Update Market"
         description="Edit market information below"
       />
-      <FormWithLocationModal>
+      <FormWithLocationModal existingLocationData={market.location}>
         {({ onFieldUpdate, setFormRef, setLocationModalOpen }) => (
           <MarketForm
             initialValues={initialValues}

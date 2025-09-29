@@ -36,9 +36,12 @@ interface FieldConfig {
   placeholder?: string
   options?: FieldOption[]
   fetchUrl?: string
+  store?: string
   valueKey?: string
   labelKey?: string
   labelFormatter?: (item: any) => string
+  initialSearch?: string
+  params?: Record<string, any>
   rows?: number
   colSpan?: number
   onCreateNew?: () => void
@@ -177,13 +180,16 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
                         <div className="space-y-2" key={field.name}>
                           <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>
                           <SelectWithFetch
-                            fetchUrl={field.fetchUrl!}
+                            fetchUrl={field.fetchUrl}
+                            store={field.store as any}
                             value={values[field.name]}
                             onChange={uuid => setFieldValue(field.name, uuid)}
                             valueKey={field.valueKey}
                             labelKey={field.labelKey}
                             labelFormatter={field.labelFormatter}
+                            initialSearch={field.initialSearch}
                             placeholder={field.placeholder}
+                            params={field.params}
                           />
                           <ErrorMessage name={field.name} component="p" className="text-sm text-red-500" />
                         </div>
@@ -196,13 +202,16 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
                           <div className="flex gap-2">
                             <div className="flex-1">
                               <SelectWithFetch
-                                fetchUrl={field.fetchUrl!}
+                                fetchUrl={field.fetchUrl}
+                                store={field.store as any}
                                 value={values[field.name]}
                                 onChange={uuid => setFieldValue(field.name, uuid)}
                                 valueKey={field.valueKey}
                                 labelKey={field.labelKey}
                                 labelFormatter={field.labelFormatter}
+                                initialSearch={field.initialSearch}
                                 placeholder={field.placeholder}
+                                params={field.params}
                               />
                             </div>
                             {field.onCreateNew && (

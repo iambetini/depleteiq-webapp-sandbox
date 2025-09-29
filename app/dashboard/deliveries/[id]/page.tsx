@@ -6,13 +6,13 @@ import { Boxes, Calendar, Flame, Package, Percent, Ruler, Scale, Truck, MapPin, 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import type { ComponentType, SVGProps } from "react";
-import { useDeliveryContext } from "./delivery-context";
+import { useContext } from "./layout";
 import { formatLabelToTitleCase } from "@/lib/label-formatters";
 
 export default function DeliveryDetailPage() {
   const { data: session } = useSession();
   const user = session?.user;
-  const { delivery } = useDeliveryContext();
+  const { delivery } = useContext();
   const router = useRouter();
 
   if (!delivery) { return null; }

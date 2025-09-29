@@ -14,12 +14,12 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { useOrderContext } from "./order-context";
+import { useContext } from "./layout";
 
-export default function OrderDetailPage({ params }: { params: { id: string } }) {
+export default function OrderDetailPage() {
   const { data: session } = useSession();
   const user = session?.user;
-  const { order, fetchOrder } = useOrderContext();
+  const { order, fetchOrder } = useContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updateMessage, setUpdateMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);

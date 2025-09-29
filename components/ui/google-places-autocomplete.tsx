@@ -237,10 +237,10 @@ export function GooglePlacesAutocomplete({
         )}
       </div>
       {!isLoaded && (
-        <p className="text-xs text-gray-500 flex items-center gap-2">
+        <div className="text-xs text-gray-500 flex items-center gap-2">
           <div className="h-3 w-3 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600"></div>
           Loading Google Places API...
-        </p>
+        </div>
       )}
     </div>
   );

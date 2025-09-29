@@ -78,7 +78,7 @@ export default function CreateMarketPage() {
       label: "Warehouse",
       type: "selectWithFetch" as const,
       required: true,
-      fetchUrl: "/warehouses",
+      store: "warehouses",
       valueKey: "uuid",
       labelKey: "warehouse_code",
       placeholder: "Select warehouse",
