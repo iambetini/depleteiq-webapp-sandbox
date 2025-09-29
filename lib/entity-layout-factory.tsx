@@ -38,7 +38,14 @@ export function createEntityLayout<T>({
 
   // Derive entity name from storeName if not provided
   if (storeName && !entityName) {
-    const singularStoreName = storeName.endsWith('s') ? storeName.slice(0, -1) : storeName;
+    let singularStoreName = storeName;
+    if (storeName.endsWith("ies")) {
+      // deliveries -> delivery
+      singularStoreName = storeName.slice(0, -3) + "y";
+    } else if (storeName.endsWith("s")) {
+      // users -> user
+      singularStoreName = storeName.slice(0, -1);
+    }
     finalEntityName = singularStoreName.charAt(0).toUpperCase() + singularStoreName.slice(1);
   }
 

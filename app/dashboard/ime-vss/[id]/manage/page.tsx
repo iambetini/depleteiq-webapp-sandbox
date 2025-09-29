@@ -10,7 +10,7 @@ import { toast } from "@/hooks/use-toast"
 import { catchError } from "@/lib/utils"
 import { useUpdateIMEVSSMutation } from "@/store/ime-vss"
 import { useRouter } from "next/navigation"
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState, useCallback, useMemo } from "react"
 import * as Yup from "yup"
 import { useImeVssData } from "@/hooks/use-entity-data"
 import { Edit, MapPin, Shield, Trash2, User } from "lucide-react"
@@ -54,8 +54,6 @@ export default function ManageImeVssPage() {
     }
   }, [imeVss, roles])
 
-  if (!imeVss) { return null; }
-
   const validationSchema = Yup.object({
     first_name: Yup.string().required("First name is required"),
     last_name: Yup.string().required("Last name is required"),
@@ -66,7 +64,7 @@ export default function ManageImeVssPage() {
     status: Yup.string().oneOf(["active", "inactive"]).required(),
   })
 
-  const fields = [
+  const fields = useMemo(() => [
     {
       name: "first_name",
       label: "First Name",
@@ -114,9 +112,10 @@ export default function ManageImeVssPage() {
       type: "selectWithFetch" as const,
       required: false,
       placeholder: "Select market",
-      fetchUrl: "/markets",
+      store: "markets",
       valueKey: "uuid",
       labelKey: "name",
+      initialSearch: imeVss?.market?.name || "",
     },
     {
       name: "status",
@@ -129,7 +128,9 @@ export default function ManageImeVssPage() {
         { label: "Inactive", value: "inactive" },
       ],
     },
-  ]
+  ], [roles, imeVss])
+
+  if (!imeVss) { return null; }
 
   const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
     try {

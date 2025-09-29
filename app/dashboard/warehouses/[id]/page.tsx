@@ -22,6 +22,8 @@ export default function WarehouseDetailPage() {
       <ViewPageHeader
         title="Warehouse Details"
         description={`Warehouse Code: ${warehouse.warehouse_code}`}
+        showEditButton={true}
+        editHref={`/dashboard/warehouses/${warehouse.uuid}/edit`}
         showDeleteButton={["admin", "super-admin","manager"].includes(userRole)}
         deleteOptions={{
           storeName: "warehouses",
