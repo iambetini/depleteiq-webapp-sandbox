@@ -4,6 +4,7 @@ import { imeVss } from "@/store/ime-vss";
 import { orders } from "@/store/orders";
 import { configureStore } from "@reduxjs/toolkit";
 import { auditLogs } from "./audit-logs";
+import { branches } from "./branches";
 import { dashboardApi } from "./dashboard-api";
 import dashboardFiltersReducer from "./dashboard-filters";
 import { deliveries } from "./deliveries";
@@ -63,6 +64,7 @@ export const store = configureStore({
   reducer: {
     [auditLogs.reducerPath]: auditLogs.reducer,
     [brands.reducerPath]: brands.reducer,
+    [branches.reducerPath]: branches.reducer,
     [dashboardApi.reducerPath]: dashboardApi.reducer,
     dashboardFilters: dashboardFiltersReducer,
     [deliveries.reducerPath]: deliveries.reducer,
@@ -87,6 +89,7 @@ export const store = configureStore({
       autoResetMiddleware,
       auditLogs.middleware,
       brands.middleware,
+      branches.middleware,
       dashboardApi.middleware,
       deliveries.middleware,
       distributorOrders.middleware,
@@ -110,6 +113,7 @@ export const store = configureStore({
 export const storeApis = {
   auditLogs,
   brands,
+  branches,
   deliveries,
   distributorOrders,
   distributorTargets,

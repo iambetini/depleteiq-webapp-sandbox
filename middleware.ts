@@ -46,6 +46,10 @@ export async function middleware(request: NextRequest) {
       },
       { pattern: /^\/dashboard\/users(\/.*)?$/, roles: ["super-admin"] },
       {
+        pattern: /^\/dashboard\/branches(\/.*)?$/,
+        roles: ["super-admin", "system-admin", "operations"],
+      },
+      {
         pattern: /^\/dashboard\/brands(\/.*)?$/,
         roles: ["super-admin", "system-admin", "operations"],
       },
