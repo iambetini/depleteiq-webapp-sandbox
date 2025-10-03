@@ -16,6 +16,7 @@ interface FieldConfig {
   fetchUrl?: string
   valueKey?: string
   labelKey?: string
+  labelFormatter?: (item: any) => string
 }
 
 interface DeliveryFormProps {
@@ -82,6 +83,7 @@ export function DeliveryForm({
                         onChange={uuid => setFieldValue(field.name, uuid)}
                         valueKey={field.valueKey}
                         labelKey={field.labelKey}
+                        labelFormatter={field.labelFormatter}
                         placeholder={field.placeholder}
                       />
                     ) : (

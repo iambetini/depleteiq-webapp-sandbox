@@ -354,7 +354,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     if (!store) return;
     const timeout = setTimeout(() => {
       setFilterState((s) => ({ ...s, search: searchValue }));
-    }, 400);
+    }, 2000);
     return () => clearTimeout(timeout);
   }, [searchValue, store]);
 

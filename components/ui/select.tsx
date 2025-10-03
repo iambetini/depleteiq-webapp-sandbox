@@ -7,6 +7,9 @@ import { Check, ChevronDown, ChevronUp } from "lucide-react"
 import * as React from "react"
 import { useEffect, useState } from "react"
 import { storeApis } from "@/store"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
+import { Button } from "@/components/ui/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 interface SelectWithFetchProps<T = any> {
   fetchUrl?: string
@@ -190,13 +193,16 @@ function SelectWithFetch<T = any>({
   const [search, setSearch] = useState(initialSearch)
   const [debouncedSearch, setDebouncedSearch] = useState(initialSearch)
   const [loading, setLoading] = useState(false)
+  const inputRef = React.useRef<HTMLInputElement>(null)
+  const [cursorPosition, setCursorPosition] = React.useState(0)
+  const [isTyping, setIsTyping] = React.useState(false)
 
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(search), 300)
     return () => clearTimeout(handler)
   }, [search])
 
-  // Build query parameters with search
+  // Build query parameters with search - memoize params object to prevent unnecessary re-renders
   const queryParams = React.useMemo(() => {
     const baseParams = { ...params }
     if (debouncedSearch.trim()) {
@@ -216,6 +222,11 @@ function SelectWithFetch<T = any>({
     // Dynamic import to avoid bundling apiClient when not needed
     import("@/lib/api-client").then(({ apiClient }) => {
       const url = new URL(fetchUrl, window.location.origin)
+
+      // Set default per_page to 1000 if not already specified
+      if (!url.searchParams.has('per_page')) {
+        url.searchParams.set('per_page', '1000')
+      }
 
       if (debouncedSearch.trim()) {
         url.searchParams.set(searchParam, debouncedSearch)
@@ -250,6 +261,56 @@ function SelectWithFetch<T = any>({
 
   const isLoading = store ? (storeQuery?.isLoading ?? false) : loading
 
+  // Memoize search handler to prevent unnecessary re-renders
+  const handleSearchChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setIsTyping(true)
+    setSearch(e.target.value)
+    setCursorPosition(e.target.selectionStart || 0)
+    // Clear typing state after a brief delay
+    setTimeout(() => setIsTyping(false), 100)
+  }, [])
+
+  const handleSearchFocus = React.useCallback(() => {
+    setIsTyping(true)
+  }, [])
+
+  const handleSearchBlur = React.useCallback(() => {
+    // Clear typing state after blur with delay
+    setTimeout(() => setIsTyping(false), 150)
+  }, [])
+
+  const handleKeyUp = React.useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Capture cursor position on key events
+    setCursorPosition((e.target as HTMLInputElement).selectionStart || 0)
+  }, [])
+
+  // Restore focus and cursor position after re-renders
+  React.useEffect(() => {
+    if (isTyping && inputRef.current && document.activeElement !== inputRef.current) {
+      const restoreFocus = () => {
+        if (inputRef.current) {
+          inputRef.current.focus()
+          inputRef.current.setSelectionRange(cursorPosition, cursorPosition)
+        }
+      }
+      // Use requestAnimationFrame to ensure DOM is updated
+      requestAnimationFrame(restoreFocus)
+    }
+  }, [isTyping, cursorPosition])
+
+  // Additional effect to restore focus when options change during typing
+  React.useEffect(() => {
+    if (isTyping && inputRef.current) {
+      const timer = setTimeout(() => {
+        if (inputRef.current && document.activeElement !== inputRef.current) {
+          inputRef.current.focus()
+          inputRef.current.setSelectionRange(cursorPosition, cursorPosition)
+        }
+      }, 50)
+      return () => clearTimeout(timer)
+    }
+  }, [debouncedSearch, isTyping, cursorPosition])
+
   return (
     <Select value={value} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger className={className}>
@@ -258,9 +319,13 @@ function SelectWithFetch<T = any>({
       <SelectContent>
         <div className="p-2">
           <Input
+            ref={inputRef}
             placeholder="Search..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={handleSearchChange}
+            onFocus={handleSearchFocus}
+            onBlur={handleSearchBlur}
+            onKeyUp={handleKeyUp}
             autoFocus
           />
         </div>
@@ -287,6 +352,177 @@ function SelectWithFetch<T = any>({
   )
 }
 
+function CommandWithFetch<T = any>({
+  fetchUrl,
+  store,
+  value,
+  onChange,
+  valueKey = "uuid",
+  labelKey = "name",
+  searchParam = "search",
+  initialSearch = "",
+  placeholder = "Select...",
+  disabled = false,
+  labelFormatter,
+  className,
+  params = {},
+}: SelectWithFetchProps<T>) {
+  const [options, setOptions] = useState<T[]>([])
+  const [search, setSearch] = useState(initialSearch)
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch)
+  const [loading, setLoading] = useState(false)
+  const [open, setOpen] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Ensure component is mounted before rendering
+  useEffect(() => {
+    setIsMounted(true)
+    return () => setIsMounted(false)
+  }, [])
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(handler)
+  }, [search])
+
+  // Build query parameters with search - memoize params object to prevent unnecessary re-renders
+  const queryParams = React.useMemo(() => {
+    const baseParams = { ...params }
+    if (debouncedSearch.trim()) {
+      baseParams[searchParam] = debouncedSearch
+    }
+    return baseParams
+  }, [params, debouncedSearch, searchParam])
+
+  // Store-based query (recommended approach)
+  const storeQuery = store ? storeApis[store]?.useGetAllQuery(queryParams) : undefined
+
+  useEffect(() => {
+    if (!fetchUrl || store) return
+
+    setLoading(true)
+
+    // Dynamic import to avoid bundling apiClient when not needed
+    import("@/lib/api-client").then(({ apiClient }) => {
+      const url = new URL(fetchUrl, window.location.origin)
+
+      // Set default per_page to 1000 if not already specified
+      if (!url.searchParams.has('per_page')) {
+        url.searchParams.set('per_page', '1000')
+      }
+
+      if (debouncedSearch.trim()) {
+        url.searchParams.set(searchParam, debouncedSearch)
+      }
+
+      const finalUrl = url.pathname + url.search
+
+      apiClient
+        .get<{ items: T[] }>(finalUrl)
+        .then(({ data }) => {
+          const items = data.items || data || []
+          const processedItems = Array.isArray(items) ? items : []
+          setOptions(processedItems)
+        })
+        .catch((error) => { setOptions([]) })
+        .finally(() => setLoading(false))
+    })
+  }, [fetchUrl, debouncedSearch, searchParam, store])
+
+  // Determine final options and loading state
+  const finalOptions = React.useMemo(() => {
+    if (store && storeQuery?.data) {
+      const resp = storeQuery.data as any
+      if (Array.isArray(resp)) {
+        return resp as T[]
+      }
+      const items = resp?.data?.items ?? resp?.items ?? []
+      return items as T[]
+    }
+    return options
+  }, [store, storeQuery?.data, options])
+
+  const isLoading = store ? (storeQuery?.isLoading ?? false) : loading
+
+  // Find selected item for display
+  const selectedItem = finalOptions.find((item: any) => getNestedValue(item, valueKey) === value)
+  const displayValue = selectedItem 
+    ? (labelFormatter ? labelFormatter(selectedItem) : getNestedValue(selectedItem, labelKey))
+    : placeholder
+
+  // Don't render until mounted to prevent SSR/client mismatch issues
+  if (!isMounted) {
+    return (
+      <Button
+        variant="outline"
+        role="combobox"
+        aria-expanded={false}
+        className={cn("w-full justify-between", className)}
+        disabled={disabled}
+      >
+        {placeholder}
+        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+      </Button>
+    )
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn("w-full justify-between", className)}
+          disabled={disabled}
+        >
+          {displayValue}
+          <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <Command shouldFilter={false}>
+          <CommandInput
+            placeholder="Search..."
+            value={search}
+            onValueChange={setSearch}
+            className="h-9"
+          />
+          <CommandEmpty>No options found.</CommandEmpty>
+          {isLoading && <div className="px-3 py-2 text-gray-400">Searching...</div>}
+          <CommandGroup className="max-h-60 overflow-y-auto">
+            {finalOptions.map((item: any) => {
+              const itemValue = getNestedValue(item, valueKey)
+              const displayLabel = labelFormatter
+                ? labelFormatter(item)
+                : getNestedValue(item, labelKey)
+
+              return (
+                <CommandItem
+                  key={itemValue}
+                  value={displayLabel}
+                  onSelect={() => {
+                    onChange(itemValue)
+                    setOpen(false)
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === itemValue ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {displayLabel}
+                </CommandItem>
+              )
+            })}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 export {
-  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue, SelectWithFetch
+  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue, SelectWithFetch, CommandWithFetch
 }
