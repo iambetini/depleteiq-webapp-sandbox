@@ -1,7 +1,7 @@
 "use client";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building, CreditCard, Mail, MapPin, Phone, User, Users } from "lucide-react";
+import { Building, CreditCard, Mail, MapPin, Phone, User, Users, Warehouse, Globe } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { memo } from "react";
@@ -29,6 +29,7 @@ const BusinessAndContactInformationCard = memo(() => {
         )}
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Business Information Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-center space-x-3">
             <Building className="h-5 w-5 text-[#ababab]" />
@@ -37,6 +38,20 @@ const BusinessAndContactInformationCard = memo(() => {
               <p className="font-medium text-[#444444]">{distributor.business_name}</p>
             </div>
           </div>
+          <div className="flex items-center space-x-3">
+            <Badge variant="secondary">{distributor.business_type}</Badge>
+            <div>
+              <p className="text-sm text-[#ababab]">Category</p>
+              <p className="font-medium text-[#444444]">{distributor.category}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Registration Information */}
+        <RegistrationInfo />
+
+        {/* People & Assignment Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex items-center space-x-3">
             <User className="h-5 w-5 text-[#ababab]" />
             <div>
@@ -62,10 +77,29 @@ const BusinessAndContactInformationCard = memo(() => {
               )}
             </div>
           </div>
-          <div className="hidden items-center space-x-0">
-            <Badge variant="secondary">{distributor.business_type}</Badge>
+        </div>
+
+        {/* Operational Context Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex items-center space-x-3">
+            <Phone className="h-5 w-5 text-[#ababab]" />
+            <div>
+              <p className="text-sm text-[#ababab]">Phone</p>
+              <p className="font-medium text-[#444444]">{distributor.user?.phone}</p>
+            </div>
           </div>
-          <RegistrationInfo />
+          <div className="flex items-center space-x-3">
+            <Globe className="h-5 w-5 text-[#ababab]" />
+            <div>
+              <p className="text-sm text-[#ababab]">Market</p>
+              <Link
+                href={`/dashboard/markets/${distributor.market?.uuid || ""}`}
+                className="font-medium text-[#444444] hover:underline"
+              >
+                {distributor.market?.name || "Not assigned"}
+              </Link>
+            </div>
+          </div>
         </div>
         {distributor.user && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -77,10 +111,15 @@ const BusinessAndContactInformationCard = memo(() => {
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <Phone className="h-5 w-5 text-[#ababab]" />
+              <Warehouse className="h-5 w-5 text-[#ababab]" />
               <div>
-                <p className="text-sm text-[#ababab]">Phone</p>
-                <p className="font-medium text-[#444444]">{distributor.user.phone}</p>
+                <p className="text-sm text-[#ababab]">Warehouse</p>
+                <Link
+                  href={`/dashboard/warehouses/${distributor.market?.warehouse?.uuid || ""}`}
+                  className="font-medium text-[#444444] hover:underline"
+                >
+                  {distributor.market?.warehouse?.warehouse_code || "Not assigned"}
+                </Link>
               </div>
             </div>
           </div>

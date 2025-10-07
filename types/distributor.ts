@@ -1,5 +1,6 @@
 import { User } from "./user";
 import { Location } from "./location";
+import { Market } from "./market";
 
 export interface Distributor {
   id: string;
@@ -17,6 +18,7 @@ export interface Distributor {
   ime_vss_user_id?: string;
   location_id?: string;
   location?: Location;
+  market?: Market;
   ime_vss?: {
     uuid: string;
     first_name: string;

@@ -40,7 +40,7 @@ export default function CreateDeliveryPage() {
       required: true,
       fetchUrl: "/vehicles",
       valueKey: "uuid",
-      labelKey: "type",
+      labelFormatter: (item: any) => `${item.vehicle_number} (${item.type})`,
       placeholder: "Select vehicle",
     },
   ]

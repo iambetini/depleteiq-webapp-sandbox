@@ -12,12 +12,16 @@ function SettingsLayoutContent({ children }: { children: React.ReactNode }) {
     if (pathname.includes('/security')) return 'security'
     if (pathname.includes('/deliveries')) return 'deliveries'
     if (pathname.includes('/orders')) return 'orders'
+    if (pathname.includes('/users')) return 'users'
+    if (pathname.includes('/roles')) return 'roles'
     return 'profile'
   }
 
   const tabs = [
     { id: 'profile', label: 'Profile', path: `/dashboard/settings/profile` },
     { id: 'security', label: 'Security', path: `/dashboard/settings/security` },
+    { id: 'roles', label: 'Roles & Permissions', path: `/dashboard/settings/roles` },
+    { id: 'users', label: 'Users', path: `/dashboard/settings/users` },
     { id: 'deliveries', label: 'Deliveries', path: `/dashboard/settings/deliveries` },
     { id: 'orders', label: 'Orders', path: `/dashboard/settings/orders` },
   ]
