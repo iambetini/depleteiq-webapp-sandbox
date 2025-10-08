@@ -15,13 +15,14 @@ export default function CreateBranchPage() {
   const [createBranch, { isLoading: isCreating }] = useCreateBranchMutation()
 
   const initialValues = {
-    name: "",
+    branch_name: "",
     branch_code: "",
     location_id: "",
+    address: "",
   }
 
   const validationSchema = Yup.object({
-    name: Yup.string().required("Branch name is required"),
+    branch_name: Yup.string().required("Branch name is required"),
     branch_code: Yup.string().required("Branch code is required"),
   })
 
@@ -42,7 +43,7 @@ export default function CreateBranchPage() {
 
   const createFields = (setLocationModalOpen: (open: boolean) => void) => [
     { 
-      name: "name", 
+      name: "branch_name", 
       label: "Branch Name", 
       type: "text" as const, 
       required: true, 

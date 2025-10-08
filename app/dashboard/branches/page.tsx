@@ -60,9 +60,9 @@ export default function BranchesPage() {
 export function getColumns(router: any, handleDelete: (uuid: string) => void): ColumnDef<Branch>[] {
   return [
     {
-      accessorKey: "name",
+      accessorKey: "branch_name",
       header: "Branch Name",
-      cell: ({ row }) => <div className="text-sm">{row.original.name}</div>,
+      cell: ({ row }) => <div className="text-sm">{row.original.branch_name}</div>,
     },
     {
       accessorKey: "branch_code",
@@ -73,11 +73,6 @@ export function getColumns(router: any, handleDelete: (uuid: string) => void): C
       accessorKey: "location.name",
       header: "Location",
       cell: ({ row }) => <div className="text-sm">{row.original.location?.full_location}</div>,
-    },
-    {
-      accessorKey: "created_at",
-      header: "Created At",
-      cell: ({ row }) => row.original.created_at,
     },
     {
       id: "actions",
