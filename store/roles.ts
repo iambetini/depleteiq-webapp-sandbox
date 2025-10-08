@@ -4,6 +4,7 @@ import { createEntity } from "./entityFactory";
 export const roles = createEntity<Role>({
   reducerPath: "rolesApi",
   entityEndpoint: "roles",
+  entityName: "Role",
 });
 export const {
   useGetAllQuery: useGetRolesQuery,

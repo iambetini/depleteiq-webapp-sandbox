@@ -4,6 +4,7 @@ import { createEntity } from "./entityFactory";
 export const locations = createEntity<Location>({
   reducerPath: "locationsApi",
   entityEndpoint: "locations",
+  entityName: "Location",
 });
 export const {
   useGetAllQuery: useGetLocationsQuery,

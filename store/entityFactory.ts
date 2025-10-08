@@ -5,6 +5,7 @@ import { apiClient, ApiRequestConfig } from "@/lib/api-client";
 type EntityApiOptions<T, CreateT = Partial<T>, UpdateT = Partial<T>> = {
   reducerPath: string;
   entityEndpoint: string;
+  entityName?: string; // Optional singular entity name (e.g., "Branch" for "branches")
   tagTypes?: string[];
 };
 
@@ -208,7 +209,7 @@ const customBaseQuery = async ({
 export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
   options: EntityApiOptions<T, CreateT, UpdateT>,
 ) {
-  const { reducerPath, entityEndpoint, tagTypes } = options;
+  const { reducerPath, entityEndpoint, entityName, tagTypes } = options;
 
   const api = createApi({
     reducerPath,
@@ -316,8 +317,8 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
     }),
   });
 
-  // Add entityEndpoint to the API instance for external access
-  (api as any).entityEndpoint = entityEndpoint;
+  // Add entityEndpoint and entityName to the API instance for external access
+  Object.assign(api, { entityEndpoint, entityName });
 
   return api;
 }

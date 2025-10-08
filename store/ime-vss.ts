@@ -4,6 +4,7 @@ import { createEntity } from "./entityFactory";
 export const imeVss = createEntity<User>({
   reducerPath: "imeVssApi",
   entityEndpoint: "users",
+  entityName: "ImeVss",
 });
 
 export const {

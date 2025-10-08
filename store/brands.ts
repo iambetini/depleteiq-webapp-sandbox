@@ -4,6 +4,7 @@ import { createEntity } from "./entityFactory";
 export const brands = createEntity<Brand>({
   reducerPath: "brandsApi",
   entityEndpoint: "brands",
+  entityName: "Brand",
 });
 
 export const {
