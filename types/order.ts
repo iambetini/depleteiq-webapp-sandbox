@@ -9,7 +9,9 @@ export type orderStatus =
   | "confirmed"
   | "fulfilled"
   | "pending"
-  | "rejected";
+  | "rejected"
+  | "delivered"
+  | "cancelled";
 export interface OrderBrand {
   uuid: string;
   order_ref: string;

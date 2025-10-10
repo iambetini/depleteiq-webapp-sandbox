@@ -4,6 +4,7 @@ import { createEntity } from "./entityFactory";
 export const markets = createEntity<Market>({
   reducerPath: "marketsApi",
   entityEndpoint: "markets",
+  entityName: "Market",
 });
 export const {
   useGetAllQuery: useGetMarketsQuery,

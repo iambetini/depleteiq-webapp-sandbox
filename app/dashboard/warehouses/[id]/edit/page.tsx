@@ -7,14 +7,13 @@ import { createAddressFieldConfig } from "@/lib/field-configs";
 import { toast } from "@/hooks/use-toast";
 import { catchError } from "@/lib/utils";
 import { useUpdateWarehouseMutation } from "@/store/warehouses";
-import type { Warehouse } from "@/types/warehouse";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import * as Yup from "yup";
 import { useContext } from "../layout";
 
 export default function EditWarehousePage() {
-  const { warehouse, isLoading, fetchWarehouse } = useContext();
+  const { warehouse, isLoading } = useContext();
   const router = useRouter()
   const [updateWarehouse] = useUpdateWarehouseMutation()
 
@@ -23,7 +22,18 @@ export default function EditWarehousePage() {
     address: Yup.string().required("Address is required"),
   }), []);
 
-  const handleSubmit = useCallback(async (values: Warehouse, { setSubmitting, setFieldError }: any) => {
+  // Create initial values with proper defaults to avoid null values
+  const initialValues = useMemo(() => {
+    if (!warehouse) return null;
+    
+    return {
+      warehouse_code: warehouse.warehouse_code || "",
+      address: warehouse.address || "",
+      location_id: warehouse.location_id || "",
+    };
+  }, [warehouse]);
+
+  const handleSubmit = useCallback(async (values: any, { setSubmitting, setFieldError }: any) => {
     try {
       const payload = {
         warehouse_code: values.warehouse_code,
@@ -32,16 +42,15 @@ export default function EditWarehousePage() {
       };
       await updateWarehouse({ id: warehouse.uuid, data: payload }).unwrap();
       toast({ title: "Success", description: "Warehouse updated successfully" });
-      fetchWarehouse();
       router.push(`/dashboard/warehouses/${warehouse.uuid}`);
     } catch (error: any) {
       catchError(error, setFieldError);
     } finally {
       setSubmitting(false);
     }
-  }, [warehouse, updateWarehouse, fetchWarehouse, router]);
+  }, [warehouse, updateWarehouse, router]);
 
-  if (!warehouse) { return null; }
+  if (!warehouse || !initialValues) { return null; }
 
   const createFields = (setLocationModalOpen: (open: boolean) => void) => [
     { 
@@ -65,7 +74,7 @@ export default function EditWarehousePage() {
           <WarehouseForm
             title="Update Warehouse"
             description="Edit warehouse information below"
-            initialValues={warehouse as Warehouse}
+            initialValues={initialValues}
             validationSchema={validationSchema}
             fields={createFields(setLocationModalOpen)}
             isLoading={isLoading}

@@ -34,19 +34,16 @@ export function createEntityLayout<T>({
       throw new Error(`Unknown store: ${storeName}`);
     }
     finalUseGetQuery = store.useGetByIdQuery as any;
+    
+    // Get entity name from the store if not explicitly provided
+    if (!entityName && (store as any).entityName) {
+      finalEntityName = (store as any).entityName;
+    }
   }
 
-  // Derive entity name from storeName if not provided
-  if (storeName && !entityName) {
-    let singularStoreName = storeName;
-    if (storeName.endsWith("ies")) {
-      // deliveries -> delivery
-      singularStoreName = storeName.slice(0, -3) + "y";
-    } else if (storeName.endsWith("s")) {
-      // users -> user
-      singularStoreName = storeName.slice(0, -1);
-    }
-    finalEntityName = singularStoreName.charAt(0).toUpperCase() + singularStoreName.slice(1);
+  // Use provided entityName if available
+  if (entityName && !finalEntityName) {
+    finalEntityName = entityName;
   }
 
   if (!finalUseGetQuery || !finalEntityName) {

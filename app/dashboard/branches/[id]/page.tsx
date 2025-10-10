@@ -22,6 +22,8 @@ export default function BranchDetailPage() {
       <ViewPageHeader
         title="Branch Details"
         description={`Branch Code: ${branch.branch_code}`}
+        showEditButton={true}
+        editHref={`/dashboard/branches/${branch.uuid}/edit`}
         showDeleteButton={["admin", "super-admin","manager"].includes(userRole)}
         deleteOptions={{
           storeName: "branches",
@@ -44,7 +46,7 @@ export default function BranchDetailPage() {
                   <Building2 className="h-5 w-5 text-[#ababab]" />
                   <div>
                     <p className="text-sm text-[#ababab]">Branch Name</p>
-                    <p className="font-medium text-[#444444]">{branch.name}</p>
+                    <p className="font-medium text-[#444444]">{branch.branch_name}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
