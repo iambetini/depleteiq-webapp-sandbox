@@ -65,7 +65,7 @@ export default function EditOrderPage() {
 
   const handleSubmit = async (values: OrderData, { setSubmitting, setFieldError }: any) => {
     try {
-      if (session?.user?.role === "sales-admin" && values?.content) {
+      if (session?.user?.role?.name === "sales-admin" && values?.content) {
         await handleMessageSubmit(values?.content || "");
       }
       const payload = { status: values?.status }
@@ -85,13 +85,13 @@ export default function EditOrderPage() {
   return (
     <div>
       <ViewPageHeader
-        title={session?.user?.role === "treasury" ? "Confirm Payment" : "Update Order"}
-        description={session?.user?.role === "treasury" ? "Confirm payment for this order" : "Update order information"}
+        title={session?.user?.role?.name === "treasury" ? "Confirm Payment" : "Update Order"}
+        description={session?.user?.role?.name === "treasury" ? "Confirm payment for this order" : "Update order information"}
       />
       <Card className="max-w-2xl">
         <CardHeader>
           <CardTitle>Order Information</CardTitle>
-          {session?.user?.role !== "treasury" && (
+          {session?.user?.role?.name !== "treasury" && (
             <CardDescription>Update the order status below</CardDescription>
           )}
         </CardHeader>
@@ -141,11 +141,11 @@ export default function EditOrderPage() {
                           { value: "update_requested", label: "Update Requested" },
                         ];
                         let filteredOptions = allOptions;
-                        if (session?.user?.role === "sales-admin") {
+                        if (session?.user?.role?.name === "sales-admin") {
                           filteredOptions = allOptions.filter(opt =>
                             ["approved", "update_requested", "confirmed"].includes(opt.value)
                           );
-                        } else if (session?.user?.role === "treasury") {
+                        } else if (session?.user?.role?.name === "treasury") {
                           filteredOptions = allOptions.filter(opt =>
                             ["update_requested", "confirmed", "pending"].includes(opt.value)
                           );
@@ -179,8 +179,8 @@ export default function EditOrderPage() {
                   <Button type="submit" className="btn-primary" disabled={isLoading || isSubmitting}>
                     <Save className="mr-2 h-4 w-4" />
                     {isLoading || isSubmitting
-                      ? (session?.user?.role === "treasury" ? "Confirming..." : "Updating...")
-                      : (session?.user?.role === "treasury" ? "Confirm Payment" : "Update Order")}
+                      ? (session?.user?.role?.name === "treasury" ? "Confirming..." : "Updating...")
+                      : (session?.user?.role?.name === "treasury" ? "Confirm Payment" : "Update Order")}
                   </Button>
                 </div>
               </Form>

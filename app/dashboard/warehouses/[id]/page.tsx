@@ -13,7 +13,7 @@ export default function WarehouseDetailPage() {
 
   if (!warehouse) { return null; }
 
-  const userRole = user?.role?.toLowerCase() || "";
+  const userRole = user?.role?.name?.toLowerCase() || "";
   const latNum = Number(warehouse?.location?.latitude) || undefined;
   const lngNum = Number(warehouse?.location?.longitude) || undefined;
 

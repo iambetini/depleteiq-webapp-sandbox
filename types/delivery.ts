@@ -1,6 +1,6 @@
+import { Location } from "./location";
 import { Order } from "./order";
 import { Vehicle } from "./vehicle";
-import { Location } from "./location";
 
 export type deliveryStatus =
   | "awaiting"

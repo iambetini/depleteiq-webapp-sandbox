@@ -12,7 +12,7 @@ export default function VehicleDetailPage() {
 
   if (!vehicle) { return null; }
 
-  const userRole = user?.role?.toLowerCase() || ""
+  const userRole = user?.role?.name?.toLowerCase() || ""
 
 
   return (

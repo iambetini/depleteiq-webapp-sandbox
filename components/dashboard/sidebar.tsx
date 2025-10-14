@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import {
   Building2,
   FileText,
+  GitBranch,
   History,
   Home,
   LogOut,
@@ -14,68 +15,193 @@ import {
   ShoppingCart,
   Truck,
   UserCheck,
+  UserCog,
   Users,
   Warehouse,
-  GitBranch,
-  UserCog,
 } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import React from "react"
 
-import { routeRoles } from "@/lib/route-roles"
+import { getUserPermissions, hasRequiredPermissions } from "@/lib/route-permissions"
 
 type IconType = React.ComponentType<{ className?: string }>;
 
-const iconMap: Record<string, IconType> = {
-  Dashboard: Home,
-  Orders: ShoppingCart,
-  Distributors: UserCheck,
-  "IME/VSS": UserCog,
-  Users: Users,
-  Brands: Package,
-  Markets: Building2,
-  Locations: MapPin,
-  Deliveries: PackageCheck,
-  Vehicles: Truck,
-  Warehouses: Warehouse,
-  Branches: GitBranch,
-  "Roles & Permissions": Shield,
-  Reports: FileText,
-  "Audit Logs": History,
+export interface SidebarItem {
+  title: string;
+  href: string;
+  permissions: string[]; // Array of permission names required to show this sidebar item
+  icon?: string;
+}
 
-  Settings: Settings,
+const iconMap: Record<string, IconType> = {
+  Home,
+  ShoppingCart,
+  UserCheck,
+  UserCog,
+  Users,
+  Package,
+  Building2,
+  MapPin,
+  PackageCheck,
+  Truck,
+  Warehouse,
+  GitBranch,
+  Shield,
+  FileText,
+  History,
+  Settings,
 };
+
+export const sidebarItems: SidebarItem[] = [
+  {
+    title: "Dashboard",
+    href: "/dashboard",
+    permissions: ["view dashboard"],
+    icon: "Home",
+  },
+  {
+    title: "Orders",
+    href: "/dashboard/orders",
+    permissions: ["view orders"],
+    icon: "ShoppingCart",
+  },
+  {
+    title: "Distributors",
+    href: "/dashboard/distributors",
+    permissions: ["view distributors"],
+    icon: "UserCheck",
+  },
+  {
+    title: "IME/VSS",
+    href: "/dashboard/ime-vss",
+    permissions: ["view distributors"],
+    icon: "UserCog",
+  },
+  {
+    title: "Brands",
+    href: "/dashboard/brands",
+    permissions: ["view brands"],
+    icon: "Package",
+  },
+  {
+    title: "Branches",
+    href: "/dashboard/branches",
+    permissions: ["view distributors"],
+    icon: "GitBranch",
+  },
+  {
+    title: "Markets",
+    href: "/dashboard/markets",
+    permissions: ["view markets"],
+    icon: "Building2",
+  },
+  {
+    title: "Locations",
+    href: "/dashboard/locations",
+    permissions: ["view locations"],
+    icon: "MapPin",
+  },
+  {
+    title: "Deliveries",
+    href: "/dashboard/deliveries",
+    permissions: ["view deliveries"],
+    icon: "PackageCheck",
+  },
+  {
+    title: "Vehicles",
+    href: "/dashboard/vehicles",
+    permissions: ["view vehicles"],
+    icon: "Truck",
+  },
+  {
+    title: "Warehouses",
+    href: "/dashboard/warehouses",
+    permissions: ["view warehouses"],
+    icon: "Warehouse",
+  },
+  {
+    title: "Reports",
+    href: "/dashboard/reports",
+    permissions: ["view reports"],
+    icon: "FileText",
+  },
+  {
+    title: "Audit Logs",
+    href: "/dashboard/audit-logs",
+    permissions: ["view audit logs"],
+    icon: "History",
+  },
+  {
+    title: "Settings",
+    href: "/dashboard/settings",
+    permissions: ["view dashboard"],
+    icon: "Settings",
+  },
+];
+
+// Helper function to filter sidebar items based on user permissions
+function filterSidebarItems(items: SidebarItem[], userPermissions: string[]): SidebarItem[] {
+  return items.filter(item => 
+    hasRequiredPermissions(userPermissions, item.permissions)
+  );
+}
+
+// Helper function to find the active sidebar item for a given pathname
+function findActiveSidebarItem(pathname: string): SidebarItem | null {
+  // First try to find exact match
+  const exactMatch = sidebarItems.find(item => item.href === pathname);
+  if (exactMatch) return exactMatch;
+
+  // Then find closest parent route
+  return sidebarItems
+    .filter((item) => pathname.startsWith(item.href + "/"))
+    .sort((a, b) => b.href.length - a.href.length)[0];
+}
 
 const handleLogout = async () => {
   await signOut({ callbackUrl: "/auth/login" });
 };
 
+interface SidebarMenuItemProps {
+  item: SidebarItem;
+  activeHref: string | undefined;
+}
+
+function SidebarMenuItem({ item, activeHref }: SidebarMenuItemProps) {
+  const isActive = activeHref === item.href;
+  const Icon = iconMap[item.icon || "Home"] || Home;
+
+  return (
+    <Link href={item.href}>
+      <Button
+        variant={isActive ? "default" : "ghost"}
+        className={`w-full justify-start ${isActive ? "btn-primary" : "hover:bg-[#f2f2f2]"}`}
+      >
+        <Icon className="mr-3 h-4 w-4" />
+        {item.title}
+      </Button>
+    </Link>
+  );
+}
+
 function SidebarMenu({
   items,
   activeHref,
 }: {
-  items: typeof routeRoles;
+  items: SidebarItem[];
   activeHref: string | undefined;
 }) {
   return (
     <>
-      {items.map((item) => {
-        const isActive = activeHref === item.href;
-        const Icon = iconMap[item.title] || Home;
-        return (
-          <Link key={item.href} href={item.href}>
-            <Button
-              variant={isActive ? "default" : "ghost"}
-              className={`w-full justify-start ${isActive ? "btn-primary" : "hover:bg-[#f2f2f2]"}`}
-            >
-              <Icon className="mr-3 h-4 w-4" />
-              {item.title}
-            </Button>
-          </Link>
-        );
-      })}
+      {items.map((item) => (
+        <SidebarMenuItem
+          key={item.href}
+          item={item}
+          activeHref={activeHref}
+        />
+      ))}
     </>
   );
 }
@@ -83,23 +209,15 @@ function SidebarMenu({
 export function DashboardSidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
-  const userRole = session?.user?.role?.toLowerCase() || "";
+  const userPermissions = React.useMemo(() => getUserPermissions(session?.user), [session?.user]);
 
   const visibleMenuItems = React.useMemo(
-    () =>
-      routeRoles.filter(
-        (item) => item.roles.includes("everybody") || item.roles.includes(userRole)
-      ),
-    [userRole]
+    () => filterSidebarItems(sidebarItems, userPermissions),
+    [userPermissions]
   );
 
   const activeItem = React.useMemo(
-    () =>
-      routeRoles
-        .filter(
-          (item) => pathname === item.href || pathname.startsWith(item.href + "/")
-        )
-        .sort((a, b) => b.href.length - a.href.length)[0],
+    () => findActiveSidebarItem(pathname),
     [pathname]
   );
 

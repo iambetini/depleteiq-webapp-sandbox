@@ -1,5 +1,5 @@
-import { createApi } from "@reduxjs/toolkit/query/react";
 import { apiClient, ApiRequestConfig } from "@/lib/api-client";
+import { createApi } from "@reduxjs/toolkit/query/react";
 
 // Types
 type EntityApiOptions<T, CreateT = Partial<T>, UpdateT = Partial<T>> = {
