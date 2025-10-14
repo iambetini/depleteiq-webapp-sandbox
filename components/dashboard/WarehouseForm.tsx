@@ -91,56 +91,56 @@ export const WarehouseForm = forwardRef<WarehouseFormRef, WarehouseFormProps>(({
           {({ values, handleChange, setFieldValue, isSubmitting }) => {
             // Store the setField_value function for external access
             setFieldValueRef.current = setFieldValue
-            
+
             return (
-            <Form className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {fields.map(field => (
-                  <div className="space-y-2" key={field.name}>
-                    <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>
-                    {field.type === "selectWithFetch" ? (
-                      <SelectWithFetch
-                        fetchUrl={field.fetchUrl!}
-                        value={values[field.name]}
-                        onChange={uuid => setFieldValue(field.name, uuid)}
-                        valueKey={field.valueKey}
-                        labelKey={field.labelKey}
-                        placeholder={field.placeholder}
-                      />
-                    ) : field.type === "textarea" ? (
-                      <Textarea
-                        id={field.name}
-                        name={field.name}
-                        value={values[field.name]}
-                        onChange={handleChange}
-                        onFocus={field.onFocus}
-                        placeholder={field.placeholder}
-                        rows={field.rows}
-                      />
-                    ) : (
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        type={field.type}
-                        value={values[field.name]}
-                        onChange={handleChange}
-                        onFocus={field.onFocus}
-                        placeholder={field.placeholder}
-                      />
-                    )}
-                    <ErrorMessage name={field.name} component="p" className="text-sm text-red-500" />
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center justify-end space-x-4 pt-6 border-t">
-                <Button type="button" variant="outline" onClick={onCancel}>
-                  Cancel
-                </Button>
-                <Button type="submit" className="btn-primary" disabled={isLoading || isSubmitting}>
-                  {isLoading || isSubmitting ? submitLabel + "..." : submitLabel}
-                </Button>
-              </div>
-            </Form>
+              <Form className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {fields.map(field => (
+                    <div className="space-y-2" key={field.name}>
+                      <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>
+                      {field.type === "selectWithFetch" ? (
+                        <SelectWithFetch
+                          fetchUrl={field.fetchUrl!}
+                          value={values[field.name]}
+                          onChange={uuid => setFieldValue(field.name, uuid)}
+                          valueKey={field.valueKey}
+                          labelKey={field.labelKey}
+                          placeholder={field.placeholder}
+                        />
+                      ) : field.type === "textarea" ? (
+                        <Textarea
+                          id={field.name}
+                          name={field.name}
+                          value={values[field.name]}
+                          onChange={handleChange}
+                          onFocus={field.onFocus}
+                          placeholder={field.placeholder}
+                          rows={field.rows}
+                        />
+                      ) : (
+                        <Input
+                          id={field.name}
+                          name={field.name}
+                          type={field.type}
+                          value={values[field.name]}
+                          onChange={handleChange}
+                          onFocus={field.onFocus}
+                          placeholder={field.placeholder}
+                        />
+                      )}
+                      <ErrorMessage name={field.name} component="p" className="text-sm text-red-500" />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-end space-x-4 pt-6 border-t">
+                  <Button type="button" variant="outline" onClick={onCancel}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="btn-primary" disabled={isLoading || isSubmitting}>
+                    {isLoading || isSubmitting ? submitLabel + "..." : submitLabel}
+                  </Button>
+                </div>
+              </Form>
             )
           }}
         </Formik>

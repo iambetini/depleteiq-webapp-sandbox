@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MapPin } from "lucide-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 // Google Places API types
 interface PlaceResult {
@@ -73,15 +73,15 @@ export function GooglePlacesAutocomplete({
   // Parse Google Places API result into our location format
   const parsePlaceResult = useCallback((place: PlaceResult): ParsedLocation => {
     const components = place.address_components;
-    
+
     // Extract coordinates - they might be functions or properties
-    const lat = typeof place.geometry.location.lat === 'function' 
-      ? place.geometry.location.lat() 
+    const lat = typeof place.geometry.location.lat === 'function'
+      ? place.geometry.location.lat()
       : place.geometry.location.lat;
-    const lng = typeof place.geometry.location.lng === 'function' 
-      ? place.geometry.location.lng() 
+    const lng = typeof place.geometry.location.lng === 'function'
+      ? place.geometry.location.lng()
       : place.geometry.location.lng;
-    
+
     // Initialize with empty values
     const parsed: ParsedLocation = {
       street: "",
@@ -98,7 +98,7 @@ export function GooglePlacesAutocomplete({
     // Parse address components
     components.forEach((component) => {
       const types = component.types;
-      
+
       if (types.includes("street_number") || types.includes("route")) {
         parsed.street = parsed.street ? `${parsed.street} ${component.long_name}` : component.long_name;
       } else if (types.includes("locality")) {
@@ -165,19 +165,19 @@ export function GooglePlacesAutocomplete({
       // Listen for place selection
       autocompleteInstanceRef.current.addListener("place_changed", () => {
         const place = autocompleteInstanceRef.current.getPlace();
-        
+
         if (place.place_id) {
           setIsLoading(true);
           try {
             const parsedLocation = parsePlaceResult(place);
-            
+
             // Ensure coordinates are numbers, not strings
             const finalLocation = {
               ...parsedLocation,
               latitude: typeof parsedLocation.latitude === 'string' ? parseFloat(parsedLocation.latitude) : parsedLocation.latitude,
               longitude: typeof parsedLocation.longitude === 'string' ? parseFloat(parsedLocation.longitude) : parsedLocation.longitude,
             };
-            
+
             // Clear the input after selection to show it was successful
             setInputValue("");
             onLocationSelect(finalLocation);

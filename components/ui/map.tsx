@@ -82,7 +82,7 @@ export function Map({ latitude, longitude, title, className = "", height = "400p
   // Fallback for when Google Maps API is not loaded
   if (typeof google === 'undefined' || !google.maps) {
     return (
-      <div 
+      <div
         className={`bg-gray-100 border border-gray-300 rounded-lg flex items-center justify-center ${className}`}
         style={{ height }}
       >
@@ -96,7 +96,7 @@ export function Map({ latitude, longitude, title, className = "", height = "400p
   }
 
   return (
-    <div 
+    <div
       ref={mapRef}
       className={`rounded-lg overflow-hidden border border-gray-200 ${className}`}
       style={{ height }}

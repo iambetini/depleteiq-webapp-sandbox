@@ -1,27 +1,27 @@
 "use client";
 
-import React, { useCallback, useRef, useState } from 'react';
-import Image from 'next/image';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import {
-  Upload,
-  X,
-  File,
-  Image as ImageIcon,
-  FileText,
-  Download,
-  Trash2,
-  RefreshCw,
-  CheckCircle,
-  AlertCircle,
-  CloudUpload
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useFileUpload, FileUploadConfig } from '@/hooks/use-file-upload';
+import { FileUploadConfig, useFileUpload } from '@/hooks/use-file-upload';
 import { UploadResult } from '@/lib/storage/storage-provider';
+import { cn } from '@/lib/utils';
+import {
+  AlertCircle,
+  CheckCircle,
+  CloudUpload,
+  Download,
+  File,
+  FileText,
+  Image as ImageIcon,
+  RefreshCw,
+  Trash2,
+  Upload,
+  X
+} from 'lucide-react';
+import Image from 'next/image';
+import React, { useCallback, useRef, useState } from 'react';
 
 interface FileUploadProps {
   config?: Partial<FileUploadConfig>;
@@ -66,7 +66,7 @@ export function FileUpload({
 }: FileUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
-  
+
   const {
     files,
     uploadedFiles,
@@ -93,13 +93,13 @@ export function FileUpload({
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    
+
     const droppedFiles = Array.from(e.dataTransfer.files);
     if (droppedFiles.length > maxFiles) {
       onUploadError?.(`Maximum ${maxFiles} files allowed`);
       return;
     }
-    
+
     addFiles(droppedFiles);
   }, [addFiles, maxFiles, onUploadError]);
 
@@ -109,7 +109,7 @@ export function FileUpload({
       onUploadError?.(`Maximum ${maxFiles} files allowed`);
       return;
     }
-    
+
     addFiles(selectedFiles);
     // Reset input value to allow selecting the same file again
     if (fileInputRef.current) {
@@ -166,7 +166,7 @@ export function FileUpload({
               {isDragOver ? "Drop files here" : "Choose files to upload"}
             </p>
             <p className="text-sm text-gray-500 mb-4">
-              {config.allowedTypes?.join(', ') || 'Any file type'} • 
+              {config.allowedTypes?.join(', ') || 'Any file type'} •
               Max {formatFileSize(config.maxFileSize || 10 * 1024 * 1024)}
             </p>
             <Button
@@ -255,12 +255,12 @@ export function FileUpload({
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
                     {showProgress && uploadProgress[index.toString()] !== undefined && (
                       <div className="w-20">
-                        <Progress 
-                          value={uploadProgress[index.toString()]} 
+                        <Progress
+                          value={uploadProgress[index.toString()]}
                           className="h-2"
                         />
                       </div>
@@ -303,7 +303,7 @@ export function FileUpload({
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
                     <Button
                       variant="outline"

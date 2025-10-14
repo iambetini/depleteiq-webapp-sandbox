@@ -1,15 +1,15 @@
 // File: lib/storage/storage-factory.ts
 
-import { StorageProvider, StorageConfig } from "./storage-provider";
+import { LocalConfig, LocalProvider } from "./local-provider";
 import {
-  AwsS3Provider,
-  AwsS3ProxyProvider,
   AwsS3Config,
+  AwsS3Provider,
   AwsS3ProxyConfig,
+  AwsS3ProxyProvider,
 } from "./providers/aws";
-import { AzureBlobProvider, AzureBlobConfig } from "./providers/azure";
-import { CloudinaryProvider, CloudinaryConfig } from "./providers/cloudinary";
-import { LocalProvider, LocalConfig } from "./local-provider";
+import { AzureBlobConfig, AzureBlobProvider } from "./providers/azure";
+import { CloudinaryConfig, CloudinaryProvider } from "./providers/cloudinary";
+import { StorageConfig, StorageProvider } from "./storage-provider";
 
 export type StorageProviderType =
   | "aws-s3"

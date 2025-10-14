@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { useEffect, useRef } from "react";
 
 interface LocationMapProps {
   latitude: number | string;
@@ -11,12 +11,12 @@ interface LocationMapProps {
   height?: string;
 }
 
-export function LocationMap({ 
-  latitude, 
-  longitude, 
-  address, 
+export function LocationMap({
+  latitude,
+  longitude,
+  address,
   className,
-  height = "300px" 
+  height = "300px"
 }: LocationMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -25,8 +25,8 @@ export function LocationMap({
   // Convert to numbers and validate
   const latNum = Number(latitude);
   const lngNum = Number(longitude);
-  const isValidCoords = !isNaN(latNum) && !isNaN(lngNum) && 
-    latNum >= -90 && latNum <= 90 && 
+  const isValidCoords = !isNaN(latNum) && !isNaN(lngNum) &&
+    latNum >= -90 && latNum <= 90 &&
     lngNum >= -180 && lngNum <= 180;
 
 
@@ -96,7 +96,7 @@ export function LocationMap({
 
   if (!isValidCoords) {
     return (
-      <div 
+      <div
         className={cn(
           "flex items-center justify-center bg-gray-100 border border-gray-200 rounded-lg",
           className
