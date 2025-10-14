@@ -10,7 +10,7 @@ import { useGetDashboardQuery } from "@/store/dashboard-api";
 import { RevenueWithDay } from "@/types/dashboard";
 import { Package, ShoppingCart } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useOrderColumns } from "@/hooks/useOrderColumns";
@@ -32,19 +32,29 @@ export default function DashboardPage() {
   const dataTableRef = useRef<{ refresh: () => void }>(null)
   const [periodType, setPeriodType] = useState('');
   const { columns } = useOrderColumns();
+  // Memoized callback for period type update
+  const updatePeriodType = useCallback((period_type: string) => {
+    const formattedType = formatLabelToTitleCase(
+      ['week', 'month', 'quarter'].includes(period_type) 
+        ? `${period_type}ly` 
+        : period_type
+    );
+    setPeriodType(formattedType);
+  }, []);
+
   const sortedRevenue: RevenueWithDay[] = useMemo(() => {
-    if (!dashboardData || !dashboardData.revenue) return [];
+    if (!dashboardData?.revenue) return [];
+    
     const { labels = [], data = [], period_type } = dashboardData.revenue;
-    setPeriodType(formatLabelToTitleCase(['week', 'month', 'quarter'].includes(period_type) ? `${period_type}ly` : period_type));
-    return labels.map((label, idx) => {
-      return {
-        date: label,
-        total: typeof data[idx] === "string" ? Number(data[idx]) : data[idx] ?? 0,
-        dayOfWeek: label.slice(0, 3),
-        formattedDate: label,
-      };
-    });
-  }, [dashboardData]);
+    updatePeriodType(period_type);
+    
+    return labels.map((label, idx) => ({
+      date: label,
+      total: typeof data[idx] === "string" ? Number(data[idx]) : data[idx] ?? 0,
+      dayOfWeek: label.slice(0, 3),
+      formattedDate: label,
+    }));
+  }, [dashboardData, updatePeriodType]);
 
   if (isLoading) {
     return (
