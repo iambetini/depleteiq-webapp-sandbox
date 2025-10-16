@@ -153,12 +153,33 @@ const columns: ColumnDef<unknown, unknown>[] = [
         },
     },
     {
-        accessorKey: "status",
-        header: "Status",
+        accessorKey: "created_approved_lead_time",
+        header: "CA Lead Time",
         width: 150,
+        showByDefault: true,
         cell: ({ row }) => {
             const delivery = row.original as Delivery;
-            return <StatusBadge status={delivery.status} />;
+            return <span>{delivery.created_approved_lead_time || "-"}</span>;
+        },
+    },
+    {
+        accessorKey: "approved_delivered_lead_time",
+        header: "AD Lead Time",
+        width: 150,
+        showByDefault: true,
+        cell: ({ row }) => {
+            const delivery = row.original as Delivery;
+            return <span>{delivery.approved_delivered_lead_time || "-"}</span>;
+        },
+    },
+    {
+        accessorKey: "overall_lead_time",
+        header: "Overall Lead Time",
+        width: 160,
+        showByDefault: true,
+        cell: ({ row }) => {
+            const delivery = row.original as Delivery;
+            return <span>{delivery.overall_lead_time || "-"}</span>;
         },
     },
     {
@@ -170,7 +191,7 @@ const columns: ColumnDef<unknown, unknown>[] = [
             const delivery = row.original as Delivery;
             return <span>{delivery.created_at ? new Date(delivery.created_at).toLocaleString() : "-"}</span>;
         },
-    },
+    }
 ];
 
 export default function DeliveryReportsPage() {

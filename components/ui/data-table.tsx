@@ -73,6 +73,7 @@ interface DataTableProps<TData, TValue> {
   fixedQuery?: Record<string, any>; // Query string parameters
   extraPath?: string; // Extra path for reports store
   customExportFn?: (data: TData[], table: any, exportFileName: string, scope: "current_page" | "all") => void;
+  initialSorting?: SortingState; // Initial sorting state
 }
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
@@ -182,10 +183,11 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     fixedQuery = {},
     extraPath,
     customExportFn,
+    initialSorting,
   }: DataTableProps<TData, TValue>,
   ref: React.Ref<{ refresh: () => void }>
 ) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>(initialSorting || []);
   const [paginationInput, setPaginationInput] = React.useState("");
   const [paginationError, setPaginationError] = React.useState("");
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
