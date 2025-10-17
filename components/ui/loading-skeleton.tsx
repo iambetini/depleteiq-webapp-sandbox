@@ -4,10 +4,10 @@ interface LoadingSkeletonProps {
   className?: string;
 }
 
-export function LoadingSkeleton({ 
-  title = true, 
-  content = true, 
-  className = "" 
+export function LoadingSkeleton({
+  title = true,
+  content = true,
+  className = ""
 }: LoadingSkeletonProps) {
   return (
     <div className={className}>

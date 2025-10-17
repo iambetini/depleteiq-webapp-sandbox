@@ -10,7 +10,10 @@ export interface User {
   email: string;
   phone: string;
   role: Role;
-  market: Market;
+  market: Market | null;
   status: string;
+  email_verified_at: string | null;
+  is_active: boolean;
+  has_distributor: boolean;
   created_at: string;
 }

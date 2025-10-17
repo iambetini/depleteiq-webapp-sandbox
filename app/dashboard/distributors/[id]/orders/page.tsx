@@ -14,7 +14,7 @@ export default function DistributorOrdersPage() {
   const routeParams = useParams();
   const distributorId = routeParams?.id as string;
   const user = session?.user;
-  const role = user?.role;
+  const role = user?.role?.name;
   const urlParams = React.useMemo(() => ({ id: distributorId, }), [distributorId]);
   const fixedQuery = React.useMemo(() => {
     const query: Record<string, any> = {};

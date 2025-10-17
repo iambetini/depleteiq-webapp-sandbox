@@ -1,6 +1,6 @@
-import { User } from "./user";
 import { Location } from "./location";
 import { Market } from "./market";
+import { User } from "./user";
 
 export interface Distributor {
   id: string;

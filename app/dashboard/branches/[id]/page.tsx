@@ -13,7 +13,7 @@ export default function BranchDetailPage() {
 
   if (!branch) { return null; }
 
-  const userRole = user?.role?.toLowerCase() || "";
+  const userRole = user?.role?.name?.toLowerCase() || "";
   const latNum = Number(branch?.location?.latitude) || undefined;
   const lngNum = Number(branch?.location?.longitude) || undefined;
 

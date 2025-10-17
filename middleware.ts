@@ -1,109 +1,60 @@
+import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import {
+  hasRequiredPermissions,
+  getUserPermissions,
+  getPermissionsForPath,
+} from "@/lib/route-permissions";
 
-export async function middleware(request: NextRequest) {
-  // Check if the request is for a dashboard route
-  const requestUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
-  if (request.nextUrl.pathname.startsWith("/dashboard")) {
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
+export default withAuth(
+  function middleware(req) {
+    const { token } = req.nextauth;
+    const { pathname } = req.nextUrl;
 
-    // If no token, redirect to login
-    if (!token) {
-      const loginUrl = new URL("/auth/login", requestUrl);
-      loginUrl.searchParams.set("callbackUrl", requestUrl);
-      return NextResponse.redirect(loginUrl);
+    // Redirect authenticated users away from login page
+    if (pathname === "/auth/login" && token) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 
-    // Role-based access control
-    let role = "";
-    if (
-      typeof token?.user === "object" &&
-      token.user &&
-      "role" in token.user &&
-      typeof token.user.role === "string"
-    ) {
-      role = token.user.role.toLowerCase();
-    } else if (typeof token?.role === "string") {
-      role = token.role.toLowerCase();
+    // Skip permission checks for no-permissions page to avoid redirect loops
+    if (pathname === "/dashboard/no-permissions") {
+      return NextResponse.next();
     }
-    const pathname = request.nextUrl.pathname;
 
-    // Route to allowed roles mapping
-    const routeRoles = [
-      { pattern: /^\/dashboard$/, roles: ["everybody"] },
-      { pattern: /^\/dashboard\/orders(\/.*)?$/, roles: ["everybody"] },
-      {
-        pattern: /^\/dashboard\/distributors(\/.*)?$/,
-        roles: ["super-admin", "system-admin", "operations"],
-      },
-      {
-        pattern: /^\/dashboard\/ime-vss(\/.*)?$/,
-        roles: ["super-admin", "system-admin", "operations"],
-      },
-      { pattern: /^\/dashboard\/users(\/.*)?$/, roles: ["super-admin"] },
-      {
-        pattern: /^\/dashboard\/branches(\/.*)?$/,
-        roles: ["super-admin", "system-admin", "operations"],
-      },
-      {
-        pattern: /^\/dashboard\/brands(\/.*)?$/,
-        roles: ["super-admin", "system-admin", "operations"],
-      },
-      {
-        pattern: /^\/dashboard\/markets(\/.*)?$/,
-        roles: ["super-admin", "system-admin", "operations"],
-      },
-      {
-        pattern: /^\/dashboard\/locations(\/.*)?$/,
-        roles: ["super-admin", "system-admin", "operations"],
-      },
-      {
-        pattern: /^\/dashboard\/deliveries(\/.*)?$/,
-        roles: ["super-admin", "system-admin", "operations"],
-      },
-      {
-        pattern: /^\/dashboard\/vehicles(\/.*)?$/,
-        roles: ["super-admin", "system-admin", "operations"],
-      },
-      {
-        pattern: /^\/dashboard\/warehouses(\/.*)?$/,
-        roles: ["super-admin", "system-admin", "operations"],
-      },
-      { pattern: /^\/dashboard\/roles(\/.*)?$/, roles: ["super-admin"] },
-      { pattern: /^\/dashboard\/reports(\/.*)?$/, roles: ["everybody"] },
-      { pattern: /^\/dashboard\/settings(\/.*)?$/, roles: ["everybody"] },
-    ];
+    // Only check permissions for dashboard routes
+    if (pathname.startsWith("/dashboard")) {
+      const userPermissions = getUserPermissions(token?.user);
 
-    const matched = routeRoles.find((r) => r.pattern.test(pathname));
-    if (matched) {
-      if (
-        !(matched.roles.includes("everybody") || matched.roles.includes(role))
-      ) {
-        // Redirect to dashboard if not authorized
-        return NextResponse.redirect(new URL("/dashboard", requestUrl));
+      // If user has no permissions at all, redirect to no-permissions page
+      if (userPermissions.length === 0) {
+        return NextResponse.redirect(
+          new URL("/dashboard/no-permissions", req.url),
+        );
+      }
+
+      // For users with permissions, check if they have required permissions
+      const requiredPermissions = getPermissionsForPath(pathname);
+      if (!hasRequiredPermissions(userPermissions, requiredPermissions)) {
+        return NextResponse.redirect(
+          new URL("/dashboard/no-permissions", req.url),
+        );
       }
     }
-  }
 
-  // If accessing login page while authenticated, redirect to dashboard
-  if (request.nextUrl.pathname === "/auth/login") {
-    const token = await getToken({
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
+    return NextResponse.next();
+  },
+  {
+    callbacks: {
+      authorized: ({ token, req }) => {
+        // Require authentication for dashboard routes
+        if (req.nextUrl.pathname.startsWith("/dashboard")) return !!token;
 
-    if (token) {
-      return NextResponse.redirect(new URL("/dashboard", requestUrl));
-    }
-  }
-
-  return NextResponse.next();
-}
+        return true;
+      },
+    },
+  },
+);
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/auth/login"],
+  matcher: ["/dashboard/:path*", "/auth/:path*"],
 };

@@ -1,15 +1,15 @@
 "use client"
 
+import { Button } from "@/components/ui/button"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
 import { Input } from "@/components/ui/input"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
+import { storeApis } from "@/store"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { Check, ChevronDown, ChevronUp } from "lucide-react"
 import * as React from "react"
 import { useEffect, useState } from "react"
-import { storeApis } from "@/store"
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
-import { Button } from "@/components/ui/button"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 interface SelectWithFetchProps<T = any> {
   fetchUrl?: string
@@ -446,7 +446,7 @@ function CommandWithFetch<T = any>({
 
   // Find selected item for display
   const selectedItem = finalOptions.find((item: any) => getNestedValue(item, valueKey) === value)
-  const displayValue = selectedItem 
+  const displayValue = selectedItem
     ? (labelFormatter ? labelFormatter(selectedItem) : getNestedValue(selectedItem, labelKey))
     : placeholder
 
@@ -523,6 +523,4 @@ function CommandWithFetch<T = any>({
   )
 }
 
-export {
-  Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue, SelectWithFetch, CommandWithFetch
-}
+export { CommandWithFetch, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue, SelectWithFetch }

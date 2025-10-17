@@ -30,13 +30,8 @@ export const authOptions: NextAuthOptions = {
               throw new Error("You're not allowed to login");
             }
             return {
-              id: user.id,
-              uuid: user.uuid,
-              email: user.email,
+              ...user,
               name: `${user.first_name} ${user.last_name}`,
-              first_name: user.first_name,
-              last_name: user.last_name,
-              role: user.role?.name || "",
               accessToken: token,
             };
           } else {
@@ -52,23 +47,33 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.accessToken = user.accessToken;
-        token.role = user.role;
-        token.uuid = user.uuid;
-        token.first_name = user.first_name;
-        token.last_name = user.last_name;
+        // Remove UUID from permissions items
+        if (user.role?.permissions) {
+          user.role.permissions = user.role.permissions.map(
+            (permission: any) => {
+              const { uuid, ...permissionWithoutUuid } = permission;
+              return permissionWithoutUuid;
+            },
+          );
+        }
+
+        const { accessToken, ...userWithoutToken } = user as any;
+        Object.assign(token, { user: userWithoutToken, accessToken });
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
-        session.accessToken = token.accessToken as string;
-        session.user.role = token.role as string;
-        session.user.uuid = token.uuid as string;
-        session.user.first_name = token.first_name as string;
-        session.user.last_name = token.last_name as string;
+        Object.assign(session, {
+          user: token.user,
+          accessToken: token.accessToken,
+        });
       }
       return session;
+    },
+    async signIn({ user, account, profile }) {
+      // Allow sign in for all users - role checking will be done in components
+      return true;
     },
   },
   pages: {

@@ -9,8 +9,8 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { apiClient } from "@/lib/api-client";
 import { ErrorMessage, Form, Formik } from "formik";
-import { Save, Plus } from "lucide-react";
-import { useEffect, useState, forwardRef, useImperativeHandle, useRef } from "react";
+import { Plus, Save } from "lucide-react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 
 type FieldType =
   | "text"
@@ -128,170 +128,170 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
           {({ values, handleChange, setFieldValue, isSubmitting }) => {
             // Store the setFieldValue function for external access
             setFieldValueRef.current = setFieldValue
-            
+
             return (
-            <Form className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {fields
-                  .filter(field => field.type !== "switch" && field.type !== "checkbox")
-                  .map((field, idx) => {
-                    if (field.type === "textarea") {
+              <Form className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {fields
+                    .filter(field => field.type !== "switch" && field.type !== "checkbox")
+                    .map((field, idx) => {
+                      if (field.type === "textarea") {
+                        return (
+                          <div className="space-y-2 md:col-span-2" key={field.name}>
+                            <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>
+                            <Textarea
+                              id={field.name}
+                              name={field.name}
+                              value={values[field.name]}
+                              onChange={handleChange}
+                              onFocus={field.onFocus}
+                              placeholder={field.placeholder}
+                              rows={field.rows || 3}
+                            />
+                            <ErrorMessage name={field.name} component="p" className="text-sm text-red-500" />
+                          </div>
+                        )
+                      }
+                      if (field.type === "select") {
+                        return (
+                          <div className="space-y-2" key={field.name}>
+                            <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>
+                            <Select
+                              value={values[field.name]}
+                              onValueChange={value => setFieldValue(field.name, value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder={field.placeholder} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {field.options?.map(option => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <ErrorMessage name={field.name} component="p" className="text-sm text-red-500" />
+                          </div>
+                        )
+                      }
+                      if (field.type === "selectWithFetch") {
+                        return (
+                          <div className="space-y-2" key={field.name}>
+                            <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>
+                            <SelectWithFetch
+                              fetchUrl={field.fetchUrl}
+                              store={field.store as any}
+                              value={values[field.name]}
+                              onChange={uuid => setFieldValue(field.name, uuid)}
+                              valueKey={field.valueKey}
+                              labelKey={field.labelKey}
+                              labelFormatter={field.labelFormatter}
+                              initialSearch={field.initialSearch}
+                              placeholder={field.placeholder}
+                              params={field.params}
+                            />
+                            <ErrorMessage name={field.name} component="p" className="text-sm text-red-500" />
+                          </div>
+                        )
+                      }
+                      if (field.type === "selectWithFetchAndCreate") {
+                        return (
+                          <div className="space-y-2" key={field.name}>
+                            <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>
+                            <div className="flex gap-2">
+                              <div className="flex-1">
+                                <SelectWithFetch
+                                  fetchUrl={field.fetchUrl}
+                                  store={field.store as any}
+                                  value={values[field.name]}
+                                  onChange={uuid => setFieldValue(field.name, uuid)}
+                                  valueKey={field.valueKey}
+                                  labelKey={field.labelKey}
+                                  labelFormatter={field.labelFormatter}
+                                  initialSearch={field.initialSearch}
+                                  placeholder={field.placeholder}
+                                  params={field.params}
+                                />
+                              </div>
+                              {field.onCreateNew && (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={field.onCreateNew}
+                                  className="px-3"
+                                >
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  {field.createButtonText || "Create"}
+                                </Button>
+                              )}
+                            </div>
+                            <ErrorMessage name={field.name} component="p" className="text-sm text-red-500" />
+                          </div>
+                        )
+                      }
+                      // Default: text, email, password
                       return (
-                        <div className="space-y-2 md:col-span-2" key={field.name}>
+                        <div className="space-y-2" key={field.name}>
                           <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>
-                          <Textarea
+                          <Input
                             id={field.name}
                             name={field.name}
+                            type={field.type}
                             value={values[field.name]}
                             onChange={handleChange}
-                            onFocus={field.onFocus}
                             placeholder={field.placeholder}
-                            rows={field.rows || 3}
                           />
                           <ErrorMessage name={field.name} component="p" className="text-sm text-red-500" />
                         </div>
                       )
-                    }
-                    if (field.type === "select") {
+                    })}
+                </div>
+                {/* Render switch/checkbox fields on a separate row */}
+                {fields
+                  .filter(field => field.type === "switch" || field.type === "checkbox")
+                  .map(field => {
+                    if (field.type === "switch") {
                       return (
-                        <div className="space-y-2" key={field.name}>
-                          <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>
-                          <Select
-                            value={values[field.name]}
-                            onValueChange={value => setFieldValue(field.name, value)}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder={field.placeholder} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {field.options?.map(option => (
-                                <SelectItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <ErrorMessage name={field.name} component="p" className="text-sm text-red-500" />
-                        </div>
-                      )
-                    }
-                    if (field.type === "selectWithFetch") {
-                      return (
-                        <div className="space-y-2" key={field.name}>
-                          <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>
-                          <SelectWithFetch
-                            fetchUrl={field.fetchUrl}
-                            store={field.store as any}
-                            value={values[field.name]}
-                            onChange={uuid => setFieldValue(field.name, uuid)}
-                            valueKey={field.valueKey}
-                            labelKey={field.labelKey}
-                            labelFormatter={field.labelFormatter}
-                            initialSearch={field.initialSearch}
-                            placeholder={field.placeholder}
-                            params={field.params}
+                        <div className="flex items-center space-x-2 mt-4" key={field.name}>
+                          <Switch
+                            id={field.name}
+                            checked={values[field.name]}
+                            onCheckedChange={checked => setFieldValue(field.name, checked)}
                           />
-                          <ErrorMessage name={field.name} component="p" className="text-sm text-red-500" />
+                          <Label htmlFor={field.name}>{field.label}</Label>
                         </div>
                       )
                     }
-                    if (field.type === "selectWithFetchAndCreate") {
+                    if (field.type === "checkbox") {
                       return (
-                        <div className="space-y-2" key={field.name}>
-                          <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>
-                          <div className="flex gap-2">
-                            <div className="flex-1">
-                              <SelectWithFetch
-                                fetchUrl={field.fetchUrl}
-                                store={field.store as any}
-                                value={values[field.name]}
-                                onChange={uuid => setFieldValue(field.name, uuid)}
-                                valueKey={field.valueKey}
-                                labelKey={field.labelKey}
-                                labelFormatter={field.labelFormatter}
-                                initialSearch={field.initialSearch}
-                                placeholder={field.placeholder}
-                                params={field.params}
-                              />
-                            </div>
-                            {field.onCreateNew && (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={field.onCreateNew}
-                                className="px-3"
-                              >
-                                <Plus className="h-4 w-4 mr-1" />
-                                {field.createButtonText || "Create"}
-                              </Button>
-                            )}
-                          </div>
-                          <ErrorMessage name={field.name} component="p" className="text-sm text-red-500" />
+                        <div className="flex items-center space-x-2 mt-4" key={field.name}>
+                          <input
+                            id={field.name}
+                            name={field.name}
+                            type="checkbox"
+                            checked={values[field.name]}
+                            onChange={handleChange}
+                            className="h-4 w-4"
+                            aria-label={field.label}
+                          />
+                          <Label htmlFor={field.name}>{field.label}</Label>
                         </div>
                       )
                     }
-                    // Default: text, email, password
-                    return (
-                      <div className="space-y-2" key={field.name}>
-                        <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>
-                        <Input
-                          id={field.name}
-                          name={field.name}
-                          type={field.type}
-                          value={values[field.name]}
-                          onChange={handleChange}
-                          placeholder={field.placeholder}
-                        />
-                        <ErrorMessage name={field.name} component="p" className="text-sm text-red-500" />
-                      </div>
-                    )
+                    return null
                   })}
-              </div>
-              {/* Render switch/checkbox fields on a separate row */}
-              {fields
-                .filter(field => field.type === "switch" || field.type === "checkbox")
-                .map(field => {
-                  if (field.type === "switch") {
-                    return (
-                      <div className="flex items-center space-x-2 mt-4" key={field.name}>
-                        <Switch
-                          id={field.name}
-                          checked={values[field.name]}
-                          onCheckedChange={checked => setFieldValue(field.name, checked)}
-                        />
-                        <Label htmlFor={field.name}>{field.label}</Label>
-                      </div>
-                    )
-                  }
-                  if (field.type === "checkbox") {
-                    return (
-                      <div className="flex items-center space-x-2 mt-4" key={field.name}>
-                        <input
-                          id={field.name}
-                          name={field.name}
-                          type="checkbox"
-                          checked={values[field.name]}
-                          onChange={handleChange}
-                          className="h-4 w-4"
-                          aria-label={field.label}
-                        />
-                        <Label htmlFor={field.name}>{field.label}</Label>
-                      </div>
-                    )
-                  }
-                  return null
-                })}
-              <div className="flex items-center justify-end space-x-4 pt-6 border-t">
-                <Button type="button" variant="outline" onClick={onCancel}>
-                  Cancel
-                </Button>
-                <Button type="submit" className="btn-primary" disabled={isLoading || isSubmitting}>
-                  <Save className="mr-2 h-4 w-4" />
-                  {isLoading || isSubmitting ? "Creating..." : submitLabel}
-                </Button>
-              </div>
-            </Form>
+                <div className="flex items-center justify-end space-x-4 pt-6 border-t">
+                  <Button type="button" variant="outline" onClick={onCancel}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" className="btn-primary" disabled={isLoading || isSubmitting}>
+                    <Save className="mr-2 h-4 w-4" />
+                    {isLoading || isSubmitting ? "Creating..." : submitLabel}
+                  </Button>
+                </div>
+              </Form>
             )
           }}
         </Formik>

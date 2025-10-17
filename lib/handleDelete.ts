@@ -1,18 +1,6 @@
 import { toast } from "@/hooks/use-toast";
 import { store, storeApis } from "@/store/index";
 
-interface HandleDeleteOptions {
-  storeName: string;
-  entityLabel?: string;
-  onSuccess?: () => void;
-  onError?: () => void;
-  confirmMessage?: string;
-  confirmTitle?: string;
-  confirmText?: string;
-  cancelText?: string;
-  useModal?: boolean;
-}
-
 // Global reference to the modal context
 let globalDeleteModal: {
   showDeleteModal: (config: any) => void;

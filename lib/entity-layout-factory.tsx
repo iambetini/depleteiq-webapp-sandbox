@@ -34,7 +34,7 @@ export function createEntityLayout<T>({
       throw new Error(`Unknown store: ${storeName}`);
     }
     finalUseGetQuery = store.useGetByIdQuery as any;
-    
+
     // Get entity name from the store if not explicitly provided
     if (!entityName && (store as any).entityName) {
       finalEntityName = (store as any).entityName;
@@ -58,7 +58,7 @@ export function createEntityLayout<T>({
 
   const providerKey = `${finalEntityName}Provider`;
   const contextKey = `use${finalEntityName}Context`;
-  
+
   const Provider = (contextResult as any)[providerKey];
   const useEntityContext = (contextResult as any)[contextKey];
 

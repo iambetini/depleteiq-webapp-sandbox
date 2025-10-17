@@ -1,7 +1,7 @@
 "use client"
 
-import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from "react"
 import { ConfirmationModal } from "@/components/ui/confirmation-modal"
+import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react"
 import { setGlobalDeleteModal } from "./handleDelete"
 
 interface DeleteModalState {

@@ -3,13 +3,7 @@
  * These can be reused across different forms and components
  */
 
-export interface User {
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-  name?: string;
-  uuid: string;
-}
+import { User } from "@/types/user";
 
 export interface BaseEntity {
   name?: string;
@@ -35,7 +29,7 @@ export const userFullNameFormatter = (user: User): string => {
   const firstName = user.first_name || "";
   const lastName = user.last_name || "";
   const fullName = `${firstName} ${lastName}`.trim();
-  return fullName || user.email || user.name || "";
+  return fullName || user.full_name || user.email || "";
 };
 
 /**
