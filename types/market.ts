@@ -18,4 +18,5 @@ export interface Market {
   warehouse_id?: string;
   warehouse: Warehouse;
   created_at: string;
+  branch:string;
 }
