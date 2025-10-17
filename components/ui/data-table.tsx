@@ -272,8 +272,8 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
       const items = resp?.data?.items ?? [];
       tableData = items as TData[];
       const pagination = resp?.meta?.pagination;
-      total = Number(pagination?.total) ?? tableData.length;
-      pageCount = Number(pagination?.last_page) || 1;
+      total = pagination?.total ? Number(pagination.total) : tableData.length;
+      pageCount = pagination?.last_page ? Number(pagination.last_page) : 1;
     }
     loading = storeQuery.isLoading || storeQuery.isFetching;
   } else {
