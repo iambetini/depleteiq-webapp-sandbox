@@ -292,11 +292,6 @@ export const routePermissions: RoutePermission[] = [
     pattern: /^\/dashboard\/target\/\d+\/manage$/,
     permissions: ["edit targets"],
   },
-  {
-    href: "/dashboard/target/[id]/update",
-    pattern: /^\/dashboard\/target\/\d+\/update$/,
-    permissions: ["edit targets"],
-  },
 
   // Users
   {
