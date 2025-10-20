@@ -276,6 +276,28 @@ export const routePermissions: RoutePermission[] = [
     permissions: ["view dashboard"],
   },
 
+  // Targets
+  {
+    href: "/dashboard/target",
+    pattern: /^\/dashboard\/target$/,
+    permissions: ["view targets"],
+  },
+  {
+    href: "/dashboard/target/[id]",
+    pattern: /^\/dashboard\/target\/\d+$/,
+    permissions: ["view targets"],
+  },
+  {
+    href: "/dashboard/target/[id]/manage",
+    pattern: /^\/dashboard\/target\/\d+\/manage$/,
+    permissions: ["edit targets"],
+  },
+  {
+    href: "/dashboard/target/[id]/update",
+    pattern: /^\/dashboard\/target\/\d+\/update$/,
+    permissions: ["edit targets"],
+  },
+
   // Users
   {
     href: "/dashboard/users",
