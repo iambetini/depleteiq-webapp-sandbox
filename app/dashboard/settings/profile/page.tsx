@@ -10,9 +10,9 @@ export default function ProfileSettingsPage() {
   const { data: session } = useSession()
 
   const roleDisplay = useMemo(() => {
-    const r = session?.user?.role || ""
+    const r = session?.user?.role?.name || ""
     return r ? r.charAt(0).toUpperCase() + r.slice(1).toLowerCase() : "Unknown"
-  }, [session?.user?.role])
+  }, [session?.user?.role?.name])
 
   if (!session?.user) {
     return (

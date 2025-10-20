@@ -30,7 +30,6 @@ function EntityLayoutContent({ children, entityType, tabs }: EntityLayoutProps) 
   const distributorData = useDistributorData(entityType === 'distributor')
   const imeVssData = useImeVssData(entityType === 'ime-vss')
   const targetData = useTargetData(entityType === 'target')
-  
   // Select the appropriate data based on entity type
   const { entity, isLoading, error } = 
     entityType === 'distributor' ? distributorData : 

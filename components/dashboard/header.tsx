@@ -3,12 +3,12 @@
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import Logo from "@/images/orbit-logo.png"
@@ -47,8 +47,8 @@ export function DashboardHeader() {
                   <User className="h-4 w-4 text-white" />
                 </div>
                 <div className="text-left">
-                  <p className="text-sm font-medium text-[#444444]">{session?.user?.name || "User"}</p>
-                  <Badge variant="info" className="text-xs">{session?.user?.role ? session.user.role?.charAt(0).toUpperCase() + session.user.role.slice(1).toLowerCase()
+                  <p className="text-sm font-medium text-[#444444]">{session?.user?.full_name || "User"}</p>
+                  <Badge variant="info" className="text-xs">{session?.user?.role ? session.user.role?.name?.charAt(0).toUpperCase() + session.user.role?.name?.slice(1).toLowerCase()
                     : ""}</Badge>
                 </div>
               </Button>

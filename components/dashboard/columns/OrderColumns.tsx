@@ -87,7 +87,7 @@ const ActionsCell = React.memo(({
   actionHandlers: any
   currentPath: string
 }) => {
-  const userRole = session?.user?.role?.toLowerCase() || ""
+  const userRole = session?.user?.role?.name?.toLowerCase() || ""
   const { handleConfirmPayment, handleConfirmOrder } = actionHandlers
   const order = row.original
   const canConfirmPayment = AUTHORIZED_ROLES.includes(userRole as any) && order.status === "pending"

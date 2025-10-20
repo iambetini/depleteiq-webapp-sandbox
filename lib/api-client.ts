@@ -145,6 +145,9 @@ class ApiClient {
     const showToast = config.showToast !== false;
     if (!showToast) return;
 
+    // Only show toast on client side
+    if (typeof window === "undefined") return;
+
     if (Array.isArray(errors) && errors.length > 0) {
       showError(formatErrorMessages(errors), "Error");
     } else {

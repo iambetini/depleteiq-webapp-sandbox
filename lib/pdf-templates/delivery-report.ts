@@ -1,5 +1,5 @@
-import jsPDF from "jspdf";
 import type { Delivery } from "@/types/delivery";
+import jsPDF from "jspdf";
 import { loadPublicImageAsBase64 } from "./image-utils";
 
 interface DeliveryReportOptions {

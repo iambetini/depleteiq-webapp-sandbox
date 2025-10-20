@@ -67,7 +67,7 @@ import { userFullNameEmailFormatter } from "@/lib/label-formatters"
 ## Usage with Initial Search
 
 ```tsx
-import { SelectWithFetch } from "@/components/ui/select"
+import { SelectWithFetch } from "@/components/ui/select";
 
 <SelectWithFetch
   fetchUrl="/api/users"
@@ -76,25 +76,25 @@ import { SelectWithFetch } from "@/components/ui/select"
   initialSearch="john"
   searchParam="search"
   placeholder="Select a user..."
-/>
+/>;
 ```
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `store` | `keyof typeof storeApis` | - | **Recommended.** Redux store key to use for data fetching |
-| `fetchUrl` | `string` | - | **Legacy.** API endpoint to fetch data from (use `store` instead) |
-| `params` | `Record<string, any>` | `{}` | Query parameters to pass to the store query |
-| `value` | `string` | - | **Required.** Currently selected value |
-| `onChange` | `(value: string) => void` | - | **Required.** Callback when selection changes |
-| `valueKey` | `string` | `"uuid"` | Key to use for option values |
-| `labelKey` | `string` | `"name"` | Key to use for option labels (ignored if `labelFormatter` is provided) |
-| `labelFormatter` | `(item: T) => string` | - | Custom function to format option labels |
-| `searchParam` | `string` | `"search"` | Query parameter name for search |
-| `initialSearch` | `string` | `""` | Initial search string to pre-populate the search input |
-| `placeholder` | `string` | `"Select..."` | Placeholder text |
-| `disabled` | `boolean` | `false` | Whether the select is disabled |
+| Prop             | Type                      | Default       | Description                                                            |
+| ---------------- | ------------------------- | ------------- | ---------------------------------------------------------------------- |
+| `store`          | `keyof typeof storeApis`  | -             | **Recommended.** Redux store key to use for data fetching              |
+| `fetchUrl`       | `string`                  | -             | **Legacy.** API endpoint to fetch data from (use `store` instead)      |
+| `params`         | `Record<string, any>`     | `{}`          | Query parameters to pass to the store query                            |
+| `value`          | `string`                  | -             | **Required.** Currently selected value                                 |
+| `onChange`       | `(value: string) => void` | -             | **Required.** Callback when selection changes                          |
+| `valueKey`       | `string`                  | `"uuid"`      | Key to use for option values                                           |
+| `labelKey`       | `string`                  | `"name"`      | Key to use for option labels (ignored if `labelFormatter` is provided) |
+| `labelFormatter` | `(item: T) => string`     | -             | Custom function to format option labels                                |
+| `searchParam`    | `string`                  | `"search"`    | Query parameter name for search                                        |
+| `initialSearch`  | `string`                  | `""`          | Initial search string to pre-populate the search input                 |
+| `placeholder`    | `string`                  | `"Select..."` | Placeholder text                                                       |
+| `disabled`       | `boolean`                 | `false`       | Whether the select is disabled                                         |
 
 ## Label Formatters
 
@@ -104,12 +104,12 @@ The component supports flexible label formatting through the `labelFormatter` pr
 
 ```tsx
 import {
-  userFullNameEmailFormatter,    // "John Doe (john@example.com)"
-  userFullNameFormatter,         // "John Doe"
-  userEmailFormatter,            // "john@example.com"
-  entityNameFormatter,           // "Entity Name"
-  entityNameIdFormatter,         // "Entity Name (ID123)"
-} from "@/lib/label-formatters"
+  userFullNameEmailFormatter, // "John Doe (john@example.com)"
+  userFullNameFormatter, // "John Doe"
+  userEmailFormatter, // "john@example.com"
+  entityNameFormatter, // "Entity Name"
+  entityNameIdFormatter, // "Entity Name (ID123)"
+} from "@/lib/label-formatters";
 ```
 
 ### Custom Formatters
@@ -117,14 +117,14 @@ import {
 ```tsx
 // Custom formatter for products
 const productFormatter = (product: any) => {
-  return `${product.name} - $${product.price}`
-}
+  return `${product.name} - $${product.price}`;
+};
 
 <SelectWithFetch
   fetchUrl="/api/products"
   labelFormatter={productFormatter}
   // ... other props
-/>
+/>;
 ```
 
 ### Generic Formatters
@@ -181,8 +181,8 @@ const fields = [
     valueKey: "uuid",
     labelFormatter: userFullNameEmailFormatter,
     placeholder: "Choose a user...",
-  }
-]
+  },
+];
 ```
 
 ## Examples
@@ -241,7 +241,7 @@ If you're migrating from the old hardcoded implementation:
 ```tsx
 <SelectWithFetch
   fetchUrl="/users?roles=ime,vss"
-  labelKey="full_name_email"  // Hardcoded special case
+  labelKey="full_name_email" // Hardcoded special case
 />
 ```
 
@@ -250,5 +250,6 @@ If you're migrating from the old hardcoded implementation:
 ```tsx
 <SelectWithFetch
   fetchUrl="/users?roles=ime,vss"
-  labelFormatter={userFullNameEmailFormatter}  // Flexible and reusable
+  labelFormatter={userFullNameEmailFormatter} // Flexible and reusable
 />
+```

@@ -2,7 +2,7 @@ import { brands } from "@/store/brands";
 import { distributors } from "@/store/distributors";
 import { imeVss } from "@/store/ime-vss";
 import { orders } from "@/store/orders";
-import { configureStore } from "@reduxjs/toolkit";
+import { AnyAction, configureStore } from "@reduxjs/toolkit";
 import { auditLogs } from "./audit-logs";
 import { branches } from "./branches";
 import { dashboardApi } from "./dashboard-api";
@@ -20,7 +20,6 @@ import { users } from "./users";
 import { vehicles } from "./vehicles";
 import { warehouses } from "./warehouses";
 import { webUsers } from "./web-users";
-import { AnyAction } from "@reduxjs/toolkit";
 
 const autoResetMiddleware =
   (storeAPI: any) => (next: any) => (action: AnyAction) => {

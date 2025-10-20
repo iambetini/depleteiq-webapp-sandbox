@@ -93,7 +93,7 @@ export default function OrderDetailPage() {
   const handleConfirmPayment = () => updateOrderStatus("confirmed");
   const handleApproveOrder = () => updateOrderStatus("approved");
 
-  const userRole = user?.role?.toLowerCase() || ""
+  const userRole = user?.role?.name?.toLowerCase() || ""
 
   const orderStatus = order.status?.toLowerCase() || "pending"
 

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Download, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
+import { Download, FileText } from "lucide-react";
+import { useState } from "react";
 
 interface ExportField {
   key: string;
@@ -39,9 +39,9 @@ interface GenericPdfExportButtonProps {
   buttonIcon?: React.ReactNode;
 }
 
-export default function GenericPdfExportButton({ 
-  data, 
-  options, 
+export default function GenericPdfExportButton({
+  data,
+  options,
   className,
   buttonText = "Export PDF",
   buttonIcon = <FileText className="mr-2 h-4 w-4" />
@@ -65,10 +65,10 @@ export default function GenericPdfExportButton({
 
   const generatePdf = async () => {
     setIsExporting(true);
-    
+
     try {
       const pdf = new jsPDF('p', 'mm', 'a4');
-      
+
       // Use custom template if provided
       if (options.customTemplate) {
         await options.customTemplate(pdf, data, {
@@ -104,9 +104,9 @@ export default function GenericPdfExportButton({
   };
 
   const generateGenericTemplate = (
-    pdf: jsPDF, 
-    data: any, 
-    options: PdfExportOptions, 
+    pdf: jsPDF,
+    data: any,
+    options: PdfExportOptions,
     selectedCategories: Record<string, boolean>,
     includeLogo: boolean,
     includeTimestamp: boolean,
@@ -114,7 +114,7 @@ export default function GenericPdfExportButton({
   ) => {
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    
+
     let yPosition = 20;
 
     // Add logo if requested
@@ -157,7 +157,7 @@ export default function GenericPdfExportButton({
       // Category fields
       pdf.setFontSize(10);
       pdf.setFont("helvetica", "normal");
-      
+
       category.fields.forEach(field => {
         const value = getNestedValue(data, field.key);
         if (value !== null && value !== undefined && value !== '') {
@@ -165,7 +165,7 @@ export default function GenericPdfExportButton({
           yPosition += 7;
         }
       });
-      
+
       yPosition += 10;
     });
 
@@ -215,7 +215,7 @@ export default function GenericPdfExportButton({
             Select the information you want to include in the PDF export.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-6 py-4">
           {/* Quick Actions */}
           <div className="flex gap-2">
@@ -283,8 +283,8 @@ export default function GenericPdfExportButton({
           <Button variant="outline" onClick={() => setIsOpen(false)}>
             Cancel
           </Button>
-          <Button 
-            onClick={generatePdf} 
+          <Button
+            onClick={generatePdf}
             disabled={isExporting || !hasSelectedCategories}
           >
             {isExporting ? (

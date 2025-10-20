@@ -16,7 +16,7 @@ const [open, setOpen] = useState(false);
   <div>
     <p>This is the modal content.</p>
   </div>
-</Modal>
+</Modal>;
 ```
 
 ## Props
@@ -40,9 +40,15 @@ export default function Example() {
   return (
     <>
       <button onClick={() => setOpen(true)}>Open Modal</button>
-      <Modal open={open} onClose={() => setOpen(false)} size="half-right" title="Half Right Modal">
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        size="half-right"
+        title="Half Right Modal"
+      >
         <div>Custom content here</div>
       </Modal>
     </>
   );
 }
+```

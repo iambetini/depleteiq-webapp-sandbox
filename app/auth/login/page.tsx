@@ -39,7 +39,7 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        setError("Invalid email or password. Please try again.")
+        setError(result.error ?? "Invalid email or password. Please try again.")
         setIsLoading(false)
       } else if (result?.ok) {
         if (callbackUrl) {
