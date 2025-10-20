@@ -23,6 +23,7 @@ export default function CreateMarketPage() {
     address: "",
     location_id: "",
     warehouse_id: "",
+    branch_id: "",
   };
 
   const validationSchema = Yup.object({
@@ -31,6 +32,7 @@ export default function CreateMarketPage() {
     type: Yup.string().oneOf(["InMarket", "OutMarket"]).required("Type is required"),
     address: Yup.string().required("Address is required"),
     warehouse_id: Yup.string().required("Warehouse is required"),
+    branch_id: Yup.string().required("Branch is required"),
   });
 
   const handleSubmit = async (values: typeof initialValues, helpers: any) => {
@@ -84,6 +86,16 @@ export default function CreateMarketPage() {
       placeholder: "Select warehouse",
     },
     createAddressFieldConfig(() => setLocationModalOpen(true), "text"),
+    {
+      name: "branch_id",
+      label: "Branch",
+      type: "selectWithFetch" as const,
+      required: true,
+      fetchUrl: "/branches",
+      valueKey: "uuid",
+      labelKey: "branch_name",
+      placeholder: "Select branch",
+    },
   ];
 
   return (

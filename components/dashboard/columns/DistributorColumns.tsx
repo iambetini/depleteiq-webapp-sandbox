@@ -53,18 +53,6 @@ const PerformanceCell = React.memo(({ performance }: { performance?: Distributor
 })
 PerformanceCell.displayName = "PerformanceCell"
 
-const TargetCell = React.memo(({ performance }: { performance?: Distributor["performance"] }) => {
-  if (!performance || !performance.target_volume) {
-    return <span className="text-muted-foreground">-</span>
-  }
-  return (
-    <div className="text-sm">
-      <div className="font-medium">₦{performance.target_volume.toLocaleString()}</div>
-    </div>
-  )
-})
-TargetCell.displayName = "TargetCell"
-
 const StatusCell = React.memo(({ status }: { status: string }) => (
   <Badge
     variant={status === "active" ? "default" : "destructive"}
@@ -142,16 +130,6 @@ export function getDistributorColumns({ router, handleDelete }: { router: any; h
       header: "Address",
       cell: ({ row }) => <AddressCell address={row.original.address} />,
     },
-    {
-      accessorKey: "performance.target_volume",
-      header: "Target",
-      cell: ({ row }) => <TargetCell performance={row.original.performance} />,
-    },
-    // {
-    //   accessorKey: "performance",
-    //   header: "Performance",
-    //   cell: ({ row }) => <PerformanceCell performance={row.original.performance} />,
-    // },
     {
       accessorKey: "user.status",
       header: "Status",

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useContext } from "./layout"
 import { handleDelete } from "@/lib/handleDelete"
-import { ArrowLeft, Calendar, Edit, MapPin, Store, Trash2, Type } from "lucide-react"
+import { ArrowLeft, Calendar, Edit, MapPin, Store, Trash2, Type, Building2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useCallback } from "react"
 import { Map } from "@/components/ui/map"
@@ -68,6 +68,13 @@ export default function MarketDetailPage() {
               <div>
                 <p className="text-sm text-[#ababab]">Type</p>
                 <p className="font-medium text-[#444444]">{market.type}</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Building2 className="h-5 w-5 text-[#ababab]" />
+              <div>
+                <p className="text-sm text-[#ababab]">Branch</p>
+                <p className="font-medium text-[#444444]">{market.branch}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">

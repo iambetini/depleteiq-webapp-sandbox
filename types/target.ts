@@ -1,3 +1,5 @@
+import { User } from "./user";
+
 export interface Target {
   uuid?: string;
   user_id: string;
@@ -9,4 +11,5 @@ export interface Target {
   end_date?: string;
   created_at?: string;
   updated_at?: string;
+  user?: User
 }

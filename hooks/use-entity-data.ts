@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useGetDistributorQuery } from "@/store/distributors";
 import { useGetIMEVSSQuery } from "@/store/ime-vss";
 import { useGetReportQuery } from "@/store/reports";
+import { useGetTargetQuery } from "@/store/targets";
 import { useMemo } from "react";
 
 interface PerformanceData {
@@ -129,6 +130,27 @@ export function useImeVssData(enabled: boolean = true) {
     isLoading,
     error: error ? String(error) : null,
     performance,
+    refetch,
+  };
+}
+
+// Target-specific hook
+export function useTargetData(enabled: boolean = true) {
+  const params = useParams();
+  const targetId = params.id as string;
+
+  const {
+    data: target,
+    isLoading,
+    error,
+    refetch,
+  } = useGetTargetQuery(targetId, { skip: !enabled });
+
+  return {
+    entity: target || null,
+    isLoading,
+    error: error ? String(error) : null,
+    performance: null,
     refetch,
   };
 }

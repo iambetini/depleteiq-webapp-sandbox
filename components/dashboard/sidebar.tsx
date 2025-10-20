@@ -1,5 +1,5 @@
-"use client"
-import { Button } from "@/components/ui/button"
+"use client";
+import { Button } from "@/components/ui/button";
 import {
   Building2,
   FileText,
@@ -18,13 +18,14 @@ import {
   Warehouse,
   GitBranch,
   UserCog,
-} from "lucide-react"
-import { signOut, useSession } from "next-auth/react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import React from "react"
+  Flag,
+} from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import React from "react";
 
-import { routeRoles } from "@/lib/route-roles"
+import { routeRoles } from "@/lib/route-roles";
 
 type IconType = React.ComponentType<{ className?: string }>;
 
@@ -44,6 +45,7 @@ const iconMap: Record<string, IconType> = {
   "Roles & Permissions": Shield,
   Reports: FileText,
   "Audit Logs": History,
+  Target: Flag,
 
   Settings: Settings,
 };
@@ -88,7 +90,8 @@ export function DashboardSidebar() {
   const visibleMenuItems = React.useMemo(
     () =>
       routeRoles.filter(
-        (item) => item.roles.includes("everybody") || item.roles.includes(userRole)
+        (item) =>
+          item.roles.includes("everybody") || item.roles.includes(userRole)
       ),
     [userRole]
   );
@@ -97,7 +100,8 @@ export function DashboardSidebar() {
     () =>
       routeRoles
         .filter(
-          (item) => pathname === item.href || pathname.startsWith(item.href + "/")
+          (item) =>
+            pathname === item.href || pathname.startsWith(item.href + "/")
         )
         .sort((a, b) => b.href.length - a.href.length)[0],
     [pathname]

@@ -31,6 +31,12 @@ export const routeRoles: RouteRole[] = [
     pattern: /^\/dashboard\/ime-vss(\/.*)?$/,
     roles: ["super-admin", "system-admin", "operations"],
   },
+    {
+    title: "Target",
+    href: "/dashboard/target",
+    pattern: /^\/dashboard\/target(\/.*)?$/,
+    roles: ["super-admin", "system-admin", "operations"],
+  },
   {
     title: "Brands",
     href: "/dashboard/brands",

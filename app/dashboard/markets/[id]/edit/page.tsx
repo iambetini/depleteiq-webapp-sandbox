@@ -19,6 +19,7 @@ interface MarketData {
   address: string
   location_id: string
   warehouse_id: string
+  branch_id: string
 }
 
 export default function EditMarketPage() {
@@ -48,6 +49,7 @@ export default function EditMarketPage() {
       address: formatAddress(market?.location) || "",
       location_id: market?.location?.uuid || "",
       warehouse_id: market?.warehouse?.uuid || "",
+      branch_id: market?.branch || "",
     };
   }, [market]);
 
@@ -57,6 +59,7 @@ export default function EditMarketPage() {
     type: Yup.string().oneOf(["InMarket", "OutMarket"]).required("Type is required"),
     address: Yup.string().required("Address is required"),
     warehouse_id: Yup.string().required("Warehouse is required"),
+    branch_id: Yup.string().required("Branch is required"),
   }), []);
 
   const handleSubmit = useCallback(async (values: MarketData, helpers: any) => {
@@ -114,6 +117,16 @@ export default function EditMarketPage() {
       placeholder: "Select warehouse",
     },
     createAddressFieldConfig(() => setLocationModalOpen(true), "text"),
+    {
+      name: "branch_id",
+      label: "Branch",
+      type: "selectWithFetch" as const,
+      required: true,
+      fetchUrl: "/branches",
+      valueKey: "uuid",
+      labelKey: "branch_name",
+      placeholder: "Select branch",
+    },
   ];
 
   return (
