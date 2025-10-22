@@ -180,7 +180,7 @@ export function getOrderColumns({ session, router, updateOrder, currentPath }: C
       accessorKey: "distributor_user.market.branch",
       header: "Branch",
       width: 150,
-      cell: ({ row }) => <BranchCell branch={row.original.distributor_user?.market?.branch} />,
+      cell: ({ row }) => <BranchCell branch={row.original.distributor_user?.market?.branch.branch_name} />,
     },
     {
       accessorKey: "self_pickup",
