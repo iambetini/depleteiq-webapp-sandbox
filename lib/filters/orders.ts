@@ -41,6 +41,17 @@ const BASE_ORDER_FILTERS: FilterConfig[] = [
     placeholder: "Select market...",
     labelFormatter: (item: any) => item.full_name,
   },
+  {
+    type: "selectWithFetch",
+    label: "Branch",
+    param: "branch",
+    fetchUrl: "/branches",
+    valueKey: "uuid",
+    labelKey: "branch_name",
+    searchParam: "search",
+    placeholder: "Select branch...",
+    labelFormatter: (item: any) => item.branch_name,
+  },
 ];
 
 export const ORDER_FILTERS = BASE_ORDER_FILTERS;

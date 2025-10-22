@@ -1,5 +1,5 @@
-"use client"
-import { Button } from "@/components/ui/button"
+"use client";
+import { Button } from "@/components/ui/button";
 import {
   Building2,
   FileText,
@@ -18,6 +18,7 @@ import {
   UserCog,
   Users,
   Warehouse,
+  Flag
 } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 import Link from "next/link"
@@ -52,6 +53,7 @@ const iconMap: Record<string, IconType> = {
   FileText,
   History,
   Settings,
+  Flag,
 };
 
 export const sidebarItems: SidebarItem[] = [
@@ -78,6 +80,12 @@ export const sidebarItems: SidebarItem[] = [
     href: "/dashboard/ime-vss",
     permissions: ["view distributors"],
     icon: "UserCog",
+  },
+   {
+    title: "Target",
+    href: "/dashboard/target",
+    permissions: ["view targets"],
+    icon: "Flag",
   },
   {
     title: "Brands",

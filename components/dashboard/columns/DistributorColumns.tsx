@@ -130,11 +130,6 @@ export function getDistributorColumns({ router, handleDelete }: { router: any; h
       header: "Address",
       cell: ({ row }) => <AddressCell address={row.original.address} />,
     },
-    // {
-    //   accessorKey: "performance",
-    //   header: "Performance",
-    //   cell: ({ row }) => <PerformanceCell performance={row.original.performance} />,
-    // },
     {
       accessorKey: "user.status",
       header: "Status",

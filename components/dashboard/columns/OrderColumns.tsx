@@ -41,6 +41,11 @@ const MarketCell = React.memo(({ market }: { market: string }) => (
 ))
 MarketCell.displayName = "MarketCell"
 
+const BranchCell = React.memo(({ branch }: { branch?: string }) => (
+  <div className="text-sm">{branch || "-"}</div>
+))
+BranchCell.displayName = "BranchCell"
+
 const SelfPickupCell = React.memo(({ selfPickup }: { selfPickup: string }) => (
   <div className="text-sm">{selfPickup ? "Yes" : "No"}</div>
 ))
@@ -170,6 +175,12 @@ export function getOrderColumns({ session, router, updateOrder, currentPath }: C
       header: "Market",
       width: 150,
       cell: ({ row }) => <MarketCell market={row.original.market} />,
+    },
+    {
+      accessorKey: "distributor_user.market.branch",
+      header: "Branch",
+      width: 150,
+      cell: ({ row }) => <BranchCell branch={row.original.distributor_user?.market?.branch.branch_name} />,
     },
     {
       accessorKey: "self_pickup",

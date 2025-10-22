@@ -62,6 +62,15 @@ export default function MarketsPage() {
         </div>
       ),
     },
+       {
+      accessorKey: "branch",
+      header: "Branch",
+      cell: ({ row }) => (
+        <div className="flex items-center space-x-1">
+          <span className="text-[#444444]">{row.original.branch || "—"}</span>
+        </div>
+      ),
+    },
     {
       accessorKey: "created_at",
       header: "Created At",

@@ -27,4 +27,12 @@ export interface Delivery {
   status: deliveryStatus;
   comment: string;
   created_at: string;
+  approved_at: string;
+  in_progress_at: string;
+  delivered_at: string;
+  created_approved_lead_time: string;
+  approved_in_progress_lead_time: string;
+  approved_delivered_lead_time: string;
+  in_progress_delivered_lead_time: string;
+  overall_lead_time: string;
 }

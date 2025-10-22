@@ -1,3 +1,4 @@
+import { Branch } from "./branch";
 import { Location } from "./location";
 import { User } from "./user";
 import { Warehouse } from "./warehouse";
@@ -18,4 +19,5 @@ export interface Market {
   warehouse_id?: string;
   warehouse: Warehouse;
   created_at: string;
+  branch:Branch;
 }

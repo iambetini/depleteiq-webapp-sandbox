@@ -7,6 +7,7 @@ import { notFound } from "next/navigation"
 import { usePathname, useRouter, useParams } from "next/navigation"
 import { useDistributorData } from "@/hooks/use-entity-data"
 import { useImeVssData } from "@/hooks/use-entity-data"
+import { useTargetData } from "@/hooks/use-entity-data"
 
 interface TabConfig {
   id: string
@@ -16,7 +17,7 @@ interface TabConfig {
 
 interface EntityLayoutProps {
   children: React.ReactNode
-  entityType: 'distributor' | 'ime-vss'
+  entityType: 'distributor' | 'ime-vss' | 'target'
   tabs: TabConfig[]
 }
 
@@ -25,12 +26,15 @@ function EntityLayoutContent({ children, entityType, tabs }: EntityLayoutProps) 
   const router = useRouter()
   const params = useParams()
 
-  // Always call both hooks to avoid conditional hook calls
+  // Always call all hooks to avoid conditional hook calls
   const distributorData = useDistributorData(entityType === 'distributor')
   const imeVssData = useImeVssData(entityType === 'ime-vss')
-
+  const targetData = useTargetData(entityType === 'target')
   // Select the appropriate data based on entity type
-  const { entity, isLoading, error } = entityType === 'distributor' ? distributorData : imeVssData
+  const { entity, isLoading, error } = 
+    entityType === 'distributor' ? distributorData : 
+    entityType === 'ime-vss' ? imeVssData : 
+    targetData
 
   if (isLoading) {
     return <LoadingSkeleton />
@@ -59,11 +63,17 @@ function EntityLayoutContent({ children, entityType, tabs }: EntityLayoutProps) 
         title: distributor.business_name || "Distributor",
         description: distributor.user ? `${distributor.user.first_name} ${distributor.user.last_name}` : ""
       }
-    } else {
+    } else if (entityType === 'ime-vss') {
       const imeVss = entity as any
       return {
         title: `${imeVss.first_name} ${imeVss.last_name}` || "IME-VSS",
         description: imeVss.email || ""
+      }
+    } else {
+      const target = entity as any
+      return {
+        title: `${target.user?.first_name || ''} ${target.user?.last_name || ''}` || "Target",
+        description: target.type ? `${target.type} - ${target.goal_type}` : ""
       }
     }
   }
@@ -135,6 +145,23 @@ export function ImeVssLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <EntityLayoutContent entityType="ime-vss" tabs={tabs}>
+      {children}
+    </EntityLayoutContent>
+  )
+}
+
+// Target Layout
+export function TargetLayout({ children }: { children: React.ReactNode }) {
+  const params = useParams()
+  const targetId = params.id as string
+
+  const tabs: TabConfig[] = [
+    { id: 'view', label: 'Overview', path: `/dashboard/target/${targetId}` },
+    { id: 'manage', label: 'Manage', path: `/dashboard/target/${targetId}/manage` },
+  ]
+
+  return (
+    <EntityLayoutContent entityType="target" tabs={tabs}>
       {children}
     </EntityLayoutContent>
   )
