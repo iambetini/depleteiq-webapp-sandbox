@@ -125,11 +125,6 @@ export function getTargetColumns({ router, handleDelete }: { router: any; handle
       cell: ({ row }) => <AmountCell amount={row.original.amount} />,
     },
     {
-      accessorKey: "volume",
-      header: "Volume",
-      cell: ({ row }) => <VolumeCell volume={row.original.volume} />,
-    },
-    {
       accessorKey: "start_date",
       header: "Date Range",
       cell: ({ row }) => (
