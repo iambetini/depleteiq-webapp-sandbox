@@ -13,12 +13,16 @@ import {
 import { Input } from "@/components/ui/input"
 import Logo from "@/images/orbit-logo.png"
 import { Bell, Key, LogOut, Search, User } from "lucide-react"
+import { useGetNotificationsQuery } from "@/store/notifications"
+import { Badge as UiBadge } from "@/components/ui/badge"
 import { signOut, useSession } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
 
 export function DashboardHeader() {
   const { data: session } = useSession()
+  const { data: notificationsData } = useGetNotificationsQuery({ params: { per_page: 10 } }) as any
+  const notifications = notificationsData?.data?.items || []
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: "/auth/login" })
@@ -37,9 +41,37 @@ export function DashboardHeader() {
           </div>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-4">
-          <Button variant="ghost" size="icon">
-            <Bell className="h-5 w-5 text-[#ababab]" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="h-5 w-5 text-[#ababab]" />
+                {Array.isArray(notifications) && notifications.length > 0 && (
+                  <UiBadge className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full bg-[#ff6600] text-white flex items-center justify-center text-[10px]">
+                    {notifications.length}
+                  </UiBadge>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80 p-0">
+              <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <div className="max-h-80 overflow-auto">
+                {Array.isArray(notifications) && notifications.length > 0 ? (
+                  notifications.map((n: any) => (
+                    <DropdownMenuItem key={n.uuid} className="flex flex-col items-start gap-1 py-3">
+                      <div className="flex w-full items-center justify-between">
+                        <span className="text-sm font-medium">{n.title}</span>
+                        <span className="text-[10px] text-muted-foreground">{n.created_at}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground leading-snug line-clamp-2">{n.body}</span>
+                    </DropdownMenuItem>
+                  ))
+                ) : (
+                  <div className="p-4 text-sm text-muted-foreground">No notifications</div>
+                )}
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center space-x-2">
