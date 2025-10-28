@@ -20,6 +20,7 @@ import { users } from "./users";
 import { vehicles } from "./vehicles";
 import { warehouses } from "./warehouses";
 import { webUsers } from "./web-users";
+import { notifications } from "./notifications";
 
 const autoResetMiddleware =
   (storeAPI: any) => (next: any) => (action: AnyAction) => {
@@ -76,6 +77,7 @@ export const store = configureStore({
     [orders.reducerPath]: orders.reducer,
     [reports.reducerPath]: reports.reducer,
     [roles.reducerPath]: roles.reducer,
+    [notifications.reducerPath]: notifications.reducer,
     [settings.reducerPath]: settings.reducer,
     [targets.reducerPath]: targets.reducer,
     [users.reducerPath]: users.reducer,
@@ -100,6 +102,7 @@ export const store = configureStore({
       orders.middleware,
       reports.middleware,
       roles.middleware,
+      notifications.middleware,
       settings.middleware,
       targets.middleware,
       users.middleware,
@@ -123,6 +126,7 @@ export const storeApis = {
   orders,
   reports,
   roles,
+  notifications,
   settings,
   targets,
   users,

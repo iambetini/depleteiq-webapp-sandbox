@@ -21,6 +21,7 @@ export default function OrderDetailPage() {
   const user = session?.user;
   const { order, fetchOrder } = useContext();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [updateMessage, setUpdateMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [messages, setMessages] = useState<any[]>([]);
@@ -93,6 +94,27 @@ export default function OrderDetailPage() {
   const handleConfirmPayment = () => updateOrderStatus("confirmed");
   const handleApproveOrder = () => updateOrderStatus("approved");
 
+  const handleCancelOrder = async () => {
+    setIsSubmitting(true);
+    try {
+      await apiClient.put<{ status: string }>(`/orders/${order.uuid}`, { status: "cancelled" });
+      toast({
+        title: "Success",
+        description: "Order cancelled successfully",
+      });
+      setIsCancelModalOpen(false);
+      fetchOrder();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to cancel order",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const userRole = user?.role?.name?.toLowerCase() || ""
 
   const orderStatus = order.status?.toLowerCase() || "pending"
@@ -112,7 +134,7 @@ export default function OrderDetailPage() {
     handleConfirmPayment: () => void;
     handleApproveOrder: () => void;
   }) {
-    if (["treasury", "sales-admin"].includes(userRole)) {
+    if (["treasury", "sales-admin", "super-admin"].includes(userRole)) {
       if (orderStatus === "pending") {
         return (
           <>
@@ -338,17 +360,46 @@ export default function OrderDetailPage() {
           </div>
         </div>
         {/* Footer Buttons */}
-        <div className="flex justify-end gap-2 m-4">
-          <FooterButtons
-            userRole={userRole}
-            orderStatus={orderStatus}
-            isSubmitting={isSubmitting}
-            handleRequestUpdate={handleRequestUpdate}
-            handleConfirmPayment={handleConfirmPayment}
-            handleApproveOrder={handleApproveOrder}
-          />
+        <div className="flex justify-between gap-2 m-4">
+          <div>
+            {orderStatus !== "confirmed" && orderStatus !== "cancelled" && (
+              <Button 
+                variant="destructive" 
+                onClick={() => setIsCancelModalOpen(true)} 
+                disabled={isSubmitting}
+              >
+                Cancel Order
+              </Button>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <FooterButtons
+              userRole={userRole}
+              orderStatus={orderStatus}
+              isSubmitting={isSubmitting}
+              handleRequestUpdate={handleRequestUpdate}
+              handleConfirmPayment={handleConfirmPayment}
+              handleApproveOrder={handleApproveOrder}
+            />
+          </div>
         </div>
       </Card>
+
+      <Modal open={isCancelModalOpen} onClose={() => setIsCancelModalOpen(false)} size="sm-center" title="Cancel Order">
+        <div className="grid gap-4 py-4">
+          <p className="text-sm text-gray-600">
+            Are you sure you want to cancel this order? This will change the order status to cancelled.
+          </p>
+        </div>
+        <div className="flex justify-center gap-3 mt-4">
+          <Button variant="outline" onClick={() => setIsCancelModalOpen(false)} disabled={isSubmitting}>
+            No, Keep Order
+          </Button>
+          <Button variant="destructive" onClick={handleCancelOrder} disabled={isSubmitting}>
+            {isSubmitting ? "Cancelling..." : "Yes, Cancel Order"}
+          </Button>
+        </div>
+      </Modal>
 
       {/* Request Update Modal */}
       <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} size="third-right" title="Request Update">
