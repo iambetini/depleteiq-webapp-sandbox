@@ -45,14 +45,14 @@ export function DashboardHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5 text-[#ababab]" />
-                {Array.isArray(notifications) && notifications.length > 0 && (
+                {/* {Array.isArray(notifications) && notifications.length > 0 && (
                   <UiBadge className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full bg-[#ff6600] text-white flex items-center justify-center text-[10px]">
                     {notifications.length}
                   </UiBadge>
-                )}
+                )} */}
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 p-0">
+            {/* <DropdownMenuContent align="end" className="w-80 p-0">
               <DropdownMenuLabel>Notifications</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <div className="max-h-80 overflow-auto">
@@ -70,7 +70,7 @@ export function DashboardHeader() {
                   <div className="p-4 text-sm text-muted-foreground">No notifications</div>
                 )}
               </div>
-            </DropdownMenuContent>
+            </DropdownMenuContent> */}
           </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
