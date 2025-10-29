@@ -63,11 +63,11 @@ export default function MarketsPage() {
       ),
     },
        {
-      accessorKey: "branch",
+      accessorKey: "branch.branch_name",
       header: "Branch",
       cell: ({ row }) => (
         <div className="flex items-center space-x-1">
-          <span className="text-[#444444]">{row.original.branch || "—"}</span>
+          <span className="text-[#444444]">{row.original.branch?.branch_name || "—"}</span>
         </div>
       ),
     },
