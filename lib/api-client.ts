@@ -213,7 +213,11 @@ class ApiClient {
     config?: ApiRequestConfig,
   ): Promise<ApiResponse<T>> {
     const mergedConfig = this.mergeConfig(config);
-    return await this.axiosInstance[method](endpoint, data, mergedConfig);
+    if (method === "get" || method === "delete") {
+      return await this.axiosInstance[method](endpoint, mergedConfig);
+    } else {
+      return await this.axiosInstance[method](endpoint, data, mergedConfig);
+    }
   }
 
   // Public API methods

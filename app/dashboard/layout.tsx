@@ -1,7 +1,6 @@
 "use client"
 
 import { DashboardHeader } from "@/components/dashboard/header"
-import { RolesProvider } from "@/components/dashboard/RolesContext"
 import { DashboardSidebar } from "@/components/dashboard/sidebar"
 import SessionTimeout from "@/components/SessionTimeout"
 import Logo from "@/images/orbit-logo.png"
@@ -48,7 +47,6 @@ export default function DashboardLayout({
   return (
     <>
       <SessionTimeout />
-      <RolesProvider>
         <div className="dashboard min-h-screen bg-[#f8f8f8]">
           <DashboardHeader />
           <div className="flex">
@@ -56,7 +54,6 @@ export default function DashboardLayout({
             <main className="flex-1 p-6 overflow-auto">{children}</main>
           </div>
         </div>
-      </RolesProvider>
     </>
   )
 }
