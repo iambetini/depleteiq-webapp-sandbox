@@ -369,8 +369,10 @@ export function hasRequiredPermissions(
     return true; // No permissions required, accessible to all
   }
 
-  return requiredPermissions.some((permission) =>
-    userPermissions.includes(permission),
+  return requiredPermissions.some(
+    (permission) =>
+      userPermissions.includes(permission) ||
+      userPermissions.includes("all access"),
   );
 }
 
