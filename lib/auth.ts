@@ -25,20 +25,33 @@ export const authOptions: NextAuthOptions = {
           });
 
           const { user, token } = data.item;
-          if (user && token) {
-            if (["distributor"].includes(user.role?.name)) {
-              throw new Error("You're not allowed to login");
-            }
-            return {
-              ...user,
-              name: `${user.first_name} ${user.last_name}`,
-              accessToken: token,
-            };
-          } else {
+          if (!token) {
             throw new Error("Invalid credentials");
           }
+
+          if (user.role?.name === "distributor") {
+            throw new Error("You're not allowed to login");
+          }
+
+          // Get full user details from /me endpoint
+          const { data: { item: fullUser } = {} } = await apiClient.get<{
+            item: User;
+          }>("/auth/me", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!fullUser) {
+            throw new Error("Failed to retrieve user details");
+          }
+
+          return {
+            ...fullUser,
+            name: `${fullUser.first_name} ${fullUser.last_name}`,
+            accessToken: token,
+          };
         } catch (error: any) {
-          // console.error("Auth error:", error);
           throw new Error(error?.message || "Authentication failed");
         }
       },
