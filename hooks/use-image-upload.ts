@@ -9,12 +9,14 @@ interface UseImageUploadOptions {
   maxFileSize?: number;
   allowedTypes?: string[];
   provider?: "aws-s3" | "aws-s3-proxy" | "cloudinary" | "local";
+  showToast?: boolean;
 }
 
 export function useImageUpload(options: UseImageUploadOptions = {}) {
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { toast } = useToast();
+  const showToast = options.showToast ?? true;
 
   const uploadImage = useCallback(
     async (file: File): Promise<string | null> => {
@@ -48,10 +50,12 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
           // Clean up temporary URL
           URL.revokeObjectURL(tempPreviewUrl);
 
-          // toast({
-          //   title: "Success",
-          //   description: "Image uploaded successfully",
-          // });
+          if (showToast) {
+            toast({
+              title: "Success",
+              description: "Image uploaded successfully",
+            });
+          }
 
           return uploadedFile.url;
         } else {
@@ -61,18 +65,20 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
         setPreviewUrl(null);
         URL.revokeObjectURL(tempPreviewUrl);
 
-        toast({
-          title: "Upload failed",
-          description: error.message || "Failed to upload image",
-          variant: "destructive",
-        });
+        if (showToast) {
+          toast({
+            title: "Upload failed",
+            description: error.message || "Failed to upload image",
+            variant: "destructive",
+          });
+        }
 
         return null;
       } finally {
         setIsUploading(false);
       }
     },
-    [options, toast],
+    [options, toast, showToast],
   );
 
   const clearPreview = useCallback(() => {
