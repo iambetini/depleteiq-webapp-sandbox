@@ -4,8 +4,9 @@ import { DataTable, FilterConfig } from "@/components/ui/data-table";
 import { ColumnDef } from "@/components/ui/data-table-types";
 import { IMEVSSPerformance } from "@/types/ime-vss-performance";
 import { Row } from "@tanstack/react-table";
-import { useRef } from "react";
+import * as React from "react";
 import * as XLSX from "xlsx-js-style";
+import { storeApis } from "@/store";
 
 type IMEVSSRow = Row<IMEVSSPerformance>;
 
@@ -46,10 +47,12 @@ const generateDayColumns = (maxDays: number = 21) => {
           width: 80,
           className: "border-r",
           enableSorting: isLastDay,
-          accessorFn: isLastDay ? (row: IMEVSSPerformance) => {
-            const dayData = row.performance_by_day[dayKey];
-            return dayData?.cummulative_performance ?? 0;
-          } : undefined,
+          accessorFn: isLastDay
+            ? (row: IMEVSSPerformance) => {
+                const dayData = row.performance_by_day[dayKey];
+                return dayData?.cummulative_performance ?? 0;
+              }
+            : undefined,
           cell: ({ row }: { row: IMEVSSRow }) => {
             const dayData = row.original.performance_by_day[dayKey];
             return (
@@ -73,8 +76,8 @@ const generateDayColumns = (maxDays: number = 21) => {
   });
 };
 
-// Define columns with proper typing
-const columns = [
+// Define base columns (without day columns)
+const baseColumns = [
   {
     accessorKey: "user.full_name",
     header: "IME/VSS",
@@ -107,8 +110,12 @@ const columns = [
     ),
     exportValue: (row: IMEVSSPerformance) => row.user.status,
   },
-  ...generateDayColumns(),
 ];
+
+// Helper function to build complete columns with specified number of days
+const buildColumns = (maxDays: number = 21) => {
+  return [...baseColumns, ...generateDayColumns(maxDays)] as ColumnDef<IMEVSSPerformance>[];
+};
 
 // Custom export function for IME-VSS Performance matching the exact table format
 const exportIMEVSSPerformance = (
@@ -197,25 +204,67 @@ const exportIMEVSSPerformance = (
 };
 
 export default function ReportsPage() {
-  const columnsRef = useRef<any>(columns);
-
-  const getDynamicColumns = (data: IMEVSSPerformance[] | undefined) => {
-    if (data && data.length > 0 && data[0].workday_count) {
-      const maxDays = data[0].workday_count;
-      return [
-        columns[0],
-        columns[1],
-        ...generateDayColumns(maxDays),
-      ] as ColumnDef<IMEVSSPerformance>[];
-    }
-    return columns as ColumnDef<IMEVSSPerformance>[];
-  };
+  const [dynamicColumns, setDynamicColumns] = React.useState<
+    ColumnDef<IMEVSSPerformance>[]
+  >(buildColumns());
+  const [initialSorting, setInitialSorting] = React.useState<
+    { id: string; desc: boolean }[]
+  >([]);
+  const dataTableRef = React.useRef<{ refresh: () => void }>(null);
 
   // Define filters
   const filters: FilterConfig[] = [
     { type: "disableDefaultDateRange" },
     { type: "month-year", label: "Month/Year", param: "month" },
   ];
+
+  // Get the store params to subscribe to data changes
+  const [filterState, setFilterState] = React.useState<{
+    [key: string]: string;
+  }>({});
+  const storeParams = React.useMemo(() => {
+    const filterParams = Object.entries(filterState)
+      .filter(([_, value]) => value && value !== "all")
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+
+    return {
+      ...filterParams,
+      page: 1,
+      per_page: 1,
+      extraPath: "ime_vss_performance",
+    };
+  }, [filterState]);
+
+  // Subscribe to data to detect workday_count changes
+  const { data: storeData } = storeApis.reports.useGetAllQuery(storeParams);
+
+  React.useEffect(() => {
+    if (storeData) {
+      const resp = storeData as any;
+      let items: IMEVSSPerformance[] = [];
+
+      if (Array.isArray(resp)) {
+        items = resp as IMEVSSPerformance[];
+      } else {
+        items = resp?.data?.items ?? [];
+      }
+
+      if (items.length > 0 && items[0].workday_count) {
+        const workdayCount = items[0].workday_count;
+
+        // Update columns with actual workday count
+        setDynamicColumns(buildColumns(workdayCount));
+
+        // Update initial sorting
+        setInitialSorting([{ id: `day_${workdayCount}_cum`, desc: true }]);
+
+        // Refresh the data table to apply new columns
+        if (dataTableRef.current) {
+          dataTableRef.current.refresh();
+        }
+      }
+    }
+  }, [storeData]);
 
   return (
     <div>
@@ -229,7 +278,8 @@ export default function ReportsPage() {
         </span>
       </div>
       <DataTable
-        columns={columnsRef.current}
+        ref={dataTableRef}
+        columns={dynamicColumns as any}
         store="reports"
         searchKey="user"
         searchPlaceholder="Search by ime/vss"
@@ -237,17 +287,15 @@ export default function ReportsPage() {
         filters={filters}
         per_page={20}
         extraPath="ime_vss_performance"
-        initialSorting={[{ id: "day_21_cum", desc: true }]}
+        initialSorting={initialSorting}
         customExportFn={(data: unknown[], table, exportFileName, scope) => {
           let maxDays = 21;
           if (
             data &&
             data.length > 0 &&
-            (data[0] as IMEVSSPerformance).performance_by_day
+            (data[0] as IMEVSSPerformance).workday_count
           ) {
-            maxDays = Object.keys(
-              (data[0] as IMEVSSPerformance).performance_by_day
-            ).length;
+            maxDays = (data[0] as IMEVSSPerformance).workday_count;
           }
           exportIMEVSSPerformance(
             data as IMEVSSPerformance[],

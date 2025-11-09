@@ -191,6 +191,13 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   const [paginationInput, setPaginationInput] = React.useState("");
   const [paginationError, setPaginationError] = React.useState("");
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+
+  // Update sorting when initialSorting prop changes
+  React.useEffect(() => {
+    if (initialSorting) {
+      setSorting(initialSorting);
+    }
+  }, [initialSorting]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [pageIndex, setPageIndex] = React.useState(0);
