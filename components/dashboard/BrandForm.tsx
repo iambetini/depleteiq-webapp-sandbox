@@ -9,6 +9,10 @@ import { Plus, Save, Trash2, Upload, Loader2 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import { useImageUpload } from "@/hooks/use-image-upload";
+
+// Default brand image fallback URL
+const DEFAULT_BRAND_IMAGE_URL = process.env.NEXT_PUBLIC_DEFAULT_BRAND_IMAGE_URL || 'https://businessnews.com.ng/wp-content/uploads/2012/08/Orange-Drugs.jpg';
+
 interface BrandFormProps {
   mode: "create" | "edit";
   initialValues: any;
@@ -32,6 +36,7 @@ export function BrandForm({
     maxFileSize: 5 * 1024 * 1024,
     allowedTypes: ['image/*'],
     provider: 'aws-s3-proxy',
+    showToast: false,
   });
 
   // Track image changes
@@ -59,10 +64,7 @@ export function BrandForm({
 
       // Upload image only if it has changed
       if (hasImageChanged && selectedFile) {
-        const uploadedUrl = await uploadImage(selectedFile);
-        if (uploadedUrl) {
-          finalValues.image = uploadedUrl;
-        }
+        finalValues.image = (await uploadImage(selectedFile)) || DEFAULT_BRAND_IMAGE_URL;
       }
 
       await onSubmit(finalValues, helpers);
