@@ -94,6 +94,32 @@ export function getColumns(router: any, handleDelete: (uuid: string) => void, ha
       cell: ({ row }) => <div className="text-sm">{row.original.total_order_weight}</div>,
     },
     {
+      id: "location",
+      header: "Location",
+      showByDefault: false,
+      width: 320,
+      columns: [
+        {
+          accessorKey: "from.full_location",
+          header: "From",
+          cell: ({ row }) => (
+            <div className="text-sm bg-blue-50 p-2 text-center">
+              {row.original.from?.full_location || "-"}
+            </div>
+          ),
+        },
+        {
+          accessorKey: "to.full_location",
+          header: "To",
+          cell: ({ row }) => (
+            <div className="text-sm bg-blue-50 p-2 text-center">
+              {row.original.to?.full_location || "-"}
+            </div>
+          ),
+        },
+      ],
+    },
+    {
       accessorKey: "distance",
       header: "Distance (km)",
       width: 130,

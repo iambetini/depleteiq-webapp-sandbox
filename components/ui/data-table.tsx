@@ -311,30 +311,87 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     pageCount: pageCount,
   });
 
+  const toggleableColumns = React.useMemo(() => {
+    const allColumns = table.getAllColumns();
+    return allColumns
+      .filter((column) => column.getCanHide() && (!column.parent || column.parent.depth === 0))
+      .map((column) => ({
+        column,
+        headerLabel:
+          typeof column.columnDef.header === "string"
+            ? (column.columnDef.header as string)
+            : column.id,
+        leafColumns: column.getLeafColumns(),
+      }));
+  }, [table]);
+
   // Set initial column visibility based on showByDefault field
   React.useEffect(() => {
+    // Cache current visibility state to avoid redundant updates
+    const columnVisibilityState = table.getState().columnVisibility;
     const visibilityUpdates: VisibilityState = {};
     let hasUpdates = false;
 
-    columns.forEach((column) => {
-      const columnDef = column as any;
-      if (columnDef.showByDefault === false) {
-        // Find the column in the table by matching accessorKey or id
-        const tableColumn = table.getAllColumns().find(col =>
-          col.id === columnDef.id ||
-          col.id === columnDef.accessorKey ||
-          (columnDef.accessorKey && col.id.includes(columnDef.accessorKey.split('.')[0]))
-        );
+    // Get all table columns to match against
+    const allTableColumns = table.getAllColumns();
 
-        if (tableColumn) {
-          visibilityUpdates[tableColumn.id] = false;
-          hasUpdates = true;
+    const processColumn = (columnDef: any) => {
+      // If this is a grouped column with child columns
+      if (columnDef.columns && Array.isArray(columnDef.columns)) {
+        const groupId = columnDef.id;
+
+        // If the parent has showByDefault: false, hide all its children
+        if (columnDef.showByDefault === false) {
+          // Find the parent column in the table
+          const parentColumn = allTableColumns.find((col) => col.id === groupId);
+
+          if (parentColumn) {
+            // Get all leaf columns under this parent
+            const leafColumns = parentColumn.getLeafColumns();
+
+            leafColumns.forEach((leafCol) => {
+              if (columnVisibilityState[leafCol.id] !== false) {
+                visibilityUpdates[leafCol.id] = false;
+                hasUpdates = true;
+              }
+            });
+          }
+        }
+
+        // Process child columns recursively
+        columnDef.columns.forEach((childCol: any) => {
+          processColumn(childCol);
+        });
+      } else {
+        // Regular column
+        if (columnDef.showByDefault === false) {
+          const columnId = columnDef.id || columnDef.accessorKey;
+          if (columnId && columnVisibilityState[columnId] !== false) {
+            visibilityUpdates[columnId] = false;
+            hasUpdates = true;
+          }
         }
       }
+    };
+
+    columns.forEach((column) => {
+      processColumn(column as any);
     });
 
     if (hasUpdates) {
-      setColumnVisibility(prev => ({ ...prev, ...visibilityUpdates }));
+      setColumnVisibility((prev) => {
+        let didChange = false;
+        const nextVisibility: VisibilityState = { ...prev };
+
+        Object.entries(visibilityUpdates).forEach(([columnId, value]) => {
+          if (nextVisibility[columnId] !== value) {
+            nextVisibility[columnId] = value;
+            didChange = true;
+          }
+        });
+
+        return didChange ? nextVisibility : prev;
+      });
     }
   }, [columns, table]);
 
@@ -710,23 +767,22 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="max-h-[400px] overflow-auto">
-              {table
-                ?.getAllColumns()
-                ?.filter((column) => column.getCanHide())
-                ?.map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
+              {toggleableColumns.map(({ column, headerLabel, leafColumns }) => {
+                const isVisible = leafColumns.every((leaf) => leaf.getIsVisible());
+
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={isVisible}
+                    onCheckedChange={(value) => {
+                      leafColumns.forEach((leaf) => leaf.toggleVisibility(!!value));
+                    }}
+                  >
+                    {headerLabel}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -931,7 +987,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                         }
                       }
                     }}
-                    onBlur={e => {
+                    onBlur={() => {
                       setPaginationInput("");
                       setPaginationError("");
                     }}
