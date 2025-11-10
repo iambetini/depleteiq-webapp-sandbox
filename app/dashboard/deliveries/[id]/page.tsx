@@ -33,8 +33,6 @@ export default function DeliveryDetailPage() {
     comment: MessageSquare,
   };
 
-  const userRole = (user as any)?.role?.toLowerCase() || ""
-
   const Icon = ({ name }: { name: keyof typeof icons }) => {
     const Cmp = icons[name];
     return Cmp ? <Cmp className="h-5 w-5 text-[#ababab]" /> : null;
@@ -47,7 +45,7 @@ export default function DeliveryDetailPage() {
         description="View detailed information about this delivery"
         showEditButton={true}
         editHref={`/dashboard/deliveries/${delivery.uuid}/edit`}
-        showDeleteButton={["super-admin", "admin", "manager"].includes(userRole)}
+        showDeleteButton={user?.role?.permissions.some(permission => permission.name === "delete orders")}
         deleteOptions={{
           storeName: "deliveries",
           uuid: delivery.uuid,

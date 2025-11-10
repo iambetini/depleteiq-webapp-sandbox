@@ -10,7 +10,7 @@ import { toast } from "@/hooks/use-toast"
 import { handleDelete } from "@/lib/handleDelete"
 import { useUpdateDeliveryMutation } from "@/store/deliveries"
 import type { Delivery } from "@/types/delivery"
-import { ArrowLeftRight, Car, CheckCircle2, Edit, Eye, MoreHorizontal, RefreshCw, Trash2 } from "lucide-react"
+import { ArrowLeftRight, Car, CheckCircle2, Edit, Eye, MoreHorizontal, Package, RefreshCw, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import React, { useRef, useCallback } from "react"
 
@@ -163,6 +163,12 @@ export function getColumns(router: any, handleDelete: (uuid: string) => void, ha
               <Eye className="mr-2 h-4 w-4" />
               View Details
             </DropdownMenuItem>
+            {row.original.order?.uuid && (
+              <DropdownMenuItem onClick={() => router.push(`/dashboard/orders/${row.original.order.uuid}`)}>
+                <Package className="mr-2 h-4 w-4" />
+                View Order
+              </DropdownMenuItem>
+            )}
             {row.original.status !== 'approved' && row.original.status !== 'delivered' && (
               <DropdownMenuItem onClick={() => handleUpdateDelivery(row.original.uuid, { status: 'approved' })}>
                 <CheckCircle2 className="mr-2 h-4 w-4" />
