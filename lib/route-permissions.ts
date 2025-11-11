@@ -234,22 +234,22 @@ export const routePermissions: RoutePermission[] = [
 
   // Roles
   {
-    href: "/dashboard/roles",
+    href: "/dashboard/settings/roles",
     pattern: /^\/dashboard\/roles$/,
     permissions: ["view roles"],
   },
   {
-    href: "/dashboard/roles/create",
+    href: "/dashboard/settings/roles/create",
     pattern: /^\/dashboard\/roles\/create$/,
     permissions: ["create roles"],
   },
   {
-    href: "/dashboard/roles/[id]",
+    href: "/dashboard/settings/roles/[id]",
     pattern: /^\/dashboard\/roles\/\d+$/,
     permissions: ["view roles"],
   },
   {
-    href: "/dashboard/roles/[id]/edit",
+    href: "/dashboard/settings/roles/[id]/edit",
     pattern: /^\/dashboard\/roles\/\d+\/edit$/,
     permissions: ["edit roles"],
   },
@@ -295,22 +295,22 @@ export const routePermissions: RoutePermission[] = [
 
   // Users
   {
-    href: "/dashboard/users",
+    href: "/dashboard/settings/users",
     pattern: /^\/dashboard\/users$/,
     permissions: ["view users"],
   },
   {
-    href: "/dashboard/users/create",
+    href: "/dashboard/settings/users/create",
     pattern: /^\/dashboard\/users\/create$/,
     permissions: ["create users"],
   },
   {
-    href: "/dashboard/users/[id]",
+    href: "/dashboard/settings/users/[id]",
     pattern: /^\/dashboard\/users\/\d+$/,
     permissions: ["view users"],
   },
   {
-    href: "/dashboard/users/[id]/edit",
+    href: "/dashboard/settings/users/[id]/edit",
     pattern: /^\/dashboard\/users\/\d+\/edit$/,
     permissions: ["edit users"],
   },

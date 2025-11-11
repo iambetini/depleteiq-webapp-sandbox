@@ -89,7 +89,7 @@ export default function RoleForm({
         if (onSuccess) {
           onSuccess(values);
         } else {
-          router.push(`/dashboard/roles/${roleId}`);
+          router.push(`/dashboard/settings/roles/${roleId}`);
         }
       } else {
         const permissionsPayload: Permission[] = values.permissions.map((uuid) => ({ uuid } as Permission));
