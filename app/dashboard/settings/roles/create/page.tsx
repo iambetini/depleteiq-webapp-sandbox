@@ -22,7 +22,7 @@ export default function CreateRolePage() {
     try {
       await createRole(values).unwrap()
       helpers.resetForm()
-      router.push("/dashboard/roles")
+      router.push("/dashboard/settings/roles")
     } catch (error: any) {
       catchError(error, helpers.setFieldError);
     } finally {
