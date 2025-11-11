@@ -10,7 +10,7 @@ import { toast } from "@/hooks/use-toast"
 import { handleDelete } from "@/lib/handleDelete"
 import { useUpdateDeliveryMutation } from "@/store/deliveries"
 import type { Delivery } from "@/types/delivery"
-import { ArrowLeftRight, Car, CheckCircle2, Edit, Eye, MoreHorizontal, RefreshCw, Trash2 } from "lucide-react"
+import { ArrowLeftRight, Car, CheckCircle2, Edit, Eye, MoreHorizontal, Package, RefreshCw, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import React, { useRef, useCallback } from "react"
 
@@ -94,6 +94,32 @@ export function getColumns(router: any, handleDelete: (uuid: string) => void, ha
       cell: ({ row }) => <div className="text-sm">{row.original.total_order_weight}</div>,
     },
     {
+      id: "location",
+      header: "Location",
+      showByDefault: false,
+      width: 320,
+      columns: [
+        {
+          accessorKey: "from.full_location",
+          header: "From",
+          cell: ({ row }) => (
+            <div className="text-sm bg-blue-50 p-2 text-center">
+              {row.original.from?.full_location || "-"}
+            </div>
+          ),
+        },
+        {
+          accessorKey: "to.full_location",
+          header: "To",
+          cell: ({ row }) => (
+            <div className="text-sm bg-blue-50 p-2 text-center">
+              {row.original.to?.full_location || "-"}
+            </div>
+          ),
+        },
+      ],
+    },
+    {
       accessorKey: "distance",
       header: "Distance (km)",
       width: 130,
@@ -163,6 +189,12 @@ export function getColumns(router: any, handleDelete: (uuid: string) => void, ha
               <Eye className="mr-2 h-4 w-4" />
               View Details
             </DropdownMenuItem>
+            {row.original.order?.uuid && (
+              <DropdownMenuItem onClick={() => router.push(`/dashboard/orders/${row.original.order.uuid}`)}>
+                <Package className="mr-2 h-4 w-4" />
+                View Order
+              </DropdownMenuItem>
+            )}
             {row.original.status !== 'approved' && row.original.status !== 'delivered' && (
               <DropdownMenuItem onClick={() => handleUpdateDelivery(row.original.uuid, { status: 'approved' })}>
                 <CheckCircle2 className="mr-2 h-4 w-4" />
