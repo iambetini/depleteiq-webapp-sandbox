@@ -47,10 +47,27 @@ export const authOptions: NextAuthOptions = {
           }
 
           return {
-            ...fullUser,
-            name: `${fullUser.first_name} ${fullUser.last_name}`,
+            uuid: fullUser.uuid,
+            first_name: fullUser.first_name,
+            last_name: fullUser.last_name,
+            full_name:
+              fullUser.full_name ||
+              `${fullUser.first_name} ${fullUser.last_name}`,
+            email: fullUser.email,
+            phone: fullUser.phone,
+            status: fullUser.status,
+            is_active: fullUser.is_active,
+            role: {
+              ...fullUser.role,
+              permissions: fullUser?.role?.permissions?.map(
+                (permission: any) => {
+                  const { uuid, ...permissionWithoutUuid } = permission;
+                  return permissionWithoutUuid;
+                },
+              ),
+            },
             accessToken: token,
-          };
+          } as User & { accessToken: string };
         } catch (error: any) {
           throw new Error(error?.message || "Authentication failed");
         }
