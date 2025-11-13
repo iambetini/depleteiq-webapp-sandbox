@@ -5,19 +5,147 @@ import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Modal } from "@/components/ui/modal"
 import { StatusBadge } from "@/components/ui/status-badge"
+import { Label } from "@/components/ui/label"
+import { CommandWithFetch } from "@/components/ui/select"
 import { toast } from "@/hooks/use-toast"
 import { handleDelete } from "@/lib/handleDelete"
+import { catchError } from "@/lib/utils"
 import { useUpdateDeliveryMutation } from "@/store/deliveries"
-import type { Delivery } from "@/types/delivery"
-import { ArrowLeftRight, Car, CheckCircle2, Edit, Eye, MoreHorizontal, Package, RefreshCw, Trash2 } from "lucide-react"
+import type { Delivery, deliveryStatus } from "@/types/delivery"
+import type { Vehicle } from "@/types/vehicle"
+import { ArrowLeftRight, Car, CheckCircle2, Eye, MoreHorizontal, Package, RefreshCw } from "lucide-react"
 import { useRouter } from "next/navigation"
-import React, { useRef, useCallback } from "react"
+import { useRef, useCallback, useState, useMemo } from "react"
+
+// Constants
+const DELIVERY_STATUS = {
+  PENDING_APPROVAL: "pending_approval",
+  UPDATE_REQUESTED: "update_requested",
+  APPROVED: "approved",
+  DELIVERED: "delivered",
+} as const
+
+const TOAST_MESSAGES = {
+  ASSIGN_SUCCESS: "Vehicle assigned successfully.",
+  CHANGE_SUCCESS: "Vehicle changed successfully. Delivery status reset to pending approval.",
+  UPDATE_SUCCESS: "Delivery updated successfully",
+  ASSIGN_ERROR: "Failed to assign vehicle",
+  CHANGE_ERROR: "Failed to change vehicle",
+} as const
+
+// Types
+interface VehicleModalState {
+  isOpen: boolean
+  delivery: Delivery | null
+  selectedVehicleId: string
+  isAssigning: boolean
+  error: string
+  isLoading: boolean
+}
+
+// Helper functions
+const canApprove = (delivery: Delivery): boolean => {
+  return !!delivery.vehicle && delivery.status === DELIVERY_STATUS.PENDING_APPROVAL
+}
+
+const canRequestUpdate = (status: deliveryStatus): boolean => {
+  // Don't show "Request Update" for final states or when already requested
+  return status !== DELIVERY_STATUS.UPDATE_REQUESTED &&
+    status !== DELIVERY_STATUS.DELIVERED
+}
+
+const canChangeVehicle = (status: deliveryStatus, hasVehicle: boolean): boolean => {
+  return status === DELIVERY_STATUS.UPDATE_REQUESTED ||
+    (status === DELIVERY_STATUS.PENDING_APPROVAL && hasVehicle)
+}
+
+const canAssignVehicle = (status: deliveryStatus, hasVehicle: boolean): boolean => {
+  return status === DELIVERY_STATUS.PENDING_APPROVAL && !hasVehicle
+}
+
+// Vehicle Modal Component
+interface VehicleModalProps {
+  state: VehicleModalState
+  onClose: () => void
+  onVehicleChange: (vehicleId: string) => void
+  onVehicleIdChange: (vehicleId: string) => void
+}
+
+function VehicleModal({ state, onClose, onVehicleChange, onVehicleIdChange }: VehicleModalProps) {
+  const handleSubmit = () => {
+    if (!state.selectedVehicleId) {
+      return
+    }
+    onVehicleChange(state.selectedVehicleId)
+  }
+
+  const modalTitle = state.isAssigning ? "Assign Vehicle" : "Change Vehicle"
+  const modalDescription = state.isAssigning
+    ? "Select a vehicle to assign to this delivery."
+    : "Select a new vehicle for this delivery. The delivery status will be reset to pending approval."
+
+  const buttonText = state.isLoading
+    ? (state.isAssigning ? "Assigning..." : "Changing...")
+    : (state.isAssigning ? "Assign Vehicle" : "Change Vehicle")
+
+  return (
+    <Modal
+      open={state.isOpen}
+      onClose={onClose}
+      size="sm-center"
+      title={modalTitle}
+    >
+      <div className="space-y-4">
+        <p className="text-sm text-gray-600">{modalDescription}</p>
+        <div className="space-y-2">
+          <Label htmlFor="vehicle">Vehicle *</Label>
+          <CommandWithFetch
+            fetchUrl="/vehicles"
+            value={state.selectedVehicleId}
+            onChange={onVehicleIdChange}
+            valueKey="uuid"
+            labelFormatter={(item: Vehicle) => `${item.vehicle_number} (${item.type})`}
+            placeholder="Select vehicle"
+          />
+          {state.error && <p className="text-sm text-red-500">{state.error}</p>}
+        </div>
+        <div className="flex items-center justify-end space-x-4 pt-4 border-t">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={state.isLoading}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={state.isLoading || !state.selectedVehicleId}
+          >
+            {buttonText}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  )
+}
 
 export default function DeliveriesPage() {
   const router = useRouter()
-  const dataTableRef = useRef<{ refresh: () => void }>(null);
-  const [updateDelivery] = useUpdateDeliveryMutation();
+  const dataTableRef = useRef<{ refresh: () => void }>(null)
+  const [updateDelivery] = useUpdateDeliveryMutation()
+
+  const [modalState, setModalState] = useState<VehicleModalState>({
+    isOpen: false,
+    delivery: null,
+    selectedVehicleId: "",
+    isAssigning: false,
+    error: "",
+    isLoading: false,
+  })
 
   const refreshTable = useCallback(() => {
     dataTableRef.current?.refresh()
@@ -31,25 +159,89 @@ export default function DeliveriesPage() {
     })
   }, [refreshTable])
 
-  const columns = React.useMemo(
-    () => {
-      const handleUpdateDelivery = (id: string, data: Partial<Delivery>) => {
-        updateDelivery({ id, data }).unwrap().then(() => {
-          toast({
-            title: "Success",
-            description: "Delivery updated successfully",
-          });
-          refreshTable();
-        });
-      };
+  const openVehicleModal = useCallback((delivery: Delivery, isAssigning: boolean = false) => {
+    setModalState({
+      isOpen: true,
+      delivery,
+      selectedVehicleId: delivery.vehicle?.uuid || "",
+      isAssigning,
+      error: "",
+      isLoading: false,
+    })
+  }, [])
 
-      return getColumns(router, deleteHandler, handleUpdateDelivery);
-    },
-    [router, deleteHandler, refreshTable, updateDelivery]
+  const closeVehicleModal = useCallback(() => {
+    setModalState({
+      isOpen: false,
+      delivery: null,
+      selectedVehicleId: "",
+      isAssigning: false,
+      error: "",
+      isLoading: false,
+    })
+  }, [])
+
+  const handleVehicleIdChange = useCallback((vehicleId: string) => {
+    setModalState(prev => ({ ...prev, selectedVehicleId: vehicleId, error: "" }))
+  }, [])
+
+  const handleVehicleChange = useCallback(async (vehicleId: string) => {
+    const currentDelivery = modalState.delivery
+    const isAssigning = modalState.isAssigning
+    
+    if (!currentDelivery) return
+
+    setModalState(prev => ({ ...prev, isLoading: true, error: "" }))
+
+    try {
+      await updateDelivery({
+        id: currentDelivery.uuid,
+        data: { vehicle_id: vehicleId } as Partial<Delivery>
+      }).unwrap()
+
+      toast({
+        title: "Success",
+        description: isAssigning
+          ? TOAST_MESSAGES.ASSIGN_SUCCESS
+          : TOAST_MESSAGES.CHANGE_SUCCESS,
+      })
+      refreshTable()
+      closeVehicleModal()
+    } catch (error: unknown) {
+      catchError(error, (field, message) => {
+        setModalState(prev => ({
+          ...prev,
+          error: message || (isAssigning ? TOAST_MESSAGES.ASSIGN_ERROR : TOAST_MESSAGES.CHANGE_ERROR),
+        }))
+      })
+    } finally {
+      setModalState(prev => ({ ...prev, isLoading: false }))
+    }
+  }, [modalState.delivery, modalState.isAssigning, updateDelivery, refreshTable, closeVehicleModal])
+
+  const handleUpdateDelivery = useCallback(async (id: string, data: Partial<Delivery>) => {
+    try {
+      await updateDelivery({ id, data }).unwrap()
+      toast({
+        title: "Success",
+        description: TOAST_MESSAGES.UPDATE_SUCCESS,
+      })
+      refreshTable()
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to update delivery",
+        variant: "destructive",
+      })
+    }
+  }, [updateDelivery, refreshTable])
+
+  const columns = useMemo(
+    () => getColumns(router, handleUpdateDelivery, openVehicleModal),
+    [router, handleUpdateDelivery, openVehicleModal]
   )
 
-  // Filter config for deliveries
-  const filters: import("@/components/ui/data-table").FilterConfig[] = []
+  const filters: import("@/components/ui/data-table").FilterConfig[] = useMemo(() => [], [])
 
   return (
     <div>
@@ -69,11 +261,22 @@ export default function DeliveriesPage() {
         exportFileName="Deliveries"
         filters={filters}
       />
+      <VehicleModal
+        state={modalState}
+        onClose={closeVehicleModal}
+        onVehicleChange={handleVehicleChange}
+        onVehicleIdChange={handleVehicleIdChange}
+      />
     </div>
   )
 }
 
-export function getColumns(router: any, handleDelete: (uuid: string) => void, handleUpdateDelivery: (id: string, data: Partial<Delivery>) => void): ColumnDef<Delivery>[] {
+// Column Definitions
+function getColumns(
+  router: ReturnType<typeof useRouter>,
+  handleUpdateDelivery: (id: string, data: Partial<Delivery>) => Promise<void>,
+  openVehicleModal: (delivery: Delivery, isAssigning?: boolean) => void
+): ColumnDef<Delivery>[] {
   return [
     {
       accessorKey: "order.ref",
@@ -165,12 +368,20 @@ export function getColumns(router: any, handleDelete: (uuid: string) => void, ha
         {
           accessorKey: "vehicle.vehicle_number",
           header: "Vehicle No.",
-          cell: ({ row }) => <div className="text-sm bg-green-50 p-2">{row.original.vehicle?.vehicle_number}</div>,
+          cell: ({ row }) => (
+            <div className="text-sm bg-green-50 p-2">
+              {row.original.vehicle?.vehicle_number || "-"}
+            </div>
+          ),
         },
         {
           accessorKey: "vehicle.type",
           header: "Type",
-          cell: ({ row }) => <div className="text-sm bg-green-50 p-2">{row.original.vehicle?.type}</div>,
+          cell: ({ row }) => (
+            <div className="text-sm bg-green-50 p-2">
+              {row.original.vehicle?.type || "-"}
+            </div>
+          ),
         },
       ],
     },
@@ -178,58 +389,84 @@ export function getColumns(router: any, handleDelete: (uuid: string) => void, ha
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => router.push(`/dashboard/deliveries/${row.original.uuid}`)}>
-              <Eye className="mr-2 h-4 w-4" />
-              View Details
-            </DropdownMenuItem>
-            {row.original.order?.uuid && (
-              <DropdownMenuItem onClick={() => router.push(`/dashboard/orders/${row.original.order.uuid}`)}>
-                <Package className="mr-2 h-4 w-4" />
-                View Order
-              </DropdownMenuItem>
-            )}
-            {row.original.status !== 'approved' && row.original.status !== 'delivered' && (
-              <DropdownMenuItem onClick={() => handleUpdateDelivery(row.original.uuid, { status: 'approved' })}>
-                <CheckCircle2 className="mr-2 h-4 w-4" />
-                Approve
-              </DropdownMenuItem>
-            )}
-            {row.original.status !== 'update_requested' && row.original.status !== 'delivered' && (
-              <DropdownMenuItem onClick={() => handleUpdateDelivery(row.original.uuid, { status: 'update_requested' })}>
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Request Update
-              </DropdownMenuItem>
-            )}
-            {row.original.status !== 'approved' && (
-              <DropdownMenuItem onClick={() => { }}>
-                <span className="relative inline-block mr-2 h-4 w-4">
-                  <Car className="h-5 w-5" />
-                  <ArrowLeftRight className="h-3 w-3 absolute -right-1 -bottom-1" />
-                </span>
-                Change Vehicle
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuItem onClick={() => router.push(`/dashboard/deliveries/${row.original.uuid}/edit`)}>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => handleDelete(row.original.uuid)}
-              className="text-red-600 hidden"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ActionsMenu
+          delivery={row.original}
+          router={router}
+          handleUpdateDelivery={handleUpdateDelivery}
+          openVehicleModal={openVehicleModal}
+        />
       ),
     },
   ]
+}
+
+// Actions Menu Component
+interface ActionsMenuProps {
+  delivery: Delivery
+  router: ReturnType<typeof useRouter>
+  handleUpdateDelivery: (id: string, data: Partial<Delivery>) => void
+  openVehicleModal: (delivery: Delivery, isAssigning?: boolean) => void
+}
+
+function ActionsMenu({
+  delivery,
+  router,
+  handleUpdateDelivery,
+  openVehicleModal
+}: ActionsMenuProps) {
+  const hasVehicle = !!delivery.vehicle
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => router.push(`/dashboard/deliveries/${delivery.uuid}`)}>
+          <Eye className="mr-2 h-4 w-4" />
+          View Details
+        </DropdownMenuItem>
+
+        {delivery.order?.uuid && (
+          <DropdownMenuItem onClick={() => router.push(`/dashboard/orders/${delivery.order.uuid}`)}>
+            <Package className="mr-2 h-4 w-4" />
+            View Order
+          </DropdownMenuItem>
+        )}
+
+        {canApprove(delivery) && (
+          <DropdownMenuItem onClick={() => handleUpdateDelivery(delivery.uuid, { status: DELIVERY_STATUS.APPROVED })}>
+            <CheckCircle2 className="mr-2 h-4 w-4" />
+            Approve
+          </DropdownMenuItem>
+        )}
+
+        {canRequestUpdate(delivery.status) && (
+          <DropdownMenuItem onClick={() => handleUpdateDelivery(delivery.uuid, { status: DELIVERY_STATUS.UPDATE_REQUESTED })}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Request Update
+          </DropdownMenuItem>
+        )}
+
+        {canChangeVehicle(delivery.status, hasVehicle) && (
+          <DropdownMenuItem onClick={() => openVehicleModal(delivery, false)}>
+            <span className="relative inline-block mr-2 h-4 w-4">
+              <Car className="h-5 w-5" />
+              <ArrowLeftRight className="h-3 w-3 absolute -right-1 -bottom-1" />
+            </span>
+            Change Vehicle
+          </DropdownMenuItem>
+        )}
+
+        {canAssignVehicle(delivery.status, hasVehicle) && (
+          <DropdownMenuItem onClick={() => openVehicleModal(delivery, true)}>
+            <Car className="mr-2 h-4 w-4" />
+            Assign Vehicle
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
 }
