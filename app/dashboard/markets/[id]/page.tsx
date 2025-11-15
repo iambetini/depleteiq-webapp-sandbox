@@ -74,7 +74,7 @@ export default function MarketDetailPage() {
               <Building2 className="h-5 w-5 text-[#ababab]" />
               <div>
                 <p className="text-sm text-[#ababab]">Branch</p>
-                <p className="font-medium text-[#444444]">{market.branch}</p>
+                <p className="font-medium text-[#444444]">{market.branch?.branch_name}</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
