@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,7 +12,7 @@ import { useCreateTargetMutation, useGetTargetsQuery, useUpdateTargetMutation } 
 import { Target } from "@/types/target";
 import { Form, Formik } from "formik";
 import { Save } from "lucide-react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import * as Yup from "yup";
 import { useDistributorData } from "@/hooks/use-entity-data";
 
@@ -20,9 +21,11 @@ export default function DistributorTargetPage() {
   const { entity: distributor } = useDistributorData()
   const [createTarget] = useCreateTargetMutation();
   const [updateTarget] = useUpdateTargetMutation();
+  const [createNewTarget, setCreateNewTarget] = useState(false);
 
   const userUuid = distributor?.user?.uuid || "";
-  const { data: targetsData, isLoading: isTargetLoading } = useGetTargetsQuery(userUuid ? { user_id: userUuid } as any : (undefined as any), { skip: !userUuid });
+  const { data: targetsData, isLoading: isTargetLoading } = useGetTargetsQuery({ type: "sales", ...(userUuid ? { user_id: userUuid } : {}), }, { skip: !userUuid });
+
   const targetList: any[] = Array.isArray(targetsData) ? targetsData : (targetsData as any)?.data?.items || [];
   const existingTarget: any | undefined = targetList[0];
 
@@ -73,12 +76,23 @@ export default function DistributorTargetPage() {
         return;
       }
       try {
-        if (existingTarget?.uuid) {
-          await updateTarget({ id: existingTarget.uuid, data: { ...values, user_id: distributor.user.uuid } }).unwrap();
-          toast({ title: "Success", description: "Target updated successfully" });
-        } else {
-          await createTarget({ ...values, user_id: distributor.user.uuid }).unwrap();
+        // Prepare payload with mutually exclusive amount/volume based on goal_type
+        const payload = {
+          ...values,
+          user_id: distributor.user.uuid,
+          amount: values.goal_type === 'amount' ? values.amount : undefined,
+          volume: values.goal_type === 'volume' ? values.volume : undefined,
+        };
+
+        // If checkbox is checked (create new) or no existing target, create new target
+        if (createNewTarget || !existingTarget?.uuid) {
+          await createTarget(payload).unwrap();
           toast({ title: "Success", description: "Target created successfully" });
+          setCreateNewTarget(false); // Reset checkbox after creating
+        } else {
+          // Otherwise, update existing target
+          await updateTarget({ id: existingTarget.uuid, data: payload }).unwrap();
+          toast({ title: "Success", description: "Target updated successfully" });
         }
         resetForm();
       } catch (error: any) {
@@ -87,7 +101,7 @@ export default function DistributorTargetPage() {
         setSubmitting(false);
       }
     },
-    [distributor?.user?.uuid, createTarget, updateTarget, existingTarget?.uuid]
+    [distributor?.user?.uuid, createTarget, updateTarget, existingTarget?.uuid, createNewTarget]
   );
 
   const normalizeDate = (dateStr?: string) => {
@@ -98,27 +112,42 @@ export default function DistributorTargetPage() {
   };
 
   const getInitialValues = useCallback((): Omit<Target, 'id' | 'uuid' | 'created_at' | 'updated_at'> => {
+    // If checkbox is checked (create new), return empty form
+    if (createNewTarget) {
+      return {
+        user_id: distributor?.user?.uuid || '0',
+        type: "yearly_sales",
+        goal_type: "amount",
+        amount: 0,
+        start_date: new Date().toISOString().split('T')[0],
+        end_date: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
+      }
+    }
+
+    // If existing target and not creating new, populate with existing data
     if (existingTarget) {
+      const goalType = existingTarget.goal_type || "amount";
       return {
         user_id: existingTarget.user_id || distributor?.user?.uuid || '0',
         type: existingTarget.type || "yearly_sales",
-        goal_type: existingTarget.goal_type || "amount",
-        amount: Number(existingTarget.amount || 0),
-        volume: Number(existingTarget.volume || 0),
+        goal_type: goalType,
+        amount: goalType === 'amount' ? Number(existingTarget.amount || 0) : 0,
+        volume: goalType === 'volume' ? Number(existingTarget.volume || 0) : 0,
         start_date: normalizeDate(existingTarget.start_date),
         end_date: normalizeDate(existingTarget.end_date),
       }
     }
+
+    // No existing target, return empty form
     return {
       user_id: distributor?.user?.uuid || '0',
       type: "yearly_sales",
       goal_type: "amount",
       amount: 0,
-      volume: 0,
       start_date: new Date().toISOString().split('T')[0],
       end_date: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
     }
-  }, [existingTarget, distributor?.user?.uuid])
+  }, [existingTarget, distributor?.user?.uuid, createNewTarget])
 
   if (!distributor || !distributor.user) { return null; }
 
@@ -133,11 +162,26 @@ export default function DistributorTargetPage() {
     )
   }
 
-  const isEditMode = !!existingTarget?.uuid;
+  const isEditMode = !!existingTarget?.uuid && !createNewTarget;
 
   return (
     <Card className="p-4">
       <CardContent>
+        {existingTarget?.uuid && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+            <div className="flex items-center space-x-3">
+              <Checkbox
+                id="createNewTarget"
+                checked={createNewTarget}
+                onCheckedChange={(checked) => setCreateNewTarget(checked as boolean)}
+              />
+              <Label htmlFor="createNewTarget" className="text-sm font-medium cursor-pointer">
+                Create a new target instead of updating the existing one
+              </Label>
+            </div>
+          </div>
+        )}
+
         <Formik
           initialValues={getInitialValues()}
           validationSchema={validationSchema}
@@ -172,7 +216,15 @@ export default function DistributorTargetPage() {
                     <Label htmlFor="goal_type">Goal Type</Label>
                     <Select
                       value={values.goal_type}
-                      onValueChange={(value) => setFieldValue("goal_type", value)}
+                      onValueChange={(value) => {
+                        setFieldValue("goal_type", value);
+                        // Reset the opposite field when goal_type changes
+                        if (value === 'amount') {
+                          setFieldValue("volume", 0);
+                        } else {
+                          setFieldValue("amount", 0);
+                        }
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select goal type" />

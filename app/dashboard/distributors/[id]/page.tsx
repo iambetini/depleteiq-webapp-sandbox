@@ -223,6 +223,7 @@ export default function DistributorDetailPage() {
             totalOrders={performance?.total_orders || 0}
             totalOrderValue={performance?.total_order_value || 0}
             targetVolume={performance?.target_volume || 0}
+            targetAmount={performance?.target_amount || 0}
           />
         </div>
       </div>

@@ -6,6 +6,7 @@ interface PerformanceMetricsCardProps {
   totalOrders?: number;
   totalOrderValue?: number;
   targetVolume?: number;
+  targetAmount?: number;
   currency?: string;
   // IME/VSS specific fields
   cummulativePerformance?: number;
@@ -18,6 +19,7 @@ export default function PerformanceMetricsCard({
   totalOrders = undefined,
   totalOrderValue = undefined,
   targetVolume = undefined,
+  targetAmount = undefined,
   currency = "₦",
   cummulativePerformance,
   dailyTarget,
@@ -51,12 +53,12 @@ export default function PerformanceMetricsCard({
             <Separator />
           </>
         )}
-        {targetVolume !== undefined && (
+        {targetAmount !== undefined && (
           <>
             <div className="flex justify-between items-center">
-              <span className="text-[#ababab]">Annual Target</span>
+              <span className="text-[#ababab]">Target Amount</span>
               <span className="font-bold text-[#444444]">
-                {currency}{Number(targetVolume).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {currency}{Number(targetAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
             <Separator />

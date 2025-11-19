@@ -13,6 +13,7 @@ interface PerformanceData {
   total_order_value: string | number;
   total_orders?: number;
   target_volume?: number;
+  target_amount?: number;
   // IME/VSS specific fields
   cummulative_performance?: number;
   daily_target?: number;
@@ -25,6 +26,7 @@ interface DistributorPerformanceResponse {
   end_date: string | null;
   total_order_value: number;
   target_volume: number;
+  target_amount: number;
   performance: any | null;
 }
 
@@ -74,6 +76,7 @@ export function useDistributorData(enabled: boolean = true) {
       total_order_value: perfData?.total_order_value || 0,
       total_orders: 0,
       target_volume: perfData?.target_volume || 0,
+      target_amount: perfData?.target_amount || 0,
     };
   }, [performanceData, distributor]);
 

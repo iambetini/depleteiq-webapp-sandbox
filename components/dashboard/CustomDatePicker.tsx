@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { Calendar } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import type { DateRange } from "react-day-picker"
 
 interface CustomDatePickerProps {
@@ -18,6 +18,11 @@ interface CustomDatePickerProps {
 
 export function CustomDatePicker({ selectedRange, onDateChange }: CustomDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    const timer = setTimeout(() => { buttonRef.current?.click() }, 200)
+    return () => clearTimeout(timer)
+  }, [])
 
   const handleDateSelect = (range: DateRange | undefined) => {
     if (range) {
@@ -32,7 +37,7 @@ export function CustomDatePicker({ selectedRange, onDateChange }: CustomDatePick
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="icon">
+        <Button ref={buttonRef} variant="outline" size="icon">
           <Calendar className="h-4 w-4" />
         </Button>
       </PopoverTrigger>
