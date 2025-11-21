@@ -362,7 +362,7 @@ export default function OrderDetailPage() {
         {/* Footer Buttons */}
         <div className="flex justify-between gap-2 m-4">
           <div>
-            {orderStatus !== "confirmed" && orderStatus !== "cancelled" && (
+            {(orderStatus === "pending" || orderStatus === "update_requested") && (
               <Button 
                 variant="destructive" 
                 onClick={() => setIsCancelModalOpen(true)} 
