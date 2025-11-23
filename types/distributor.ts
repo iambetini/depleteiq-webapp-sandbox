@@ -29,6 +29,7 @@ export interface Distributor {
     total_orders: number;
     total_order_value: number;
     target_volume: number;
+    target_amount: number;
     total_value: number;
     growth_rate: number;
     last_order_date: string;
