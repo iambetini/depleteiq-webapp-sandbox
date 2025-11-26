@@ -83,7 +83,7 @@ export const sidebarItems: SidebarItem[] = [
   },
    {
     title: "Targets",
-    href: "/dashboard/target",
+    href: "/dashboard/targets",
     permissions: ["view targets"],
     icon: "Flag",
   },

@@ -34,9 +34,6 @@ export default function TargetPage() {
         exportFileName="Targets"
         fixedQuery={{ roles: "distributor" }}
         filters={[
-          { type: "disableDefaultDateRange" },
-          { type: "date", label: "Start Date", param: "start_date" },
-          { type: "date", label: "End Date", param: "end_date" },
           {
             type: "select",
             label: "Type",
