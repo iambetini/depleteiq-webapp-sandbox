@@ -156,8 +156,8 @@ export function TargetLayout({ children }: { children: React.ReactNode }) {
   const targetId = params.id as string
 
   const tabs: TabConfig[] = [
-    { id: 'view', label: 'Overview', path: `/dashboard/target/${targetId}` },
-    { id: 'manage', label: 'Manage', path: `/dashboard/target/${targetId}/manage` },
+    { id: 'view', label: 'Overview', path: `/dashboard/targets/${targetId}` },
+    { id: 'manage', label: 'Manage', path: `/dashboard/targets/${targetId}/manage` },
   ]
 
   return (

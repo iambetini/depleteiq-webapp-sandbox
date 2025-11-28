@@ -88,11 +88,11 @@ const ActionsCell = React.memo((
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => router.push(`/dashboard/target/${target.uuid}`)}>
+        <DropdownMenuItem onClick={() => router.push(`/dashboard/targets/${target.uuid}`)}>
           <Eye className="mr-2 h-4 w-4" />
           View Details
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push(`/dashboard/target/${target.uuid}/manage`)}>
+        <DropdownMenuItem onClick={() => router.push(`/dashboard/targets/${target.uuid}/manage`)}>
           <Edit className="mr-2 h-4 w-4" />
           Manage
         </DropdownMenuItem>
