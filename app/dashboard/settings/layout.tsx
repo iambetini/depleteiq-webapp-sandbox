@@ -8,22 +8,24 @@ function SettingsLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter()
 
   const getActiveTab = () => {
-    if (pathname.includes('/profile')) return 'profile'
-    if (pathname.includes('/security')) return 'security'
     if (pathname.includes('/deliveries')) return 'deliveries'
     if (pathname.includes('/orders')) return 'orders'
+    if (pathname.includes('/reports')) return 'reports'
+    if (pathname.includes('/telescope')) return 'telescope'
+    if (pathname.includes('/horizon')) return 'horizon'
     if (pathname.includes('/users')) return 'users'
     if (pathname.includes('/roles')) return 'roles'
-    return 'profile'
+    return 'roles'
   }
 
   const tabs = [
-    { id: 'profile', label: 'Profile', path: `/dashboard/settings/profile` },
-    { id: 'security', label: 'Security', path: `/dashboard/settings/security` },
     { id: 'roles', label: 'Roles & Permissions', path: `/dashboard/settings/roles` },
     { id: 'users', label: 'Users', path: `/dashboard/settings/users` },
     { id: 'deliveries', label: 'Deliveries', path: `/dashboard/settings/deliveries` },
     { id: 'orders', label: 'Orders', path: `/dashboard/settings/orders` },
+    { id: 'reports', label: 'Reports', path: `/dashboard/settings/reports` },
+    { id: 'telescope', label: 'Telescope', path: `/dashboard/settings/telescope` },
+    { id: 'horizon', label: 'Horizon', path: `/dashboard/settings/horizon` },
   ]
 
   const activeTab = getActiveTab()

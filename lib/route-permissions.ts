@@ -77,6 +77,16 @@ export const routePermissions: RoutePermission[] = [
     pattern: /^\/dashboard\/no-permissions$/,
     permissions: [],
   },
+  {
+    href: "/dashboard/profile",
+    pattern: /^\/dashboard\/profile$/,
+    permissions: ["view dashboard"],
+  },
+  {
+    href: "/dashboard/security",
+    pattern: /^\/dashboard\/security$/,
+    permissions: ["view dashboard"],
+  },
 
   // Deliveries
   {
@@ -251,18 +261,18 @@ export const routePermissions: RoutePermission[] = [
     permissions: ["view dashboard"],
   },
   {
-    href: "/dashboard/settings/preferences",
-    pattern: /^\/dashboard\/settings\/preferences$/,
+    href: "/dashboard/settings/deliveries",
+    pattern: /^\/dashboard\/settings\/deliveries$/,
     permissions: ["view dashboard"],
   },
   {
-    href: "/dashboard/settings/profile",
-    pattern: /^\/dashboard\/settings\/profile$/,
+    href: "/dashboard/settings/orders",
+    pattern: /^\/dashboard\/settings\/orders$/,
     permissions: ["view dashboard"],
   },
   {
-    href: "/dashboard/settings/system",
-    pattern: /^\/dashboard\/settings\/system$/,
+    href: "/dashboard/settings/reports",
+    pattern: /^\/dashboard\/settings\/reports$/,
     permissions: ["view dashboard"],
   },
 

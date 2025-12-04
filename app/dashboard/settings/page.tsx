@@ -2,5 +2,5 @@
 
 import { redirect } from "next/navigation";
 
-export default function SettingsPage() { redirect("/dashboard/settings/profile"); }
+export default function SettingsPage() { redirect("/dashboard/settings/roles"); }
 
