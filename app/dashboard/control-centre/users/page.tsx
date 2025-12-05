@@ -68,11 +68,11 @@ function getColumns(
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => router.push(`/dashboard/settings/users/${row.original.uuid}`)}>
+            <DropdownMenuItem onClick={() => router.push(`/dashboard/control-centre/users/${row.original.uuid}`)}>
               <Eye className="mr-2 h-4 w-4" />
               View Details
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push(`/dashboard/settings/users/${row.original.uuid}/edit`)}>
+            <DropdownMenuItem onClick={() => router.push(`/dashboard/control-centre/users/${row.original.uuid}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
@@ -119,7 +119,7 @@ export default function UsersPage() {
         title="Users"
         description="Manage system users and their permissions"
         showAddButton={true}
-        onAdd={() => router.push("/dashboard/settings/users/create")}
+        onAdd={() => router.push("/dashboard/control-centre/users/create")}
         addLabel="Add User"
         showBulkAddButton={true}
         onBulkAdd={() => setBulkModalOpen(true)}

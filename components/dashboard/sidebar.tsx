@@ -142,9 +142,9 @@ export const sidebarItems: SidebarItem[] = [
     icon: "History",
   },
   {
-    title: "Settings",
-    href: "/dashboard/settings",
-    permissions: ["view dashboard"],
+    title: "Control Centre",
+    href: "/dashboard/control-centre",
+    permissions: ["all access"],
     icon: "Settings",
   },
 ];
