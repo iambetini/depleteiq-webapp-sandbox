@@ -2,29 +2,32 @@
 
 import { cn } from "@/lib/utils"
 import { usePathname, useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
+import { hasPermissionForRoute } from "@/lib/route-permissions"
 
-function SettingsLayoutContent({ children }: { children: React.ReactNode }) {
+function ControlCentreLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
+  const { data: session } = useSession()
 
   const getActiveTab = () => {
-    if (pathname.includes('/profile')) return 'profile'
-    if (pathname.includes('/security')) return 'security'
-    if (pathname.includes('/deliveries')) return 'deliveries'
-    if (pathname.includes('/orders')) return 'orders'
-    if (pathname.includes('/users')) return 'users'
     if (pathname.includes('/roles')) return 'roles'
-    return 'profile'
+    if (pathname.includes('/users')) return 'users'
+    if (pathname.includes('/deliveries') || pathname.includes('/orders') || 
+        pathname.includes('/reports') || pathname.includes('/telescope') || 
+        pathname.includes('/horizon') || pathname.includes('/settings')) return 'settings'
+    return 'roles'
   }
 
-  const tabs = [
-    { id: 'profile', label: 'Profile', path: `/dashboard/settings/profile` },
-    { id: 'security', label: 'Security', path: `/dashboard/settings/security` },
-    { id: 'roles', label: 'Roles & Permissions', path: `/dashboard/settings/roles` },
-    { id: 'users', label: 'Users', path: `/dashboard/settings/users` },
-    { id: 'deliveries', label: 'Deliveries', path: `/dashboard/settings/deliveries` },
-    { id: 'orders', label: 'Orders', path: `/dashboard/settings/orders` },
+  const allTabs = [
+    { id: 'roles', label: 'Roles & Permissions', path: `/dashboard/control-centre/roles` },
+    { id: 'users', label: 'Users', path: `/dashboard/control-centre/users` },
+    { id: 'settings', label: 'Settings', path: `/dashboard/control-centre/settings` },
   ]
+
+  const tabs = allTabs.filter((tab) =>
+    hasPermissionForRoute(tab.path, session?.user?.role?.permissions)
+  )
 
   const activeTab = getActiveTab()
 
@@ -55,10 +58,10 @@ function SettingsLayoutContent({ children }: { children: React.ReactNode }) {
   )
 }
 
-export default function SettingsLayout({ children }: { children: React.ReactNode }) {
+export default function ControlCentreLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SettingsLayoutContent>
+    <ControlCentreLayoutContent>
       {children}
-    </SettingsLayoutContent>
+    </ControlCentreLayoutContent>
   )
 }

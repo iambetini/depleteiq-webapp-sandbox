@@ -77,6 +77,16 @@ export const routePermissions: RoutePermission[] = [
     pattern: /^\/dashboard\/no-permissions$/,
     permissions: [],
   },
+  {
+    href: "/dashboard/profile",
+    pattern: /^\/dashboard\/profile$/,
+    permissions: ["view dashboard"],
+  },
+  {
+    href: "/dashboard/security",
+    pattern: /^\/dashboard\/security$/,
+    permissions: ["view dashboard"],
+  },
 
   // Deliveries
   {
@@ -224,46 +234,46 @@ export const routePermissions: RoutePermission[] = [
 
   // Roles
   {
-    href: "/dashboard/settings/roles",
-    pattern: /^\/dashboard\/roles$/,
+    href: "/dashboard/control-centre/roles",
+    pattern: /^\/dashboard\/control-centre\/roles$/,
     permissions: ["view roles"],
   },
   {
-    href: "/dashboard/settings/roles/create",
-    pattern: /^\/dashboard\/roles\/create$/,
+    href: "/dashboard/control-centre/roles/create",
+    pattern: /^\/dashboard\/control-centre\/roles\/create$/,
     permissions: ["create roles"],
   },
   {
-    href: "/dashboard/settings/roles/[id]",
-    pattern: /^\/dashboard\/roles\/\d+$/,
+    href: "/dashboard/control-centre/roles/[id]",
+    pattern: /^\/dashboard\/control-centre\/roles\/[a-f0-9-]+$/,
     permissions: ["view roles"],
   },
   {
-    href: "/dashboard/settings/roles/[id]/edit",
-    pattern: /^\/dashboard\/roles\/\d+\/edit$/,
+    href: "/dashboard/control-centre/roles/[id]/edit",
+    pattern: /^\/dashboard\/control-centre\/roles\/[a-f0-9-]+\/edit$/,
     permissions: ["edit roles"],
   },
 
   // Settings
   {
-    href: "/dashboard/settings",
-    pattern: /^\/dashboard\/settings$/,
-    permissions: ["view dashboard"],
+    href: "/dashboard/control-centre/settings",
+    pattern: /^\/dashboard\/control-centre\/settings$/,
+    permissions: ["all access"],
   },
   {
-    href: "/dashboard/settings/preferences",
-    pattern: /^\/dashboard\/settings\/preferences$/,
-    permissions: ["view dashboard"],
+    href: "/dashboard/control-centre/settings/deliveries",
+    pattern: /^\/dashboard\/control-centre\/settings\/deliveries$/,
+    permissions: ["all access"],
   },
   {
-    href: "/dashboard/settings/profile",
-    pattern: /^\/dashboard\/settings\/profile$/,
-    permissions: ["view dashboard"],
+    href: "/dashboard/control-centre/settings/orders",
+    pattern: /^\/dashboard\/control-centre\/settings\/orders$/,
+    permissions: ["all access"],
   },
   {
-    href: "/dashboard/settings/system",
-    pattern: /^\/dashboard\/settings\/system$/,
-    permissions: ["view dashboard"],
+    href: "/dashboard/control-centre/settings/reports",
+    pattern: /^\/dashboard\/control-centre\/settings\/reports$/,
+    permissions: ["all access"],
   },
 
   // Targets
@@ -285,23 +295,23 @@ export const routePermissions: RoutePermission[] = [
 
   // Users
   {
-    href: "/dashboard/settings/users",
-    pattern: /^\/dashboard\/users$/,
+    href: "/dashboard/control-centre/users",
+    pattern: /^\/dashboard\/control-centre\/users$/,
     permissions: ["view users"],
   },
   {
-    href: "/dashboard/settings/users/create",
-    pattern: /^\/dashboard\/users\/create$/,
+    href: "/dashboard/control-centre/users/create",
+    pattern: /^\/dashboard\/control-centre\/users\/create$/,
     permissions: ["create users"],
   },
   {
-    href: "/dashboard/settings/users/[id]",
-    pattern: /^\/dashboard\/users\/\d+$/,
+    href: "/dashboard/control-centre/users/[id]",
+    pattern: /^\/dashboard\/control-centre\/users\/[a-f0-9-]+$/,
     permissions: ["view users"],
   },
   {
-    href: "/dashboard/settings/users/[id]/edit",
-    pattern: /^\/dashboard\/users\/\d+\/edit$/,
+    href: "/dashboard/control-centre/users/[id]/edit",
+    pattern: /^\/dashboard\/control-centre\/users\/[a-f0-9-]+\/edit$/,
     permissions: ["edit users"],
   },
 
@@ -407,4 +417,24 @@ export function getPermissionsForPath(pathname: string): string[] {
   }
 
   return closestParent ? closestParent.permissions : [];
+}
+
+export function hasPermissionForRoute(
+  routePath: string,
+  userPermissions: Array<{ name: string }> | undefined
+): boolean {
+  if (!userPermissions) {
+    return false
+  }
+
+  const permissionNames = userPermissions.map((p) => p.name)
+  const routeConfig = routePermissions.find((route) => route.href === routePath)
+
+  if (!routeConfig) {
+    return false
+  }
+
+  return routeConfig.permissions.some((permission) =>
+    permissionNames.includes(permission)
+  )
 }

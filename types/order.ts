@@ -39,6 +39,7 @@ export interface Order {
   uuid: string;
   ref: string;
   delivery_image: string;
+  invoice_url: string;
   delivery_location: Location;
   delivery: Delivery;
   fulfilled_token: string;

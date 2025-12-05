@@ -14,7 +14,6 @@ import { Input } from "@/components/ui/input"
 import Logo from "@/images/orbit-logo.png"
 import { Bell, Key, LogOut, Search, User } from "lucide-react"
 import { useGetNotificationsQuery } from "@/store/notifications"
-import { Badge as UiBadge } from "@/components/ui/badge"
 import { signOut, useSession } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
@@ -89,13 +88,13 @@ export function DashboardHeader() {
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/settings/profile" className="flex items-center cursor-pointer">
+                <Link href="/dashboard/profile" className="flex items-center cursor-pointer">
                   <User className="mr-2 h-4 w-4" />
                   Profile
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/settings/security" className="flex items-center cursor-pointer">
+                <Link href="/dashboard/security" className="flex items-center cursor-pointer">
                   <Key className="mr-2 h-4 w-4" />
                   Change Password
                 </Link>

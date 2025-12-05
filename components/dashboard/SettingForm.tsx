@@ -109,7 +109,17 @@ export default function SettingForm({
                 id={`sub_key-${index}`}
                 value={setting.sub_key}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSubKeyChange(index, e.target.value)}
-                placeholder={parentKey === "order" ? "e.g., minimum_order_amount" : "e.g., minimum_order_delivery"}
+                placeholder={
+                  parentKey === "order"
+                    ? "e.g., minimum_order_amount"
+                    : parentKey === "reports"
+                    ? "e.g., orderEvents_enabled"
+                    : parentKey === "telescope"
+                    ? "e.g., enabled"
+                    : parentKey === "horizon"
+                    ? "e.g., max_processes"
+                    : "e.g., minimum_order_delivery"
+                }
                 className="mt-1"
                 disabled={!allowModifyPairs}
                 readOnly={!allowModifyPairs}
