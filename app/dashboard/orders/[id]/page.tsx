@@ -7,75 +7,310 @@ import Modal from "@/components/ui/modal";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { useFileUpload } from "@/hooks/use-file-upload";
 import SuccessIcon from "@/images/success.svg";
 import { apiClient } from "@/lib/api-client";
 import type { Order } from "@/types/order";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useContext } from "./layout";
+
+// ============ Constants ============
+const FILE_UPLOAD_CONFIG = {
+  folder: "documents",
+  maxFileSize: 10 * 1024 * 1024, // 10MB
+  allowedTypes: [
+    'application/pdf',
+    'image/jpeg',
+    'image/png'
+  ],
+  provider: 'aws-s3-proxy' as const,
+};
+
+const ALLOWED_ROLES_FOR_PAYMENT = ["treasury", "sales-admin", "super-admin"];
+const ALLOWED_ROLES_FOR_APPROVAL = ["sales-admin"];
+const DOCUMENT_UPLOAD_STATUSES = ["confirmed", "approved", "delivered", "fulfilled"];
+
+// ============ Sub-Components ============
+
+interface DocumentSectionProps {
+  invoice_url?: string;
+  receipt_url?: string;
+}
+
+function DocumentsSection({ invoice_url, receipt_url }: DocumentSectionProps) {
+  if (!invoice_url && !receipt_url) return null;
+
+  return (
+    <div className="mt-8 pt-6 border-t border-gray-200">
+      <h3 className="text-lg font-semibold text-[#333333] mb-4">Documents</h3>
+      <div className="flex gap-4">
+        {invoice_url && (
+          <a
+            href={invoice_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-[#FF6600] text-white text-sm font-semibold rounded hover:bg-[#ff6b00] transition-colors"
+          >
+            View Invoice
+          </a>
+        )}
+        {receipt_url && (
+          <a
+            href={receipt_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-[#FF6600] text-white text-sm font-semibold rounded hover:bg-[#ff6b00] transition-colors"
+          >
+            View Receipt
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
+interface FooterButtonsProps {
+  userRole: string;
+  orderStatus: string;
+  isSubmitting: boolean;
+  invoice_url?: string;
+  receipt_url?: string;
+  handleRequestUpdate: () => void;
+  handleConfirmPayment: () => void;
+  handleApproveOrder: () => void;
+  onUploadDocuments: (type: 'invoice' | 'receipt') => void;
+}
+
+function FooterButtons({
+  userRole,
+  orderStatus,
+  isSubmitting,
+  invoice_url,
+  receipt_url,
+  handleRequestUpdate,
+  handleConfirmPayment,
+  handleApproveOrder,
+  onUploadDocuments,
+}: FooterButtonsProps) {
+  const hasInvoice = !!invoice_url;
+  const hasReceipt = !!receipt_url;
+
+  if (userRole && ALLOWED_ROLES_FOR_PAYMENT.includes(userRole)) {
+    if (orderStatus === "pending") {
+      return (
+        <>
+          <Button
+            variant="outline"
+            className="btn-secondary ml-2"
+            onClick={handleRequestUpdate}
+            disabled={isSubmitting}
+          >
+            Request update
+          </Button>
+          <Button
+            className="btn-primary ml-2"
+            onClick={handleConfirmPayment}
+            disabled={isSubmitting}
+          >
+            Confirm Payment
+          </Button>
+        </>
+      );
+    }
+
+    if (orderStatus === "update_requested") {
+      return (
+        <Badge className="text-[#FF6600] bg-[#FF660012] border-none p-3 rounded-[10px]">
+          Awaiting update
+        </Badge>
+      );
+    }
+
+    if (DOCUMENT_UPLOAD_STATUSES.includes(orderStatus as any)) {
+      return (
+        <>
+          {!hasInvoice && (
+            <Button variant="outline" onClick={() => onUploadDocuments('invoice')} disabled={isSubmitting}>
+              Upload Invoice
+            </Button>
+          )}
+          {!hasReceipt && (
+            <Button variant="outline" onClick={() => onUploadDocuments('receipt')} disabled={isSubmitting}>
+              Upload Receipt
+            </Button>
+          )}
+          <Badge className="text-[#12B636] bg-[#1CD34412] border-none ml-2 p-3 rounded-[10px]">
+            Payment Confirmed{" "}
+            <Image
+              src={SuccessIcon}
+              alt="Success"
+              width={16}
+              height={16}
+              className="inline mx-2"
+            />
+          </Badge>
+        </>
+      );
+    }
+
+    return (
+      <Badge className="text-[#12B636] bg-[#1CD34412] border-none p-3 rounded-[10px]">
+        Payment Confirmed{" "}
+        <Image src={SuccessIcon} alt="Success" width={16} height={16} className="inline mx-2" />
+      </Badge>
+    );
+  }
+
+  if (userRole && ALLOWED_ROLES_FOR_APPROVAL.includes(userRole)) {
+    if (orderStatus === "confirmed") {
+      return (
+        <>
+          <Button
+            className="btn-secondary"
+            onClick={handleRequestUpdate}
+            disabled={isSubmitting}
+          >
+            Request update
+          </Button>
+          <Button
+            className="btn-primary ml-2"
+            onClick={handleApproveOrder}
+            disabled={isSubmitting}
+          >
+            Approve Order
+          </Button>
+        </>
+      );
+    }
+
+    if (orderStatus === "update_requested") {
+      return (
+        <Badge className="text-[#FF6600] bg-[#FF660012] border-none p-3 rounded-[10px]">
+          Awaiting update
+        </Badge>
+      );
+    }
+
+    if (DOCUMENT_UPLOAD_STATUSES.includes(orderStatus as any)) {
+      return (
+        <>
+          {!hasInvoice && (
+            <Button variant="outline" onClick={() => onUploadDocuments('invoice')} disabled={isSubmitting}>
+              Upload Invoice
+            </Button>
+          )}
+          {!hasReceipt && (
+            <Button variant="outline" onClick={() => onUploadDocuments('receipt')} disabled={isSubmitting}>
+              Upload Receipt
+            </Button>
+          )}
+          {(hasInvoice && hasReceipt) && (
+            <Badge className="text-[#12B636] bg-[#1CD34412] border-none ml-2 p-3 rounded-[10px]">
+              Order Approved{" "}
+              <Image
+                src={SuccessIcon}
+                alt="Success"
+                width={16}
+                height={16}
+                className="inline mx-2"
+              />
+            </Badge>
+          )}
+        </>
+      );
+    }
+  }
+
+  return null;
+}
 
 export default function OrderDetailPage() {
   const { data: session } = useSession();
   const user = session?.user;
-  const { order, fetchOrder } = useContext();
+  const { order, fetchEntity } = useContext();
+
+  // State management - grouped by concern
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isDocumentsModalOpen, setIsDocumentsModalOpen] = useState(false);
+  const [documentType, setDocumentType] = useState<'invoice' | 'receipt' | null>(null);
   const [updateMessage, setUpdateMessage] = useState("");
+  const [selectedInvoiceFile, setSelectedInvoiceFile] = useState<File | null>(null);
+  const [selectedReceiptFile, setSelectedReceiptFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
   const [messages, setMessages] = useState<any[]>([]);
   const [isMessagesLoading, setIsMessagesLoading] = useState(true);
 
-  const fetchMessages = useCallback(() => {
-    const fetch = async () => {
-      setIsMessagesLoading(true);
-      try {
-        const response = await apiClient.get<{ items: any[] }>(`/orders/${order?.uuid}/messages`);
-        setMessages(response.data.items ?? []);
-      } catch (error: any) {
-      } finally {
-        setIsMessagesLoading(false);
-      }
-    };
-    fetch();
+  // File upload hook
+  const fileUpload = useFileUpload(FILE_UPLOAD_CONFIG);
+
+  // Computed values
+  const userRole = useMemo(() => user?.role?.name?.toLowerCase() ?? "", [user?.role?.name]);
+  const orderStatus = useMemo(() => order?.status?.toLowerCase() ?? "pending", [order?.status]);
+
+  // Fetch messages
+  const fetchMessages = useCallback(async () => {
+    if (!order?.uuid) return;
+    setIsMessagesLoading(true);
+    try {
+      const response = await apiClient.get<{ items: any[] }>(
+        `/orders/${order.uuid}/messages`
+      );
+      setMessages(response.data.items ?? []);
+    } catch (error) {
+      console.error("Failed to fetch messages:", error);
+    } finally {
+      setIsMessagesLoading(false);
+    }
   }, [order?.uuid]);
 
-  useEffect(() => { fetchMessages(); }, [order?.uuid, fetchMessages]);
+  useEffect(() => {
+    fetchMessages();
+  }, [order?.uuid, fetchMessages]);
 
-  if (!order) { return null; }
+  // ============ Handlers ============
 
-  const updateOrderStatus = async (status: string, extra: Record<string, any> = {}) => {
+  const updateOrderStatus = useCallback(async (status: string, extra: Record<string, any> = {}) => {
     setIsSubmitting(true);
     try {
-      await apiClient.put<{ status: string }>(`/orders/${order.uuid}`, { status, ...extra });
+      await apiClient.put(`/orders/${order.uuid}`, {
+        status,
+        ...extra,
+      });
       toast({
         title: "Success",
-        description: `Order ${status?.replace("_", " ")} successfully`,
+        description: `Order ${status.replace(/_/g, " ")} successfully`,
       });
-      fetchOrder();
+      fetchEntity();
     } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update order",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [order.uuid, fetchEntity]);
 
-  const handleRequestUpdate = () => {
+  const handleRequestUpdate = useCallback(() => {
     setIsModalOpen(true);
     setUpdateMessage("");
-  };
+  }, []);
 
-  const handleSubmitUpdate = async () => {
-    if (!updateMessage.trim()) {
-      return;
-    }
+  const handleSubmitUpdate = useCallback(async () => {
+    if (!updateMessage.trim()) return;
+
     setIsSubmitting(true);
     try {
-      const payload = {
+      await apiClient.post(`/orders/${order.uuid}/messages`, {
         content: updateMessage,
         sales_admin: user?.uuid,
-      };
-      await apiClient.post<{ status: string }>(`/orders/${order.uuid}/messages`, payload);
+      });
       await updateOrderStatus("update_requested", { sales_admin: user?.uuid });
       toast({
         title: "Success",
@@ -84,26 +319,27 @@ export default function OrderDetailPage() {
       setIsModalOpen(false);
       setUpdateMessage("");
       fetchMessages();
-      fetchOrder();
     } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to send update request",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [updateMessage, order.uuid, user?.uuid, updateOrderStatus, fetchMessages]);
 
-  const handleConfirmPayment = () => updateOrderStatus("confirmed");
-  const handleApproveOrder = () => updateOrderStatus("approved");
-
-  const handleCancelOrder = async () => {
+  const handleCancelOrder = useCallback(async () => {
     setIsSubmitting(true);
     try {
-      await apiClient.put<{ status: string }>(`/orders/${order.uuid}`, { status: "cancelled" });
+      await apiClient.put(`/orders/${order.uuid}`, { status: "cancelled" });
       toast({
         title: "Success",
         description: "Order cancelled successfully",
       });
       setIsCancelModalOpen(false);
-      fetchOrder();
+      fetchEntity();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -113,76 +349,68 @@ export default function OrderDetailPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [order.uuid, fetchEntity]);
 
-  const userRole = user?.role?.name?.toLowerCase() || ""
-
-  const orderStatus = order.status?.toLowerCase() || "pending"
-
-  function FooterButtons({
-    userRole,
-    orderStatus,
-    isSubmitting,
-    handleRequestUpdate,
-    handleConfirmPayment,
-    handleApproveOrder,
-  }: {
-    userRole: string;
-    orderStatus: string;
-    isSubmitting: boolean;
-    handleRequestUpdate: () => void;
-    handleConfirmPayment: () => void;
-    handleApproveOrder: () => void;
-  }) {
-    if (["treasury", "sales-admin", "super-admin"].includes(userRole)) {
-      if (orderStatus === "pending") {
-        return (
-          <>
-            <Button variant="outline" className="btn-secondary ml-2" onClick={handleRequestUpdate} disabled={isSubmitting}>
-              Request update
-            </Button>
-            <Button className="btn-primary ml-2" onClick={handleConfirmPayment} disabled={isSubmitting}>
-              Confirm Payment
-            </Button>
-          </>
-        )
+  const handleUploadDocuments = useCallback(async () => {
+    setIsUploadingFiles(true);
+    try {
+      let file: File | null = null;
+      let fieldName = '';
+      let label = '';
+      
+      if (documentType === 'invoice') {
+        file = selectedInvoiceFile;
+        fieldName = 'invoice_url';
+        label = 'Invoice';
+      } else if (documentType === 'receipt') {
+        file = selectedReceiptFile;
+        fieldName = 'receipt_url';
+        label = 'Receipt';
       }
-      if (orderStatus === "update_requested") {
-        return (
-          <Badge className="text-[#FF6600] bg-[#FF660012] border-none p-3 rounded-[10px]">Awaiting update</Badge>
-        )
+      
+      if (!file) {
+        toast({
+          title: "Error",
+          description: `Please select a ${label.toLowerCase()} file to upload`,
+          variant: "destructive",
+        });
+        return;
       }
-      return (
-        <Badge className="text-[#12B636] bg-[#1CD34412] border-none p-3 rounded-[10px]">Payment Confirmed <Image src={SuccessIcon} alt="Success" width={16} height={16} className="inline mx-2" /></Badge>
-      )
+
+      fileUpload.clearFiles();
+      fileUpload.addFiles([file]);
+      const uploadedFiles = await fileUpload.uploadFiles();
+
+      if (!uploadedFiles?.length) {
+        throw new Error(`Failed to upload ${label.toLowerCase()}`);
+      }
+
+      await apiClient.put(`/orders/${order.uuid}`, { [fieldName]: uploadedFiles[0].url });
+      toast({
+        title: "Success",
+        description: `${label} uploaded successfully`,
+      });
+
+      setSelectedInvoiceFile(null);
+      setSelectedReceiptFile(null);
+      fileUpload.clearFiles();
+      setIsDocumentsModalOpen(false);
+      fetchEntity();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to upload file",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingFiles(false);
     }
-    else if (userRole === "sales-admin") {
-      if (orderStatus === "confirmed") {
-        return (
-          <>
-            <Button className="btn-secondary" onClick={handleRequestUpdate} disabled={isSubmitting}>
-              Request update
-            </Button>
-            <Button className="btn-primary ml-2" onClick={handleApproveOrder} disabled={isSubmitting}>
-              Approve Order
-            </Button>
-          </>
-        )
-      }
-      if (orderStatus === "update_requested") {
-        return (
-          <Badge className="text-[#FF6600] bg-[#FF660012] border-none p-3 rounded-[10px]">Awaiting update</Badge>
-        )
-      }
-      return (
-        <>
-          <Button variant="outline">Generate Receipt</Button>
-          <Badge className="text-[#12B636] bg-[#1CD34412] border-none ml-2 p-3 rounded-[10px]">Order Approved <Image src={SuccessIcon} alt="Success" width={16} height={16} className="inline mx-2" /></Badge>
-        </>
-      )
-    }
-    return null
-  }
+  }, [documentType, selectedInvoiceFile, selectedReceiptFile, fileUpload, order.uuid, fetchEntity]);
+
+  const handleConfirmPayment = useCallback(() => updateOrderStatus("confirmed"), [updateOrderStatus]);
+  const handleApproveOrder = useCallback(() => updateOrderStatus("approved"), [updateOrderStatus]);
+
+  if (!order) return null;
 
   return (
     <div>
@@ -199,7 +427,7 @@ export default function OrderDetailPage() {
               #{order.ref}
             </div>
             <div className="operations flex items-center space-x-2">
-              {["operations", 'super-admin'].includes(userRole) && (
+              {['operations', 'super-admin'].includes(userRole) && (
                 <div className="flex items-center gap-1 text-sm text-[#444] bg-[#F8F8F8] px-3 py-1 rounded">
                   <span className="font-medium text-[#12B636]">Order Token:</span>
                   <span className="font-mono text-xs text-[#333]">{order.fulfilled_token || 'N/A'}</span>
@@ -285,7 +513,7 @@ export default function OrderDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {order.brands?.map((brand: Order["brands"][number], idx: number) => (
+                  {order.brands?.map((brand: Order['brands'][number], idx: number) => (
                     <tr
                       key={idx}
                       className="border-b border-gray-100"
@@ -318,6 +546,11 @@ export default function OrderDetailPage() {
               </table>
             </div>
           </div>
+          {/* Documents Section - Show if at least one document is available */}
+          <DocumentsSection
+            invoice_url={order.invoice_url}
+            receipt_url={order.receipt_url}
+          />
         </CardContent>
         {/* Chat Section */}
         <div className="mb-8">
@@ -363,9 +596,9 @@ export default function OrderDetailPage() {
         <div className="flex justify-between gap-2 m-4">
           <div>
             {(orderStatus === "pending" || orderStatus === "update_requested") && (
-              <Button 
-                variant="destructive" 
-                onClick={() => setIsCancelModalOpen(true)} 
+              <Button
+                variant="destructive"
+                onClick={() => setIsCancelModalOpen(true)}
                 disabled={isSubmitting}
               >
                 Cancel Order
@@ -377,9 +610,15 @@ export default function OrderDetailPage() {
               userRole={userRole}
               orderStatus={orderStatus}
               isSubmitting={isSubmitting}
+              invoice_url={order.invoice_url}
+              receipt_url={order.receipt_url}
               handleRequestUpdate={handleRequestUpdate}
               handleConfirmPayment={handleConfirmPayment}
               handleApproveOrder={handleApproveOrder}
+              onUploadDocuments={(type) => {
+                setDocumentType(type);
+                setIsDocumentsModalOpen(true);
+              }}
             />
           </div>
         </div>
@@ -423,6 +662,92 @@ export default function OrderDetailPage() {
           </Button>
           <Button className="btn-primary" onClick={handleSubmitUpdate} disabled={isSubmitting || !updateMessage.trim()}>
             {isSubmitting ? "Sending..." : "Send Request"}
+          </Button>
+        </div>
+      </Modal>
+
+      {/* Documents Upload Modal */}
+      <Modal
+        open={isDocumentsModalOpen}
+        onClose={() => {
+          setIsDocumentsModalOpen(false);
+          setDocumentType(null);
+          setSelectedInvoiceFile(null);
+          setSelectedReceiptFile(null);
+        }}
+        size="sm-center"
+        title={documentType === 'invoice' ? 'Upload Invoice' : 'Upload Receipt'}
+      >
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <label htmlFor={documentType === 'invoice' ? 'invoice' : 'receipt'} className="text-sm font-medium">
+              {documentType === 'invoice' ? 'Invoice File' : 'Receipt File'}
+            </label>
+            <input
+              id={documentType === 'invoice' ? 'invoice' : 'receipt'}
+              type="file"
+              accept=".pdf,.doc,.docx,.xlsx,.xls,.jpg,.jpeg,.png"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (documentType === 'invoice') {
+                  setSelectedInvoiceFile(file || null);
+                } else if (documentType === 'receipt') {
+                  setSelectedReceiptFile(file || null);
+                }
+              }}
+              className="block w-full text-sm text-slate-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-sm file:font-semibold
+                file:bg-[#FF6600] file:text-white
+                hover:file:bg-[#ff6b00]"
+            />
+            {(documentType === 'invoice' && selectedInvoiceFile) && (
+              <div className="flex items-center justify-between bg-green-50 p-2 rounded">
+                <p className="text-sm text-green-700">✓ {selectedInvoiceFile.name}</p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedInvoiceFile(null)}
+                  className="text-red-600 hover:text-red-700"
+                >Remove</Button>
+              </div>
+            )}
+            {(documentType === 'receipt' && selectedReceiptFile) && (
+              <div className="flex items-center justify-between bg-green-50 p-2 rounded">
+                <p className="text-sm text-green-700">✓ {selectedReceiptFile.name}</p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedReceiptFile(null)}
+                  className="text-red-600 hover:text-red-700"
+                >Remove</Button>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="flex justify-end gap-2 mt-4">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setIsDocumentsModalOpen(false);
+              setDocumentType(null);
+              setSelectedInvoiceFile(null);
+              setSelectedReceiptFile(null);
+            }}
+            disabled={isUploadingFiles}
+          >Cancel</Button>
+          <Button
+            className="btn-primary"
+            onClick={handleUploadDocuments}
+            disabled={isUploadingFiles ||
+              (documentType === 'invoice' ? !selectedInvoiceFile : !selectedReceiptFile)}
+          >
+            {isUploadingFiles
+              ? 'Uploading...'
+              : `Upload ${documentType === 'invoice' ? 'Invoice' : 'Receipt'}`}
           </Button>
         </div>
       </Modal>

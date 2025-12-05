@@ -59,4 +59,6 @@ export interface Order {
   self_pickup: string;
   brands: OrderBrand[];
   promos: Promo;
+  invoice_url?: string;
+  receipt_url?: string;
 }

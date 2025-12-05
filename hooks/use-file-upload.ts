@@ -4,7 +4,7 @@ import {
   StorageFactory,
 } from "@/lib/storage/storage-factory";
 import { StorageProvider, UploadResult } from "@/lib/storage/storage-provider";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 // Re-export for convenience
 export type { FileUploadConfig } from "@/lib/storage/storage-factory";
@@ -34,7 +34,10 @@ export interface FileUploadActions {
 export function useFileUpload(
   config: Partial<FileUploadConfig> = {},
 ): FileUploadState & FileUploadActions {
-  const mergedConfig = { ...StorageFactory.getDefaultConfig(), ...config };
+  const mergedConfig = useMemo(
+    () => ({ ...StorageFactory.getDefaultConfig(), ...config }),
+    [config],
+  );
   const [state, setState] = useState<FileUploadState>({
     files: [],
     uploadedFiles: [],
@@ -45,6 +48,8 @@ export function useFileUpload(
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const storageProviderRef = useRef<StorageProvider | null>(null);
+  const stateRef = useRef<FileUploadState>(state);
+  stateRef.current = state;
 
   // Get or create storage provider instance
   const getStorageProvider = useCallback((): StorageProvider => {
@@ -139,70 +144,77 @@ export function useFileUpload(
   );
 
   const uploadFiles = useCallback(async (): Promise<UploadResult[]> => {
-    if (state.files.length === 0) {
-      return [];
-    }
+    return new Promise(async (resolve) => {
+      Promise.resolve().then(async () => {
+        const filesToUpload = [...stateRef.current.files];
 
-    setState((prev) => ({ ...prev, isUploading: true, error: null }));
-    abortControllerRef.current = new AbortController();
+        if (filesToUpload.length === 0) {
+          resolve([]);
+          return;
+        }
 
-    const uploadedFiles: UploadResult[] = [];
-    const errors: string[] = [];
+        setState((prev) => ({ ...prev, isUploading: true, error: null }));
+        abortControllerRef.current = new AbortController();
 
-    try {
-      for (let i = 0; i < state.files.length; i++) {
-        const file = state.files[i];
-        const fileId = i.toString();
+        const uploadedFiles: UploadResult[] = [];
+        const errors: string[] = [];
 
         try {
-          // Update progress
-          setState((prev) => ({
-            ...prev,
-            uploadProgress: { ...prev.uploadProgress, [fileId]: 0 },
-          }));
+          for (let i = 0; i < filesToUpload.length; i++) {
+            const file = filesToUpload[i];
+            const fileId = i.toString();
 
-          const uploadedFile = await uploadFile(file, fileId);
-          uploadedFiles.push(uploadedFile);
+            try {
+              // Update progress
+              setState((prev) => ({
+                ...prev,
+                uploadProgress: { ...prev.uploadProgress, [fileId]: 0 },
+              }));
 
-          // Update progress to 100%
-          setState((prev) => ({
-            ...prev,
-            uploadProgress: { ...prev.uploadProgress, [fileId]: 100 },
-          }));
-        } catch (error: any) {
-          errors.push(`Failed to upload ${file.name}: ${error.message}`);
+              const uploadedFile = await uploadFile(file, fileId);
+              uploadedFiles.push(uploadedFile);
+
+              // Update progress to 100%
+              setState((prev) => ({
+                ...prev,
+                uploadProgress: { ...prev.uploadProgress, [fileId]: 100 },
+              }));
+            } catch (error: any) {
+              errors.push(`Failed to upload ${file.name}: ${error.message}`);
+            }
+          }
+
+          if (errors.length > 0) {
+            setState((prev) => ({ ...prev, error: errors.join(", ") }));
+            toast({
+              title: "Upload errors",
+              description: errors.join(", "),
+              variant: "destructive",
+            });
+          }
+
+          if (uploadedFiles.length > 0) {
+            setState((prev) => ({
+              ...prev,
+              uploadedFiles: [...prev.uploadedFiles, ...uploadedFiles],
+              files: [],
+              uploadProgress: {},
+            }));
+
+            toast({
+              title: "Upload successful",
+              description: `${uploadedFiles.length} file(s) uploaded successfully`,
+            });
+          }
+
+          resolve(uploadedFiles);
+        } finally {
+          setState((prev) => ({ ...prev, isUploading: false }));
+          abortControllerRef.current = null;
         }
-      }
-
-      if (errors.length > 0) {
-        setState((prev) => ({ ...prev, error: errors.join(", ") }));
-        toast({
-          title: "Upload errors",
-          description: errors.join(", "),
-          variant: "destructive",
-        });
-      }
-
-      if (uploadedFiles.length > 0) {
-        setState((prev) => ({
-          ...prev,
-          uploadedFiles: [...prev.uploadedFiles, ...uploadedFiles],
-          files: [],
-          uploadProgress: {},
-        }));
-
-        toast({
-          title: "Upload successful",
-          description: `${uploadedFiles.length} file(s) uploaded successfully`,
-        });
-      }
-
-      return uploadedFiles;
-    } finally {
-      setState((prev) => ({ ...prev, isUploading: false }));
-      abortControllerRef.current = null;
-    }
-  }, [state.files, uploadFile]);
+      });
+    });
+  }, [uploadFile]);
 
   const clearFiles = useCallback(() => {
     setState({
