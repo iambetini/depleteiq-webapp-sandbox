@@ -1,4 +1,4 @@
-name: Deploy depleteiq-webapp to Prod #
+name: Deploy depleteiq-webapp to Prod
 
 on:
   push:
