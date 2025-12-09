@@ -61,12 +61,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Prepare SSH key & host (staging)
-        run: |
-          echo "HOST=${{ secrets.DO_HOST_DEPLETEIQ_WEBAPP_STAGING }}" >> $GITHUB_ENV
-          printf '%s\n' "${{ secrets.DO_SSH_KEY_DEPLETEIQ_WEBAPP_STAGING }}" > /tmp/ssh_key
-          chmod 600 /tmp/ssh_key
-
       - name: Create .env.production from secret
         run: echo "${{ secrets.DEPLETEIQ_STAGING_WEBAPP_ENV_FILE }}" > .env.production
 
