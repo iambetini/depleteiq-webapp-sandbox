@@ -84,8 +84,3 @@ jobs:
             docker compose pull
             docker compose up -d
           EOF
-
-      - name: Clean up old Docker images
-        run: |
-          docker image prune -a -f
-          # docker rmi -f $(docker images -q)
