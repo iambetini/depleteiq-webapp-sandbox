@@ -77,7 +77,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
 
           rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa" \
-            docker-compose.yml next.config.mjs nginx.conf .env.production \
+            next.config.mjs .env.production \
             root@${{ env.HOST }}:/var/www/depleteiq-webapp
 
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa root@${{ env.HOST }} << 'EOF'
