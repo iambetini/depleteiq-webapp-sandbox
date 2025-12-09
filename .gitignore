@@ -34,8 +34,5 @@ nginx.conf
 /domain_config
 
 # docker config
-Dockerfile
 docker-compose.yml
-
-package-lock.json
 .vscode
