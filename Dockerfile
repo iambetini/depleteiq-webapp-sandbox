@@ -31,7 +31,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 
 # Install only production dep
-COPY package.json package-lock.json ./
+COPY package-lock.json ./
 RUN npm ci --omit=dev
 
 # Create non-root user for apps
