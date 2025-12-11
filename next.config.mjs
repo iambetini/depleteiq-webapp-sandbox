@@ -15,7 +15,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: 'https://depleteiqstore.s3.eu-west-2.amazonaws.com',
       },
     ],
     unoptimized: true,
