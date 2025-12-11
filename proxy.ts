@@ -1,13 +1,13 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 import {
-  hasRequiredPermissions,
-  getUserPermissions,
-  getPermissionsForPath,
+    hasRequiredPermissions,
+    getUserPermissions,
+    getPermissionsForPath,
 } from "@/lib/route-permissions";
 
 export default withAuth(
-  function middleware(req) {
+  function proxy(req) {
     const { token } = req.nextauth;
     const { pathname } = req.nextUrl;
 

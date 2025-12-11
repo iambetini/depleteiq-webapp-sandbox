@@ -11,7 +11,7 @@ import Image from "next/image";
 import { useImageUpload } from "@/hooks/use-image-upload";
 
 // Default brand image fallback URL
-const DEFAULT_BRAND_IMAGE_URL = process.env.NEXT_PUBLIC_DEFAULT_BRAND_IMAGE_URL || 'https://businessnews.com.ng/wp-content/uploads/2012/08/Orange-Drugs.jpg';
+const DEFAULT_BRAND_IMAGE_URL = process.env.NEXT_PUBLIC_DEFAULT_BRAND_IMAGE_URL || 'https://depleteiqstore.s3.eu-west-2.amazonaws.com/brand-images/1765453346869-w0msa6stce.jpg';
 
 interface BrandFormProps {
   mode: "create" | "edit";
