@@ -1,6 +1,6 @@
-@use "tailwindcss/base";
-@use "tailwindcss/components";
-@use "tailwindcss/utilities";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 // Custom SCSS variables matching the Figma design
 $primary-orange: #ff6600;
