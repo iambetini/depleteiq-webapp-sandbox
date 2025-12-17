@@ -14,6 +14,5 @@ export interface Role {
   permissions_count: number;
   users_count: number;
   description: string;
-  status: string;
   created_at: string;
 }

@@ -13,7 +13,6 @@ export default function EditRolePage() {
   const initialValues: RoleFormValues = {
     name: role?.name || "",
     description: role?.description || "",
-    status: role?.status || "active",
     access_type: role?.access_type || "web",
     permissions: role?.permissions?.map((p: any) => p.uuid || p.id) || [],
   };
