@@ -26,14 +26,9 @@ export function getColumns(): ColumnDef<OrderBrand>[] {
     {
       accessorKey: "posted_at",
       header: "Posted At",
+      showByDefault: false,
       width: 200,
       cell: ({ row }) => <div className="text-sm">{row.original.posted_at}</div>,
-    },
-    {
-      accessorKey: "date",
-      header: "Date",
-      width: 200,
-      cell: ({ row }) => <div className="text-sm">{row.original.date}</div>,
     },
     {
       accessorKey: "customer_name",
