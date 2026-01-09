@@ -1,5 +1,6 @@
 // components/ui/modal.tsx
 import { ReactNode, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 type ModalSize =
   | "sm-center"
@@ -57,7 +58,7 @@ export const Modal = ({
 
   const labelId = title ? "modal-title" : undefined;
 
-  return (
+  const modalContent = (
     <div
       className="!mt-0 fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       onClick={onClose}
@@ -85,6 +86,10 @@ export const Modal = ({
       </div>
     </div>
   );
+
+  return typeof document !== "undefined"
+    ? createPortal(modalContent, document.body)
+    : null;
 };
 
 export default Modal;
