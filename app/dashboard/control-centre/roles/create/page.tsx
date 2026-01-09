@@ -13,7 +13,6 @@ export default function CreateRolePage() {
   const initialValues: RoleFormValues = {
     name: "",
     description: "",
-    status: "active",
     access_type: "web",
     permissions: [],
   }

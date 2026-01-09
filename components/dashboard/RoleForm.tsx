@@ -18,7 +18,6 @@ import * as Yup from "yup"
 export interface RoleFormValues {
   name: string
   description: string
-  status: string
   access_type: string
   permissions: string[]
 }
@@ -36,7 +35,6 @@ interface RoleFormProps {
 export const roleValidationSchema = Yup.object({
   name: Yup.string().required("Name is required"),
   description: Yup.string(),
-  status: Yup.string().oneOf(["active", "inactive"]).required(),
   access_type: Yup.string().oneOf(["web", "mobile"]).required(),
   permissions: Yup.array().of(Yup.string()),
 })
@@ -155,22 +153,6 @@ export default function RoleForm({
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
-                    <Select
-                      value={values.status}
-                      onValueChange={(value) => setFieldValue("status", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <ErrorMessage name="status" component="p" className="text-sm text-red-500" />
-                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="access_type">Access Type</Label>
                     <Select

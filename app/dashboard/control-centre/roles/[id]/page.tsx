@@ -1,9 +1,8 @@
 "use client";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useContext } from "./layout";
-import { Calendar, FileText, Laptop, Shield, Smartphone } from "lucide-react";
+import { Calendar, FileText, Laptop, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function RoleDetailPage() {
@@ -37,16 +36,6 @@ export default function RoleDetailPage() {
               <div>
                 <p className="text-sm text-[#ababab]">Description</p>
                 <p className="font-medium text-[#444444]">{role.description}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <Shield className="h-5 w-5 text-[#ababab]" />
-              <div>
-                <p className="text-sm text-[#ababab]">Status</p>
-                <Badge variant={role.status === "active" ? "primary" : "destructive"}>
-                  {role.status === "active" ? "Active" : "Inactive"}
-                </Badge>
               </div>
             </div>
 
