@@ -129,6 +129,10 @@ function FooterButtons({
       );
     }
 
+    if (orderStatus === "cancelled") {
+      return null;
+    }
+
     if (DOCUMENT_UPLOAD_STATUSES.includes(orderStatus as any)) {
       return (
         <>

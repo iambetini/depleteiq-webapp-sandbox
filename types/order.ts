@@ -23,6 +23,8 @@ export interface OrderBrand {
   cartons_sold: string;
   location: string;
   date: string;
+  updated_at: string;
+  posted_at: string;
   price_per_carton: string;
   sales_value: number;
   comments: string;
@@ -59,6 +61,5 @@ export interface Order {
   self_pickup: string;
   brands: OrderBrand[];
   promos: Promo;
-  invoice_url?: string;
   receipt_url?: string;
 }
