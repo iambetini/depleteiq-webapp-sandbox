@@ -1,18 +1,16 @@
-export interface Permission {
-  uuid: string;
-  name: string;
-  guard_name: null;
-  category: string;
-  description?: string;
-  created_at: string;
-}
+import { Permission } from "./permission";
+
 export interface Role {
+  id: string;
   uuid: string;
   name: string;
-  access_type?: string;
-  permissions: Permission[];
-  permissions_count: number;
-  users_count: number;
-  description: string;
+  access_type: string;
+  description?: string | null;
+  deleted: string;
+  permissions?: Permission[] | string[];
+  permissions_count?: number;
+  users_count?: number;
   created_at: string;
+  updated_at: string;
+  deleted_at?: string;
 }

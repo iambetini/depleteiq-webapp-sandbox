@@ -1,31 +1,31 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import {
-  Building2,
-  FileText,
-  GitBranch,
-  History,
-  Home,
-  LogOut,
-  MapPin,
-  Package,
-  PackageCheck,
-  Settings,
-  Shield,
-  ShoppingCart,
-  Truck,
-  UserCheck,
-  UserCog,
-  Users,
-  Warehouse,
-  Flag
-} from "lucide-react"
-import { signOut, useSession } from "next-auth/react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import React from "react"
+    Building2,
+    FileText,
+    GitBranch,
+    History,
+    Home,
+    LogOut,
+    MapPin,
+    Package,
+    PackageCheck,
+    Settings,
+    Shield,
+    ShoppingCart,
+    Truck,
+    UserCheck,
+    UserCog,
+    Users,
+    Warehouse,
+    Flag
+} from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import React from "react";
 
-import { getUserPermissions, hasRequiredPermissions } from "@/lib/route-permissions"
+import { getUserPermissions, hasRequiredPermissions } from "@/lib/route-permissions";
 
 type IconType = React.ComponentType<{ className?: string }>;
 
@@ -142,8 +142,8 @@ export const sidebarItems: SidebarItem[] = [
     icon: "History",
   },
   {
-    title: "Control Centre",
-    href: "/dashboard/control-centre",
+    title: "General Settings",
+    href: "/dashboard/general-settings",
     permissions: ["all access"],
     icon: "Settings",
   },

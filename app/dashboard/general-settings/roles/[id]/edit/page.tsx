@@ -34,7 +34,7 @@ export default function EditRolePage() {
         title="Edit Role"
         description="Update role information"
         submitButtonText="Update Role"
-        onSuccess={() => router.push(`/dashboard/control-centre/roles/${role.uuid}`)}
+        onSuccess={() => router.push(`/dashboard/general-settings/roles/${role.uuid}`)}
       />
     </>
   );

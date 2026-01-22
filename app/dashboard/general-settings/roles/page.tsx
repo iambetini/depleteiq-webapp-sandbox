@@ -62,11 +62,11 @@ export default function RolesPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => router.push(`/dashboard/control-centre/roles/${row.original.uuid}`)}>
+            <DropdownMenuItem onClick={() => router.push(`/dashboard/general-settings/roles/${row.original.uuid}`)}>
               <Eye className="mr-2 h-4 w-4" />
               View Details
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push(`/dashboard/control-centre/roles/${row.original.uuid}/edit`)}>
+            <DropdownMenuItem onClick={() => router.push(`/dashboard/general-settings/roles/${row.original.uuid}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
@@ -91,7 +91,7 @@ export default function RolesPage() {
         title="Roles"
         description="Manage system roles and permissions"
         showAddButton={true}
-        onAdd={() => router.push("/dashboard/control-centre/roles/create")}
+        onAdd={() => router.push("/dashboard/general-settings/roles/create")}
         addLabel="Add Role"
       />
 

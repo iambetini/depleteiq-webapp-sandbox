@@ -94,7 +94,7 @@ export default function EditUserPage() {
       await updateUser({ id: user.uuid, data: values }).unwrap();
       toast({ title: "Success", description: "User updated successfully" });
       fetchUser();
-      router.push(`/dashboard/control-centre/users/${user.uuid}`);
+      router.push(`/dashboard/general-settings/users/${user.uuid}`);
     } catch (error: any) {
       catchError(error, setFieldError);
     } finally {

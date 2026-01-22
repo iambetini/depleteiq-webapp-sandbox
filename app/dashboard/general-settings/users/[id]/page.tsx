@@ -18,7 +18,7 @@ export default function UserDetailPage() {
         title={`${user.first_name} ${user.last_name}`}
         description="User Details"
         showEditButton={true}
-        editHref={`/dashboard/control-centre/users/${user.uuid}/edit`}
+        editHref={`/dashboard/general-settings/users/${user.uuid}/edit`}
         showDeleteButton={true}
         deleteOptions={{
           storeName: "users",

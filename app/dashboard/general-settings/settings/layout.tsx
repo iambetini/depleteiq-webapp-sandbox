@@ -17,11 +17,11 @@ function SettingsLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   const tabs = [
-    { id: 'deliveries', label: 'Deliveries', path: `/dashboard/control-centre/settings/deliveries` },
-    { id: 'orders', label: 'Orders', path: `/dashboard/control-centre/settings/orders` },
-    { id: 'reports', label: 'Reports', path: `/dashboard/control-centre/settings/reports` },
-    { id: 'telescope', label: 'Telescope', path: `/dashboard/control-centre/settings/telescope` },
-    { id: 'horizon', label: 'Horizon', path: `/dashboard/control-centre/settings/horizon` },
+    { id: 'orders', label: 'Orders', path: `/dashboard/general-settings/settings/orders` },
+    { id: 'deliveries', label: 'Deliveries', path: `/dashboard/general-settings/settings/deliveries` },
+    { id: 'reports', label: 'Reports', path: `/dashboard/general-settings/settings/reports` },
+    { id: 'telescope', label: 'Telescope', path: `/dashboard/general-settings/settings/telescope` },
+    { id: 'horizon', label: 'Horizon', path: `/dashboard/general-settings/settings/horizon` },
   ]
 
   const activeTab = getActiveTab()
