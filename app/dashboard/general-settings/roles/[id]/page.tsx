@@ -17,7 +17,7 @@ export default function RoleDetailPage() {
         title={role.name}
         description="Role Details"
         showEditButton={true}
-        editHref={`/dashboard/control-centre/roles/${role.uuid}/edit`}
+        editHref={`/dashboard/general-settings/roles/${role.uuid}/edit`}
         showDeleteButton={true}
         deleteOptions={{
           storeName: "roles",

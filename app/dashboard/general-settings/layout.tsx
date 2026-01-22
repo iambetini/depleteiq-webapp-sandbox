@@ -20,9 +20,9 @@ function ControlCentreLayoutContent({ children }: { children: React.ReactNode })
   }
 
   const allTabs = [
-    { id: 'roles', label: 'Roles & Permissions', path: `/dashboard/control-centre/roles` },
-    { id: 'users', label: 'Users', path: `/dashboard/control-centre/users` },
-    { id: 'settings', label: 'Settings', path: `/dashboard/control-centre/settings` },
+    { id: 'roles', label: 'Roles & Permissions', path: `/dashboard/general-settings/roles` },
+    { id: 'users', label: 'Users', path: `/dashboard/general-settings/users` },
+    { id: 'settings', label: 'Settings', path: `/dashboard/general-settings/settings` },
   ]
 
   const tabs = allTabs.filter((tab) =>

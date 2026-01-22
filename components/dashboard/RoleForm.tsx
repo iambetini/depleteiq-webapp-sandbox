@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/hooks/use-toast"
 import { apiClient } from "@/lib/api-client"
 import { useCreateRoleMutation, useUpdateRoleMutation } from "@/store/roles"
-import type { Permission } from "@/types/role"
+import { Permission } from "@/types/permission"
 import { ErrorMessage, Field, Form, Formik } from "formik"
 import { Save } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -87,7 +87,7 @@ export default function RoleForm({
         if (onSuccess) {
           onSuccess(values);
         } else {
-          router.push(`/dashboard/control-centre/roles/${roleId}`);
+          router.push(`/dashboard/general-settings/roles/${roleId}`);
         }
       } else {
         const permissionsPayload: Permission[] = values.permissions.map((uuid) => ({ uuid } as Permission));

@@ -57,15 +57,14 @@ export const authOptions: NextAuthOptions = {
             phone: fullUser.phone,
             status: fullUser.status,
             is_active: fullUser.is_active,
-            role: {
-              ...fullUser.role,
-              permissions: fullUser?.role?.permissions?.map(
-                (permission: any) => {
-                  const { uuid, ...permissionWithoutUuid } = permission;
-                  return permissionWithoutUuid;
-                },
-              ),
-            },
+            role: fullUser.role
+              ? {
+                  ...fullUser.role,
+                  permissions: fullUser.role.permissions?.map(
+                    (permission: any) => permission.name,
+                  ),
+                }
+              : undefined,
             accessToken: token,
           } as User & { accessToken: string };
         } catch (error: any) {
@@ -77,16 +76,6 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        // Remove UUID from permissions items
-        if (user.role?.permissions) {
-          user.role.permissions = user.role.permissions.map(
-            (permission: any) => {
-              const { uuid, ...permissionWithoutUuid } = permission;
-              return permissionWithoutUuid;
-            },
-          );
-        }
-
         const { accessToken, ...userWithoutToken } = user as any;
         Object.assign(token, { user: userWithoutToken, accessToken });
       }
