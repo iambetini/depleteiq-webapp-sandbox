@@ -1,0 +1,50 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Node.js CI
+
+on:
+  push:
+    branches: ["dev", "staging", "production"]
+
+jobs:
+  build:
+    runs-on: runner
+    env:
+      NEXTAUTH_URL: ${{secrets.NEXTAUTH_URL}}
+      NEXTAUTH_SECRET: ${{secrets.NEXTAUTH_SECRET}}
+      NEXT_PUBLIC_API_URL: ${{secrets.NEXT_PUBLIC_API_URL}}
+      NEXT_PUBLIC_API_KEY: ${{secrets.NEXT_PUBLIC_API_KEY}}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          cache: true
+
+      - run: pnpm i -- lockfile
+
+      - run: npm run dev:start
+
+      - run: pnpm build
+
+      # - name: Type check
+      #   run: npm run type-check # or npx tsc --noEmit
+
+      # - name: Lint
+      #   run: npm run lint
+
+      - run: npm test
+        env:
+          NEXTAUTH_URL: ${{secrets.NEXTAUTH_URL}}
+          NEXTAUTH_SECRET: ${{secrets.NEXTAUTH_SECRET}}
+          NEXT_PUBLIC_API_URL: ${{secrets.NEXT_PUBLIC_API_URL}}
+          NEXT_PUBLIC_API_KEY: ${{secrets.NEXT_PUBLIC_API_KEY}}
