@@ -41,7 +41,7 @@
     # ========== NGINX CONFIGURATION ==========
     - name: Check if nginx config file exists in source
       stat:
-        path: "{{ source_dir }}/nginx.conf"
+        path: "{{ source_dir }}nginx.conf"
       register: nginx_config_exists
 
     - name: Deploy Nginx configuration
@@ -49,7 +49,7 @@
       block:
         - name: Copy Nginx configuration
           copy:
-            src: "{{ source_dir }}/nginx.conf"
+            src: "{{ source_dir }}nginx.conf"
             dest: "/etc/nginx/sites-available/{{ project_name }}"
             owner: root
             group: root
