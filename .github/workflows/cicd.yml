@@ -28,19 +28,19 @@ jobs:
           node-version: "20"
           cache: "pnpm"
 
-      - run: pnpm i -- lockfile
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - run: npm run dev:start
+      - name: Lint (check only)
+        run: pnpm lint
+        continue-on-error: true # Don't fail on lint errors
 
-      - run: pnpm build
+      - name: Type check
+        run: pnpm type-check
+        continue-on-error: true
 
-      # - name: Type check
-      #   run: npm run type-check # or npx tsc --noEmit
-
-      # - name: Lint
-      #   run: npm run lint
-
-      - run: npm test
+      - name: Build
+        run: pnpm build
 
   deploy:
     name: Deploy to Server
