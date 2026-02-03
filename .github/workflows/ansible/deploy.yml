@@ -1,0 +1,80 @@
+---
+- name: Deploy Application
+  hosts: "webapp"
+  become: no
+  vars:
+    app_user: "{{ lookup('env', 'SSH_USER')| default('root') }}"
+    project_name: "{{ lookup('env', 'PROJECT') | default('myapp') }}"
+    deploy_dir: "/home/{{ app_user }}/projects/{{ project_name }}/"
+    source_dir: "{{ lookup('env', 'SOURCE_DIR') | default('.') }}/"
+    ansible_ssh_common_args: "-o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ControlMaster=no"
+    ansible_command_timeout: 900
+
+  tasks:
+    - name: Validate deployment parameters
+      assert:
+        that:
+          - deploy_dir is defined
+          - project_name is defined
+          - source_dir is defined
+        fail_msg: "Required deployment parameters are not defined"
+
+    - name: Ensure deployment directory exists
+      file:
+        path: "{{ deploy_dir }}"
+        state: directory
+        mode: "0755"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+
+    - name: Copy current repository files to server
+      synchronize:
+        src: "{{ source_dir }}"
+        dest: "{{ deploy_dir }}"
+        recursive: yes
+        delete: yes
+        rsync_opts:
+          - "--exclude=.git"
+          - "--exclude=node_modules"
+          - "--exclude=.next"
+
+    - name: Remove existing build folder
+      file:
+        path: "{{ deploy_dir }}/.next"
+        state: absent
+
+    - name: Install dependencies with pnpm
+      command: pnpm install --frozen-lockfile
+      args:
+        chdir: "{{ deploy_dir }}"
+      become_user: "{{ app_user }}"
+
+    - name: Build the Next.js application
+      command: pnpm build
+      args:
+        chdir: "{{ deploy_dir }}"
+      become_user: "{{ app_user }}"
+
+    - name: Manage PM2 process
+      block:
+        - name: Stop PM2 process if exists
+          community.general.pm2:
+            name: "{{ app_name }}"
+            state: stopped
+          ignore_errors: yes
+
+        - name: Delete PM2 process if exists
+          community.general.pm2:
+            name: "{{ app_name }}"
+            state: deleted
+          ignore_errors: yes
+
+        - name: Start application with PM2
+          community.general.pm2:
+            name: "{{ app_name }}"
+            cmd: "npm"
+            args: "start"
+            cwd: "{{ deploy_dir }}"
+            state: started
+            env:
+              NODE_ENV: production
