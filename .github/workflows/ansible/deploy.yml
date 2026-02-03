@@ -39,12 +39,13 @@
           - "--exclude=.next"
 
     # ========== NGINX CONFIGURATION ==========
-    - name: Check if nginx config file exists in source
+    - name: Check if nginx config file exists in after copy
       stat:
         path: "{{ deploy_dir }}nginx.conf"
       register: nginx_config_exists
 
     - name: Deploy Nginx configuration
+      become: true
       when: nginx_config_exists.stat.exists
       block:
         - name: Copy Nginx configuration
@@ -68,17 +69,17 @@
             path: /etc/nginx/sites-enabled/default
             state: absent
 
-        - name: Reload Nginx if config changed
-          systemd:
-            name: nginx
-            state: reloaded
-          when: nginx_copied is changed
-
         - name: Test Nginx configuration
           command: nginx -t
           register: nginx_test
           changed_when: false
           failed_when: nginx_test.rc != 0
+
+        - name: Reload Nginx if config changed
+          systemd:
+            name: nginx
+            state: reloaded
+          when: nginx_copied is changed and nginx_test.rc == 0
 
     - name: Remove existing build folder
       file:
