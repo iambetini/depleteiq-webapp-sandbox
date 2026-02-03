@@ -100,6 +100,11 @@ jobs:
           cat > nginx.conf << 'EOF'
           ${{ secrets.NGINX_CONFIG }}
           EOF
+
+          echo "Writing ecosystem config file"
+          cat > ecosystem.config.js << 'EOF'
+          ${{ secrets.ECO_CONFIG }}
+          EOF
            
           # Get every VM IPs for API servers
           API_IP=$(echo '${{ steps.ip_output.outputs.vm_ips }}' | jq -r '[to_entries[] | select(.key | contains("-api-")) | .value] | join(" ")')
@@ -114,8 +119,6 @@ jobs:
 
           echo API_IP is $API_IP
           echo WEBAPP_IP is $WEBAPP_IP
-
-          cat nginx.conf
 
       #  SSH key setup with passphrase
       - name: Setup SSH key with Passphrase
@@ -228,7 +231,7 @@ jobs:
       - name: Deploy App
         run: ansible-playbook -i inventory.ini .github/workflows/ansible/deploy.yml
         env:
-          PROJECT: ${{ env.project }}
+          PROJECT: "${{ env.project }}-${{ env.application }}"
           SSH_USER: ${{ secrets.SSH_USER }}
           app_container: ${{ secrets.APP_CONTAINER }}
           nginx_container: ${{ secrets.NGINX_CONTAINER }}

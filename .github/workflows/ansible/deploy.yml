@@ -38,6 +38,48 @@
           - "--exclude=node_modules"
           - "--exclude=.next"
 
+    # ========== NGINX CONFIGURATION ==========
+    - name: Check if nginx config file exists in source
+      stat:
+        path: "{{ source_dir }}/nginx.conf"
+      register: nginx_config_exists
+
+    - name: Deploy Nginx configuration
+      when: nginx_config_exists.stat.exists
+      block:
+        - name: Copy Nginx configuration
+          copy:
+            src: "{{ source_dir }}/nginx.conf"
+            dest: "/etc/nginx/sites-available/{{ project_name }}"
+            owner: root
+            group: root
+            mode: "0644"
+          register: nginx_copied
+
+        - name: Enable site if not already enabled
+          file:
+            src: "/etc/nginx/sites-available/{{ project_name }}"
+            dest: "/etc/nginx/sites-enabled/{{ project_name }}"
+            state: link
+          when: nginx_copied is changed
+
+        - name: Remove default Nginx config
+          file:
+            path: /etc/nginx/sites-enabled/default
+            state: absent
+
+        - name: Reload Nginx if config changed
+          systemd:
+            name: nginx
+            state: reloaded
+          when: nginx_copied is changed
+
+        - name: Test Nginx configuration
+          command: nginx -t
+          register: nginx_test
+          changed_when: false
+          failed_when: nginx_test.rc != 0
+
     - name: Remove existing build folder
       file:
         path: "{{ deploy_dir }}/.next"
@@ -55,26 +97,14 @@
         chdir: "{{ deploy_dir }}"
       become_user: "{{ app_user }}"
 
-    - name: Manage PM2 process
-      block:
-        - name: Stop PM2 process if exists
-          community.general.pm2:
-            name: "{{ app_name }}"
-            state: stopped
-          ignore_errors: yes
+    - name: Deploy via PM2 Ecosystem
+      shell: |
+        pm2 delete {{ project_name }} || true
+        pm2 start ecosystem.config.js
+      args:
+        chdir: "{{ deploy_dir }}"
+      become_user: "{{ app_user }}"
 
-        - name: Delete PM2 process if exists
-          community.general.pm2:
-            name: "{{ app_name }}"
-            state: deleted
-          ignore_errors: yes
-
-        - name: Start application with PM2
-          community.general.pm2:
-            name: "{{ app_name }}"
-            cmd: "npm"
-            args: "start"
-            cwd: "{{ deploy_dir }}"
-            state: started
-            env:
-              NODE_ENV: production
+    - name: Persist PM2 state
+      command: pm2 save
+      become_user: "{{ app_user }}"
