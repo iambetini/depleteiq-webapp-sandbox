@@ -5,7 +5,7 @@ name: Node.js CI
 
 on:
   push:
-    branches: ["dev", "staging", "production"]
+    branches: ["dev", "staging", "production", feature/*, bugfix/*]
 
 jobs:
   build:
