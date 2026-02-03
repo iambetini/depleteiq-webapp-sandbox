@@ -41,7 +41,7 @@
     # ========== NGINX CONFIGURATION ==========
     - name: Check if nginx config file exists in source
       stat:
-        path: "{{ source_dir }}nginx.conf"
+        path: "{{ deploy_dir }}nginx.conf"
       register: nginx_config_exists
 
     - name: Deploy Nginx configuration
@@ -82,7 +82,7 @@
 
     - name: Remove existing build folder
       file:
-        path: "{{ deploy_dir }}/.next"
+        path: "{{ deploy_dir }}.next"
         state: absent
 
     - name: Install dependencies with pnpm
