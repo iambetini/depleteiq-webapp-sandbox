@@ -5,7 +5,7 @@
   vars:
     app_user: "{{ lookup('env', 'SSH_USER')| default('root') }}"
     project_name: "{{ lookup('env', 'PROJECT') | default('myapp') }}"
-    deploy_dir: "/home/{{ app_user }}/projects/{{ project_name }}"
+    deploy_dir: "/home/{{ app_user }}/projects/{{ project_name }}/"
     backup_dir: "/home/{{ app_user }}/backups/{{ project_name }}"
     backup_retention: "{{ retention | default(5) }}"
     timestamp: "{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}"

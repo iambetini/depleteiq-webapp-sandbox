@@ -1,7 +1,12 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+name: Webapp Pipeline
 
-name: Node.js CI
+run-name: |
+  ${{ 
+    github.ref == 'refs/heads/production' && 'Deploy to Production' ||
+    github.ref == 'refs/heads/stage' && 'Deploy to Stage' ||
+    github.ref == 'refs/heads/dev' && 'Deploy to Dev' ||
+    'Running CI '
+  }} by @${{ github.actor }}
 
 on:
   push:
@@ -38,6 +43,8 @@ jobs:
       - name: Type check
         run: pnpm type-check
         continue-on-error: true
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
 
       - name: Build
         run: pnpm build
@@ -223,7 +230,7 @@ jobs:
       - name: Run Code Backup
         run: ansible-playbook -i inventory.ini .github/workflows/ansible/backup.yml
         env:
-          PROJECT: ${{ env.project }}
+          PROJECT: "${{ env.project }}-${{ env.application }}"
           SSH_USER: ${{ secrets.SSH_USER }}
 
       # Deploy latest changes to server with ansible
