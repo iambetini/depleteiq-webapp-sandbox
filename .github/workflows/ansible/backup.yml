@@ -5,7 +5,7 @@
   vars:
     app_user: "{{ lookup('env', 'SSH_USER')| default('root') }}"
     project_name: "{{ lookup('env', 'PROJECT') | default('myapp') }}"
-    deploy_dir: "/home/{{ app_user }}/projects/{{ project_name }}/"
+    deploy_dir: "/home/{{ app_user }}/projects/{{ project_name }}"
     backup_dir: "/home/{{ app_user }}/backups/{{ project_name }}"
     backup_retention: "{{ retention | default(5) }}"
     timestamp: "{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}"
@@ -36,12 +36,13 @@
       when: deployment_exists.stat.exists
       command: >
         tar -czf "{{ backup_dir }}/backup_{{ timestamp }}.tar.gz"
-        --exclude=node_modules \
-        --exclude=.next \
-        --exclude=.git \
-        --exclude=*.log \
-        --exclude=*.tmp \
+        --exclude=node_modules
+        --exclude=.next
+        --exclude=.git
+        --exclude=*.log
+        --exclude=*.tmp
         -C "{{ deploy_dir }}"
+        .
       args:
         creates: "{{ backup_dir }}/backup_{{ timestamp }}.tar.gz"
       register: backup_created
