@@ -14,7 +14,6 @@ env:
 jobs:
   build_and_test:
     runs-on: runner
-    if: github.ref == 'refs/heads/production'
     steps:
       - uses: actions/checkout@v4
 
@@ -47,7 +46,7 @@ jobs:
     name: Deploy to Server
     runs-on: runner
     # Requires successful build and test
-    # needs: build_and_test
+    needs: build_and_test
     # Run job if branch is production, stage and dev
     if: github.ref == 'refs/heads/production' || github.ref == 'refs/heads/stage' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/feature/pipeline-fix'
     # Set environment for job based on branch
