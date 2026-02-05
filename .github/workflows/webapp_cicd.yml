@@ -10,7 +10,9 @@ run-name: |
 
 on:
   push:
-    branches: ["dev", "staging", "production", feature/*, bugfix/*]
+    branches: ["dev", "stage", "production", feature/*, bugfix/*]
+  pull_request:
+    branches: [production, dev, stage]
 
 env:
   project: "depleteiq"
