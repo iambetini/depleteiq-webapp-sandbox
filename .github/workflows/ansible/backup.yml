@@ -1,0 +1,80 @@
+---
+- name: Backup Current Deployment
+  hosts: "webapp"
+  become: no
+  vars:
+    app_user: "{{ lookup('env', 'SSH_USER')| default('root') }}"
+    project_name: "{{ lookup('env', 'PROJECT') | default('myapp') }}"
+    deploy_dir: "/home/{{ app_user }}/projects/{{ project_name }}"
+    backup_dir: "/home/{{ app_user }}/backups/{{ project_name }}"
+    backup_retention: "{{ retention | default(5) }}"
+    timestamp: "{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}"
+
+  tasks:
+    - name: Validate directories
+      assert:
+        that:
+          - deploy_dir is defined
+          - backup_dir is defined
+          - project_name is defined
+        fail_msg: "Required variables are not defined"
+
+    - name: Ensure backup directory exists
+      file:
+        path: "{{ backup_dir }}"
+        state: directory
+        mode: "0755"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+
+    - name: Check if deployment directory exists
+      stat:
+        path: "{{ deploy_dir }}"
+      register: deployment_exists
+
+    - name: Create backup of current deployment
+      when: deployment_exists.stat.exists
+      command: >
+        tar -czf "{{ backup_dir }}/backup_{{ timestamp }}.tar.gz"
+        --exclude=node_modules
+        --exclude=.next
+        --exclude=.git
+        --exclude=*.log
+        --exclude=*.tmp
+        -C "{{ deploy_dir }}"
+        .
+      args:
+        creates: "{{ backup_dir }}/backup_{{ timestamp }}.tar.gz"
+      register: backup_created
+
+    - name: Skip backup if no deployment exists
+      when: not deployment_exists.stat.exists
+      debug:
+        msg: "No existing deployment found at {{ deploy_dir }}, skipping backup"
+
+    - name: Clean old backups (keep last {{ backup_retention }})
+      when: deployment_exists.stat.exists
+      shell: |
+        ls -t "{{ backup_dir }}/"backup_*.tar.gz 2>/dev/null | tail -n +{{ backup_retention|int + 1 }} | xargs rm -f --
+      register: cleanup_result
+
+    - name: List current backups
+      shell: |
+        ls -lh "{{ backup_dir }}/"backup_*.tar.gz 2>/dev/null || echo "No backups found"
+      register: backup_list
+      changed_when: false
+
+    - name: Display backup information
+      debug:
+        msg: |
+          {% if backup_created is changed %}
+              Backup Created Successfully!
+          Backup file: {{ backup_dir }}/backup_{{ timestamp }}.tar.gz
+          {% elif not deployment_exists.stat.exists %}
+              No existing deployment to backup
+          {% else %}
+              Backup already exists or not needed
+          {% endif %}
+
+          Current backups (keeping last {{ backup_retention }}):
+          {{ backup_list.stdout }}
