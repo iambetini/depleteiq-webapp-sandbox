@@ -9,6 +9,8 @@
     source_dir: "{{ lookup('env', 'SOURCE_DIR') | default('.') }}/"
     ansible_ssh_common_args: "-o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ControlMaster=no"
     ansible_command_timeout: 900
+    ssl_email: "{{ lookup('env', 'SSL_EMAIL') | default('admin@example.com') }}"
+    domain_names: "{{ lookup('env', 'DOMAIN_NAMES') | default('') }}" # Comma-separated list of domains
 
   tasks:
     - name: Validate deployment parameters
@@ -37,6 +39,27 @@
           - "--exclude=.git"
           - "--exclude=node_modules"
           - "--exclude=.next"
+
+    # ========== SSL CERTIFICATE SETUP WITH CERTBOT ==========
+    - name: Check if SSL certificates already exist
+      stat:
+        path: "/etc/letsencrypt/live/{{ domain_names.split(',')[0] | trim }}/fullchain.pem"
+      register: certbot_done
+      become: true
+      when: domain_names != ""
+
+    - name: Run Certbot once for Nginx (PM2 setup)
+      become: true
+      command: >
+        certbot --nginx
+        --email {{ ssl_email }}
+        --domains {{ domain_names.split(',') | map('trim') | join(',') }}
+        --agree-tos
+        --no-eff-email
+        --non-interactive
+        --redirect
+      when: domain_names != "" and not certbot_done.stat.exists
+      register: certbot_result
 
     # ========== NGINX CONFIGURATION ==========
     - name: Check if nginx config file exists in after copy
