@@ -29,6 +29,39 @@
         owner: "{{ app_user }}"
         group: "{{ app_user }}"
 
+    # ========== SSL CERTIFICATE SETUP WITH CERTBOT ==========
+    - name: Check if SSL certificates already exist
+      stat:
+        path: "/etc/letsencrypt/live/{{ domain_names.split(',')[0] | trim }}/fullchain.pem"
+      register: certbot_done
+      become: true
+      when: domain_names != ""
+
+    - name: Check if SSL config active
+      shell: |
+        cd "/etc/nginx/sites-enabled/{{ project_name }}"
+        grep -q "listen 443 ssl" nginx.conf
+      register: has_ssl
+      failed_when: false
+      changed_when: false
+
+    - name: Run Certbot once for Nginx (PM2 setup)
+      become: true
+      command: >
+        certbot --nginx 
+        --agree-tos 
+        --no-eff-email
+        --email {{ ssl_email }}
+        --non-interactive 
+        --staging 
+        --redirect
+        --domains {{ domain_names.split(',') | map('trim') | join(',') }}
+      when:
+        - domain_names != ""
+        - not certbot_done.stat.exists
+        - has_ssl.rc != 0
+      register: certbot_result
+
     - name: Copy current repository files to server
       synchronize:
         src: "{{ source_dir }}"
@@ -40,29 +73,8 @@
           - "--exclude=node_modules"
           - "--exclude=.next"
 
-    # ========== SSL CERTIFICATE SETUP WITH CERTBOT ==========
-    - name: Check if SSL certificates already exist
-      stat:
-        path: "/etc/letsencrypt/live/{{ domain_names.split(',')[0] | trim }}/fullchain.pem"
-      register: certbot_done
-      become: true
-      when: domain_names != ""
-
-    - name: Run Certbot once for Nginx (PM2 setup)
-      become: true
-      command: >
-        certbot --nginx
-        --email {{ ssl_email }}
-        --domains {{ domain_names.split(',') | map('trim') | join(',') }}
-        --agree-tos
-        --no-eff-email
-        --non-interactive
-        --redirect
-      when: domain_names != "" and not certbot_done.stat.exists
-      register: certbot_result
-
     # ========== NGINX CONFIGURATION ==========
-    - name: Check if nginx config file exists in after copy
+    - name: Check if nginx config file exists after copy
       stat:
         path: "{{ deploy_dir }}nginx.conf"
       register: nginx_config_exists
