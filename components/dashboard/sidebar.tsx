@@ -6,6 +6,7 @@ import {
     GitBranch,
     History,
     Home,
+    LogOut,
     MapPin,
     Package,
     PackageCheck,
@@ -167,7 +168,9 @@ function findActiveSidebarItem(pathname: string): SidebarItem | null {
     .sort((a, b) => b.href.length - a.href.length)[0];
 }
 
-
+const handleLogout = async () => {
+  await signOut({ callbackUrl: "/auth/login" });
+};
 
 interface SidebarMenuItemProps {
   item: SidebarItem;
@@ -231,6 +234,14 @@ export function DashboardSidebar() {
       <div className="p-4">
         <nav className="space-y-1">
           <SidebarMenu items={visibleMenuItems} activeHref={activeItem?.href} />
+          <Button
+            variant="ghost"
+            className="w-full justify-start hover:bg-[#f2f2f2]"
+            onClick={handleLogout}
+          >
+            <LogOut className="mr-3 h-4 w-4" />
+            Logout
+          </Button>
         </nav>
       </div>
     </aside>

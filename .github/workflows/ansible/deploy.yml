@@ -53,7 +53,6 @@
         --no-eff-email
         --email {{ ssl_email }}
         --non-interactive 
-        --staging 
         --redirect
         --domains {{ domain_names.split(',') | map('trim') | join(',') }}
       when:
