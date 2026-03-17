@@ -297,12 +297,15 @@ export function BrandForm({
                                   <SelectValue placeholder="Select type" />
                                 </SelectTrigger>
                                 <SelectContent>
+                                  <SelectItem value="bar">Bar</SelectItem>
                                   <SelectItem value="bottle">Bottle</SelectItem>
-                                  <SelectItem value="can">Can</SelectItem>
-                                  <SelectItem value="pack">Pack</SelectItem>
-                                  <SelectItem value="carton">Carton</SelectItem>
                                   <SelectItem value="box">Box</SelectItem>
+                                  <SelectItem value="can">Can</SelectItem>
+                                  <SelectItem value="carton">Carton</SelectItem>
+                                  <SelectItem value="pack">Pack</SelectItem>
+                                  <SelectItem value="roll">Roll</SelectItem>
                                   <SelectItem value="sachet">Sachet</SelectItem>
+                                  <SelectItem value="string">String</SelectItem>
                                 </SelectContent>
                               </Select>
                               <ErrorMessage name={`packages[${index}].type`} component="p" className="text-sm text-[#ff0000] font-medium" />
