@@ -2,7 +2,7 @@ name: Webapp Pipeline
 
 run-name: |
   ${{ 
-    github.ref == 'refs/heads/production' && 'Deploy to Production' ||
+    github.ref == 'refs/heads/prod' && 'Deploy to Production' ||
     github.ref == 'refs/heads/stage' && 'Deploy to Stage' ||
     github.ref == 'refs/heads/dev' && 'Deploy to Dev' ||
     'Running CI '
@@ -10,9 +10,9 @@ run-name: |
 
 on:
   push:
-    branches: ["dev", "stage", "production", feature/*, bugfix/*]
+    branches: ["dev", "stage", "prod`", feature/*, bugfix/*]
   pull_request:
-    branches: [production, dev, stage]
+    branches: [prod`, dev, stage]
 
 env:
   project: "depleteiq"
@@ -56,13 +56,13 @@ jobs:
     runs-on: runner
     # Requires successful build and test
     needs: build_and_test
-    # Run job if branch is production, stage and dev
-    if: github.ref == 'refs/heads/production' || github.ref == 'refs/heads/stage' || github.ref == 'refs/heads/dev'
+    # Run job if branch is prod, stage and dev
+    if: github.ref == 'refs/heads/prod' || github.ref == 'refs/heads/stage' || github.ref == 'refs/heads/dev'
     # Set environment for job based on branch
-    environment: ${{  github.ref == 'refs/heads/production' && 'production' || github.ref == 'refs/heads/stage' && 'stage' || 'dev' }}
+    environment: ${{  github.ref == 'refs/heads/prod' && 'prod' || github.ref == 'refs/heads/stage' && 'stage' || 'dev' }}
     # Set stage variable to branch name
     env:
-      stage: ${{  github.ref == 'refs/heads/production' && 'production' || github.ref == 'refs/heads/stage' && 'stage' || 'dev' }}
+      stage: ${{  github.ref == 'refs/heads/prod' && 'prod' || github.ref == 'refs/heads/stage' && 'stage' || 'dev' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
