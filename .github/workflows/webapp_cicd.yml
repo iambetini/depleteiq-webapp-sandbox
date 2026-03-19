@@ -57,7 +57,7 @@ jobs:
     # Requires successful build and test
     needs: build_and_test
     # Run job if branch is production, stage and dev
-    if: github.ref == 'refs/heads/production' || github.ref == 'refs/heads/stage' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/feature/pipeline-fix'
+    if: github.ref == 'refs/heads/production' || github.ref == 'refs/heads/stage' || github.ref == 'refs/heads/dev'
     # Set environment for job based on branch
     environment: ${{  github.ref == 'refs/heads/production' && 'production' || github.ref == 'refs/heads/stage' && 'stage' || 'dev' }}
     # Set stage variable to branch name
@@ -134,59 +134,37 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_KEY_PASSPHRASE: ${{ secrets.SSH_KEY_PASSPHRASE }}
         run: |
-          # Install expect
-          sudo apt-get update && sudo apt-get install -y expect
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
 
-          # Start ssh-agent
           eval "$(ssh-agent -s)"
           echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
           echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
 
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-
           echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          # Create expect script to add key with passphrase
-          cat > /tmp/add_ssh_key.exp << 'EXPECTEOF'
-          #!/usr/bin/expect -f
-          set timeout 10
-          set keyfile [lindex $argv 0]
-          set passphrase [lindex $argv 1]
+          # This bypasses the need for a real terminal (TTY)
+          cat << 'EOF' > ~/.ssh/askpass.sh
+          #!/bin/bash
+          echo "${SSH_KEY_PASSPHRASE}"
+          EOF
+          chmod +x ~/.ssh/askpass.sh
 
-          spawn ssh-add $keyfile
-          expect {
-            "Enter passphrase for" {
-              send "$passphrase\r"
-              exp_continue
-            }
-            "Identity added" {
-              exit 0
-            }
-            timeout {
-              puts "Timeout waiting for ssh-add"
-              exit 1
-            }
-            eof
-          }
-          EXPECTEOF
+          export DISPLAY=:0
+          export SSH_ASKPASS=~/.ssh/askpass.sh
+          export SSH_KEY_PASSPHRASE="${SSH_KEY_PASSPHRASE}"
 
-          chmod +x /tmp/add_ssh_key.exp
-          /tmp/add_ssh_key.exp ~/.ssh/id_rsa "$SSH_KEY_PASSPHRASE" 
+          # Force ssh-add to use askpass by redirecting input from /dev/null
+          ssh-add ~/.ssh/id_rsa < /dev/null
 
-          # Verify key was added
-          echo "Keys in ssh-agent:"
+          rm ~/.ssh/askpass.sh
           ssh-add -l
 
-          # Add all IPs to known_hosts
+          # 6. Add IPs to known_hosts
           for ip in $(echo '${{ steps.ip_output.outputs.vm_ips }}' | jq -r '.[]'); do
-            echo "Adding $ip to known_hosts..."
             ssh-keyscan -H $ip >> ~/.ssh/known_hosts 2>/dev/null || true
           done
-
-          echo "known_hosts content:"
-          cat ~/.ssh/known_hosts
 
       # Checking SSHworks with passphrase
       - name: Test SSH Connection
@@ -245,3 +223,5 @@ jobs:
           nginx_container: ${{ secrets.NGINX_CONTAINER }}
           postgres_container: ${{ secrets.POSTGRES_CONTAINER }}
           SOURCE_DIR: ${{ github.workspace }}
+          SSL_EMAIL: ${{ secrets.SSL_EMAIL }}
+          DOMAIN_NAMES: ${{ secrets.DOMAIN_NAMES }}

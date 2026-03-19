@@ -9,6 +9,8 @@
     source_dir: "{{ lookup('env', 'SOURCE_DIR') | default('.') }}/"
     ansible_ssh_common_args: "-o ServerAliveInterval=30 -o ServerAliveCountMax=10 -o ControlMaster=no"
     ansible_command_timeout: 900
+    ssl_email: "{{ lookup('env', 'SSL_EMAIL') | default('admin@example.com') }}"
+    domain_names: "{{ lookup('env', 'DOMAIN_NAMES') | default('') }}" # Comma-separated list of domains
 
   tasks:
     - name: Validate deployment parameters
@@ -27,6 +29,38 @@
         owner: "{{ app_user }}"
         group: "{{ app_user }}"
 
+    # ========== SSL CERTIFICATE SETUP WITH CERTBOT ==========
+    - name: Check if SSL certificates already exist
+      stat:
+        path: "/etc/letsencrypt/live/{{ domain_names.split(',')[0] | trim }}/fullchain.pem"
+      register: certbot_done
+      become: true
+      when: domain_names != ""
+
+    - name: Check if SSL config active
+      shell: |
+        cd "/etc/nginx/sites-enabled/{{ project_name }}"
+        grep -q "listen 443 ssl" nginx.conf
+      register: has_ssl
+      failed_when: false
+      changed_when: false
+
+    - name: Run Certbot once for Nginx (PM2 setup)
+      become: true
+      command: >
+        certbot --nginx 
+        --agree-tos 
+        --no-eff-email
+        --email {{ ssl_email }}
+        --non-interactive 
+        --redirect
+        --domains {{ domain_names.split(',') | map('trim') | join(',') }}
+      when:
+        - domain_names != ""
+        - not certbot_done.stat.exists
+        - has_ssl.rc != 0
+      register: certbot_result
+
     - name: Copy current repository files to server
       synchronize:
         src: "{{ source_dir }}"
@@ -39,7 +73,7 @@
           - "--exclude=.next"
 
     # ========== NGINX CONFIGURATION ==========
-    - name: Check if nginx config file exists in after copy
+    - name: Check if nginx config file exists after copy
       stat:
         path: "{{ deploy_dir }}nginx.conf"
       register: nginx_config_exists
