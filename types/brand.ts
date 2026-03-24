@@ -19,6 +19,7 @@ export interface Brand {
   category: string;
   description?: string;
   image: string;
+  is_group_brand: boolean;
   packages: BrandPackage[];
   created_at: string;
   updated_at: string;

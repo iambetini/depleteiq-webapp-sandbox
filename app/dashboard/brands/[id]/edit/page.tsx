@@ -21,6 +21,7 @@ export default function EditBrandPage() {
       name: brand.name || "",
       category: brand.category || "",
       image: brand.image || "",
+      is_group_brand: brand.is_group_brand || false,
       packages: (brand.packages || []).map((pkg: BrandPackage) => ({
         uuid: pkg.uuid,
         type: pkg.type || "",
@@ -43,6 +44,7 @@ export default function EditBrandPage() {
     name: Yup.string().required("Brand name is required"),
     category: Yup.string().required("Category is required"),
     image: Yup.string(),
+    is_group_brand: Yup.boolean(),
     packages: Yup.array()
       .of(
         Yup.object({
@@ -69,6 +71,7 @@ export default function EditBrandPage() {
         name: values.name,
         category: values.category,
         image: values.image,
+        is_group_brand: values.is_group_brand,
         packages: filteredPackages,
       };
       await updateBrand({ id: brand.uuid, data }).unwrap();

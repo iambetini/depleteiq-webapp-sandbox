@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { BrandPackage } from "@/types/brand";
 import { ErrorMessage, FieldArray, Form, Formik } from "formik";
 import { Plus, Save, Trash2, Upload, Loader2 } from "lucide-react";
@@ -226,6 +227,19 @@ export function BrandForm({
                           </SelectContent>
                         </Select>
                         <ErrorMessage name="category" component="p" className="text-sm text-[#ff0000] font-medium" />
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex items-center">
+                          <Label htmlFor="is_group_brand" className="text-sm font-semibold text-[#444444]">
+                            Group Brand
+                          </Label>
+                          <Switch
+                            id="is_group_brand"
+                            checked={values.is_group_brand}
+                            onCheckedChange={(checked) => setFieldValue("is_group_brand", checked)}
+                            className="ml-2"
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
