@@ -66,6 +66,7 @@ export default function CreateDistributorPage() {
       type: "text" as const,
       required: true,
       placeholder: "Enter business name",
+      section: "Business Information",
     },
     {
       name: "category",
@@ -73,18 +74,21 @@ export default function CreateDistributorPage() {
       type: "select" as const,
       required: true,
       placeholder: "Select category",
+      section: "Business Information",
       options: [
         { label: "Food & Beverage", value: "FnB" },
         { label: "Personal Care", value: "PC" },
         { label: "Pharmaceutical", value: "Pharma" },
       ],
     },
+    createAddressFieldConfig(() => setLocationModalOpen(true), "textarea", 3, "Business Information"),
     {
       name: "first_name",
       label: "First Name",
       type: "text" as const,
       required: true,
       placeholder: "Enter first name",
+      section: "User Information",
     },
     {
       name: "last_name",
@@ -92,6 +96,7 @@ export default function CreateDistributorPage() {
       type: "text" as const,
       required: true,
       placeholder: "Enter last name",
+      section: "User Information",
     },
     {
       name: "email",
@@ -99,6 +104,7 @@ export default function CreateDistributorPage() {
       type: "email" as const,
       required: true,
       placeholder: "Enter email",
+      section: "User Information",
     },
     {
       name: "phone",
@@ -106,6 +112,7 @@ export default function CreateDistributorPage() {
       type: "text" as const,
       required: false,
       placeholder: "Enter phone number",
+      section: "User Information",
     },
     {
       name: "password",
@@ -113,6 +120,7 @@ export default function CreateDistributorPage() {
       type: "password" as const,
       required: true,
       placeholder: "Enter password",
+      section: "User Information",
     },
     {
       name: "ime_vss_user_id",
@@ -123,8 +131,8 @@ export default function CreateDistributorPage() {
       valueKey: "uuid",
       labelFormatter: userFullNameEmailFormatter,
       placeholder: "Select IME/VSS user",
+      section: "Assignment",
     },
-    createAddressFieldConfig(() => setLocationModalOpen(true), "textarea", 3),
   ]
 
   return (

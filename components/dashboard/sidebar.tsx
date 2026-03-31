@@ -1,24 +1,30 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import {
-    Building2,
-    FileText,
-    GitBranch,
-    History,
-    Home,
-    LogOut,
-    MapPin,
-    Package,
-    PackageCheck,
-    Settings,
-    Shield,
-    ShoppingCart,
-    Truck,
-    UserCheck,
-    UserCog,
-    Users,
-    Warehouse,
-    Flag
+  Building2,
+  FileText,
+  Gift,
+  GitBranch,
+  History,
+  Home,
+  LogOut,
+  MapPin,
+  Megaphone,
+  Package,
+  PackageCheck,
+  QrCode,
+  Settings,
+  Shield,
+  ShoppingBag,
+  ShoppingCart,
+  Store,
+  Truck,
+  UserCheck,
+  UserCog,
+  UserPlus,
+  Users,
+  Warehouse,
+  Flag
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
@@ -54,6 +60,12 @@ const iconMap: Record<string, IconType> = {
   History,
   Settings,
   Flag,
+  ShoppingBag,
+  Store,
+  Megaphone,
+  UserPlus,
+  QrCode,
+  Gift,
 };
 
 export const sidebarItems: SidebarItem[] = [
@@ -70,18 +82,6 @@ export const sidebarItems: SidebarItem[] = [
     icon: "ShoppingCart",
   },
   {
-    title: "Distributors",
-    href: "/dashboard/distributors",
-    permissions: ["view distributors"],
-    icon: "UserCheck",
-  },
-  {
-    title: "IME/VSS",
-    href: "/dashboard/ime-vss",
-    permissions: ["view distributors"],
-    icon: "UserCog",
-  },
-   {
     title: "Targets",
     href: "/dashboard/targets",
     permissions: ["view targets"],
@@ -92,6 +92,48 @@ export const sidebarItems: SidebarItem[] = [
     href: "/dashboard/brands",
     permissions: ["view brands"],
     icon: "Package",
+  },
+  {
+    title: "Distributors",
+    href: "/dashboard/distributors",
+    permissions: ["view distributors"],
+    icon: "UserCheck",
+  },
+  {
+    title: "Wholesalers",
+    href: "/dashboard/wholesalers",
+    permissions: ["view wholesalers"],
+    icon: "ShoppingBag",
+  },
+  {
+    title: "TPE",
+    href: "/dashboard/tpe",
+    permissions: ["view wholesalers"],
+    icon: "Users",
+  },
+  {
+    title: "IME/VSS",
+    href: "/dashboard/ime-vss",
+    permissions: ["view distributors"],
+    icon: "UserCog",
+  },
+  {
+    title: "Promos",
+    href: "/dashboard/promos",
+    permissions: ["view promos"],
+    icon: "Gift",
+  },
+  {
+    title: "Stores",
+    href: "/dashboard/stores",
+    permissions: ["view stores"],
+    icon: "Store",
+  },
+  {
+    title: "QR Codes",
+    href: "/dashboard/qr-codes",
+    permissions: ["view qr_codes"],
+    icon: "QrCode",
   },
   {
     title: "Branches",
@@ -151,7 +193,7 @@ export const sidebarItems: SidebarItem[] = [
 
 // Helper function to filter sidebar items based on user permissions
 function filterSidebarItems(items: SidebarItem[], userPermissions: string[]): SidebarItem[] {
-  return items.filter(item => 
+  return items.filter(item =>
     hasRequiredPermissions(userPermissions, item.permissions)
   );
 }

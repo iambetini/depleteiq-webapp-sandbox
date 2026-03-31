@@ -35,11 +35,11 @@ const BusinessAndContactInformationCard = memo(() => {
             <Building className="h-5 w-5 text-[#ababab]" />
             <div>
               <p className="text-sm text-[#ababab]">Business Name</p>
-              <p className="font-medium text-[#444444]">{distributor.business_name}</p>
+              <p className="font-medium text-[#444444]">{distributor.business?.name}</p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
-            <Badge variant="secondary">{distributor.business_type}</Badge>
+            <Badge variant="secondary">{distributor.business?.type}</Badge>
             <div>
               <p className="text-sm text-[#ababab]">Category</p>
               <p className="font-medium text-[#444444]">{distributor.category}</p>
@@ -129,7 +129,7 @@ const BusinessAndContactInformationCard = memo(() => {
             <MapPin className="h-5 w-5 text-[#ababab] mt-1" />
             <div>
               <p className="text-sm text-[#ababab]">Address</p>
-              <p className="font-medium text-[#444444]">{distributor.address}</p>
+              <p className="font-medium text-[#444444]">{distributor.business?.address}</p>
             </div>
           </div>
         </div>

@@ -15,9 +15,9 @@ interface ColumnProps {
 // Reusable cell components
 const BusinessNameCell = React.memo(({ distributor }: { distributor: Distributor }) => (
   <div>
-    <div className="font-medium">{distributor.business_name}</div>
+    <div className="font-medium">{distributor.business?.name}</div>
     <div className="text-sm text-muted-foreground">
-      {distributor.user.first_name} {distributor.user.last_name}
+      {distributor.user?.first_name} {distributor.user?.last_name}
     </div>
   </div>
 ))
@@ -116,7 +116,7 @@ ActionsCell.displayName = "ActionsCell"
 export function getDistributorColumns({ router, handleDelete }: { router: any; handleDelete: (uuid: string) => void }): ColumnDef<Distributor>[] {
   return [
     {
-      accessorKey: "business_name",
+      accessorKey: "business.name",
       header: "Business",
       cell: ({ row }) => <BusinessNameCell distributor={row.original} />,
     },
@@ -126,9 +126,9 @@ export function getDistributorColumns({ router, handleDelete }: { router: any; h
       cell: ({ row }) => <ContactCell distributor={row.original} />,
     },
     {
-      accessorKey: "address",
+      accessorKey: "business.address",
       header: "Address",
-      cell: ({ row }) => <AddressCell address={row.original.address} />,
+      cell: ({ row }) => <AddressCell address={row.original.business?.address} />,
     },
     {
       accessorKey: "user.status",

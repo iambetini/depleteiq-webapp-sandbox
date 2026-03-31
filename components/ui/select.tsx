@@ -169,6 +169,9 @@ const SelectSeparator = React.forwardRef<
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName
 
 function getNestedValue(obj: any, path: string): any {
+  if (typeof path !== 'string') {
+    return undefined
+  }
   return path.split('.').reduce((current, key) => {
     return current && typeof current === 'object' ? current[key] : undefined
   }, obj)

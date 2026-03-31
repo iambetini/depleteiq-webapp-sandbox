@@ -28,13 +28,16 @@ export function createEntityContext<T>({
 }: ContextFactoryOptions<T>) {
   const EntityContext = createContext<EntityContextValue<T> | undefined>(undefined);
 
+  // Convert PascalCase to camelCase (e.g., "PromoParticipation" -> "promoParticipation")
+  const camelCaseEntityName = entityName.charAt(0).toLowerCase() + entityName.slice(1);
+
   function EntityProvider({ id, children }: { id: string; children: React.ReactNode }) {
     const {
       data: entity,
       isLoading,
       error,
       refetch,
-    } = useGetQuery(id);
+    } = useGetQuery({ id });
 
     React.useEffect(() => {
       if (error && showErrorToast) {
@@ -51,7 +54,8 @@ export function createEntityContext<T>({
     }, [refetch]);
 
     const contextValue = {
-      [entityName.toLowerCase()]: entity ?? null,
+      [camelCaseEntityName]: entity ?? null,
+      [entityName.toLowerCase()]: entity ?? null, // Support old lowercase format for backward compatibility
       isLoading,
       fetchEntity,
       refetch,

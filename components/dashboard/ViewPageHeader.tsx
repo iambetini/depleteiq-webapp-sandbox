@@ -1,3 +1,5 @@
+"use client"
+
 import { Button } from "@/components/ui/button";
 import { handleDelete } from "@/lib/handleDelete";
 import { ArrowLeft, Edit, Trash2 } from "lucide-react";
