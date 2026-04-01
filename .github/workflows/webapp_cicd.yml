@@ -18,8 +18,13 @@ env:
   project: "depleteiq"
   application: "webapp"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build_and_test:
+    name: Build and Test
     runs-on: runner
     steps:
       - uses: actions/checkout@v4
@@ -207,11 +212,23 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
 
       #  Executre code backup on server with ansible
-      - name: Run Code Backup
-        run: ansible-playbook -i inventory.ini .github/workflows/ansible/backup.yml
+      # - name: Run Code Backup
+      #   run: ansible-playbook -i inventory.ini .github/workflows/ansible/backup.yml
+      #   env:
+      #     PROJECT: "${{ env.project }}-${{ env.application }}"
+      #     SSH_USER: ${{ secrets.SSH_USER }}
+
+      - name: Run Code Backup to S3
+        run: ansible-playbook -i inventory.ini .github/workflows/ansible/backup-s3.yml
         env:
           PROJECT: "${{ env.project }}-${{ env.application }}"
           SSH_USER: ${{ secrets.SSH_USER }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          S3_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          STAGE: ${{ env.stage }}
+          retention: 5
 
       # Deploy latest changes to server with ansible
       - name: Deploy App
