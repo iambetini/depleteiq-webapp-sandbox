@@ -107,6 +107,15 @@ function getColumns(
       cell: ({ row }) => <Badge variant="secondary">{row.original.category}</Badge>,
     },
     {
+      accessorKey: "is_group_brand",
+      header: "Group Brand",
+      cell: ({ row }) => (
+        <Badge variant={row.original.is_group_brand ? "default" : "outline"}>
+          {row.original.is_group_brand ? "Yes" : "No"}
+        </Badge>
+      ),
+    },
+    {
       accessorKey: "packages",
       header: "Packages",
       cell: ({ row }) => (

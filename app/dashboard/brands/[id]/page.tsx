@@ -2,7 +2,7 @@
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, Tag, FileText } from "lucide-react";
+import { Package, Tag, FileText, Users } from "lucide-react";
 import Image from "next/image";
 import { useContext } from "./layout";
 
@@ -47,7 +47,7 @@ export default function BrandDetailPage() {
                   </div>
                 )}
                 <div className="flex-1">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="flex items-center space-x-3">
                       <Tag className="h-5 w-5 text-[#ababab]" />
                       <div>
@@ -67,6 +67,15 @@ export default function BrandDetailPage() {
                       <div>
                         <p className="text-sm text-[#ababab]">Total Packages</p>
                         <p className="font-medium text-[#444444]">{brand.packages?.length || 0}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Users className="h-5 w-5 text-[#ababab]" />
+                      <div>
+                        <p className="text-sm text-[#ababab]">Group Brand</p>
+                        <Badge variant={brand.is_group_brand ? "default" : "outline"}>
+                          {brand.is_group_brand ? "Yes" : "No"}
+                        </Badge>
                       </div>
                     </div>
                   </div>
