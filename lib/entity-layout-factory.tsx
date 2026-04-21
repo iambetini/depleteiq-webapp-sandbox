@@ -76,7 +76,10 @@ export function createEntityLayout<T>({
 
   function EntityLayoutContent({ children, useEntityContext }: { children: React.ReactNode; useEntityContext: () => any }) {
     const contextValue = useEntityContext();
-    const entity = contextValue[finalEntityName!.toLowerCase()];
+    // Convert PascalCase to camelCase to match context factory
+    const camelCaseEntityName = finalEntityName!.charAt(0).toLowerCase() + finalEntityName!.slice(1);
+    // Try camelCase first, then fall back to lowercase for backward compatibility
+    const entity = contextValue[camelCaseEntityName] ?? contextValue[finalEntityName!.toLowerCase()];
     const isLoading = contextValue.isLoading;
 
     if (isLoading) {

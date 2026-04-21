@@ -47,6 +47,7 @@ interface FieldConfig {
   onCreateNew?: () => void
   createButtonText?: string
   onFocus?: () => void
+  section?: string
 }
 
 interface UserFormProps {
@@ -131,10 +132,37 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
 
             return (
               <Form className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {fields
-                    .filter(field => field.type !== "switch" && field.type !== "checkbox")
-                    .map((field, idx) => {
+                {(() => {
+                  // Group fields by section
+                  const sections: Record<string, typeof fields> = {}
+                  const noSectionFields: typeof fields = []
+                  
+                  fields.forEach(field => {
+                    if (field.section) {
+                      if (!sections[field.section]) {
+                        sections[field.section] = []
+                      }
+                      sections[field.section].push(field)
+                    } else {
+                      noSectionFields.push(field)
+                    }
+                  })
+                  
+                  // Render fields without section first
+                  const allSections = [
+                    { name: null, fields: noSectionFields },
+                    ...Object.entries(sections).map(([name, sectionFields]) => ({ name, fields: sectionFields }))
+                  ]
+                  
+                  return allSections.map(section => (
+                    <div key={section.name || 'default'}>
+                      {section.name && (
+                        <h3 className="text-lg font-semibold mb-4 text-gray-900">{section.name}</h3>
+                      )}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {section.fields
+                          .filter(field => field.type !== "switch" && field.type !== "checkbox")
+                          .map((field, idx) => {
                       if (field.type === "textarea") {
                         return (
                           <div className="space-y-2 md:col-span-2" key={field.name}>
@@ -247,7 +275,10 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
                         </div>
                       )
                     })}
-                </div>
+                      </div>
+                    </div>
+                  ))
+                })()}
                 {/* Render switch/checkbox fields on a separate row */}
                 {fields
                   .filter(field => field.type === "switch" || field.type === "checkbox")

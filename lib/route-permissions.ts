@@ -122,8 +122,8 @@ export const routePermissions: RoutePermission[] = [
     permissions: ["view distributors"],
   },
   {
-    href: "/dashboard/distributors/[id]/edit",
-    pattern: /^\/dashboard\/distributors\/\d+\/edit$/,
+    href: "/dashboard/distributors/[id]/manage",
+    pattern: /^\/dashboard\/distributors\/\d+\/manage$/,
     permissions: ["edit distributors"],
   },
 
@@ -208,6 +208,94 @@ export const routePermissions: RoutePermission[] = [
     href: "/dashboard/orders/[id]",
     pattern: /^\/dashboard\/orders\/\d+$/,
     permissions: ["view orders"],
+  },
+
+  // Participants
+  {
+    href: "/dashboard/promos/participants",
+    pattern: /^\/dashboard\/promos\/participants$/,
+    permissions: ["view participants"],
+  },
+  {
+    href: "/dashboard/promos/participants/create",
+    pattern: /^\/dashboard\/promos\/participants\/create$/,
+    permissions: ["create participants"],
+  },
+  {
+    href: "/dashboard/promos/participants/[id]",
+    pattern: /^\/dashboard\/promos\/participants\/[a-f0-9-]+$/,
+    permissions: ["view participants"],
+  },
+  {
+    href: "/dashboard/promos/participants/[id]/edit",
+    pattern: /^\/dashboard\/promos\/participants\/[a-f0-9-]+\/edit$/,
+    permissions: ["edit participants"],
+  },
+
+  // Promo Participations
+  {
+    href: "/dashboard/promos/promo-participations",
+    pattern: /^\/dashboard\/promos\/promo-participations$/,
+    permissions: ["view promo_participations"],
+  },
+  {
+    href: "/dashboard/promos/promo-participations/create",
+    pattern: /^\/dashboard\/promos\/promo-participations\/create$/,
+    permissions: ["create promo_participations"],
+  },
+  {
+    href: "/dashboard/promos/promo-participations/[id]",
+    pattern: /^\/dashboard\/promos\/promo-participations\/[a-f0-9-]+$/,
+    permissions: ["view promo_participations"],
+  },
+  {
+    href: "/dashboard/promos/promo-participations/[id]/edit",
+    pattern: /^\/dashboard\/promos\/promo-participations\/[a-f0-9-]+\/edit$/,
+    permissions: ["edit promo_participations"],
+  },
+
+  // Promoters
+  {
+    href: "/dashboard/promos/promoters",
+    pattern: /^\/dashboard\/promos\/promoters$/,
+    permissions: ["view promoters"],
+  },
+  {
+    href: "/dashboard/promos/promoters/create",
+    pattern: /^\/dashboard\/promos\/promoters\/create$/,
+    permissions: ["create promoters"],
+  },
+  {
+    href: "/dashboard/promos/promoters/[id]",
+    pattern: /^\/dashboard\/promos\/promoters\/[a-f0-9-]+$/,
+    permissions: ["view promoters"],
+  },
+  {
+    href: "/dashboard/promos/promoters/[id]/edit",
+    pattern: /^\/dashboard\/promos\/promoters\/[a-f0-9-]+\/edit$/,
+    permissions: ["edit promoters"],
+  },
+
+  // Promos
+  {
+    href: "/dashboard/promos",
+    pattern: /^\/dashboard\/promos$/,
+    permissions: ["view promos"],
+  },
+  {
+    href: "/dashboard/promos/create",
+    pattern: /^\/dashboard\/promos\/create$/,
+    permissions: ["create promos"],
+  },
+  {
+    href: "/dashboard/promos/[id]",
+    pattern: /^\/dashboard\/promos\/[a-f0-9-]+$/,
+    permissions: ["view promos"],
+  },
+  {
+    href: "/dashboard/promos/[id]/edit",
+    pattern: /^\/dashboard\/promos\/[a-f0-9-]+\/edit$/,
+    permissions: ["edit promos"],
   },
 
   // Reports

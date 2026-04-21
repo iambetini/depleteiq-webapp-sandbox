@@ -2,14 +2,23 @@ import { Location } from "./location";
 import { Market } from "./market";
 import { User } from "./user";
 
+export interface Business {
+  uuid: string;
+  name: string;
+  type: string;
+  address: string;
+  email?: string;
+  phone?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface Distributor {
-  id: string;
+  id?: string;
   uuid: string;
   user: User;
-  business_name: string;
+  business: Business;
   category: string;
-  address: string;
-  business_type: string;
   registration_number?: string;
   tax_id?: string;
   bank_name?: string;
@@ -19,20 +28,15 @@ export interface Distributor {
   location_id?: string;
   location?: Location;
   market?: Market;
-  ime_vss?: {
-    uuid: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-  };
+  ime_vss?: User;
   performance?: {
     total_orders: number;
     total_order_value: number;
     target_volume: number;
     target_amount: number;
-    total_value: number;
-    growth_rate: number;
-    last_order_date: string;
+    total_value?: number;
+    growth_rate?: number;
+    last_order_date?: string;
   };
   created_at: string;
 }
