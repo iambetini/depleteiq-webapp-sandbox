@@ -86,7 +86,7 @@ export default function ParticipantsPage() {
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() =>
-                  router.push(`/dashboard/promos/participants/${participant.uuid}`)
+                  router.push(`/dashboard/promos/participants/${participant.uuid}/edit`)
                 }
               >
                 <Edit className="mr-2 h-4 w-4" />
