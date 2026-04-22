@@ -64,7 +64,9 @@
 
       - name: Create temporary backup archive
         archive:
-            path: "{{ deploy_dir }}/*"
+            path:
+                - "{{ deploy_dir }}/*"
+                - "{{ deploy_dir }}/.[!.]*"
             dest: "{{ temp_backup_dir }}/backup_{{ backup_timestamp }}.tar.gz"
             format: gz
             exclude_path:

@@ -1,0 +1,215 @@
+name: Rollback Application
+
+run-name: |
+    Rollback to backup #${{ github.event.inputs.backup_number || '1' }} on ${{ github.event.inputs.environment }} by @${{ github.actor }}
+
+on:
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: "Environment to rollback"
+                required: true
+                type: choice
+                options:
+                    - dev
+                    - stage
+                    - prod
+            backup_number:
+                description: "Backup to restore (1=latest, 2=previous, etc. Max: 5)"
+                required: false
+                default: "1"
+                type: choice
+                options:
+                    - "1"
+                    - "2"
+                    - "3"
+                    - "4"
+                    - "5"
+            confirm_rollback:
+                description: 'Type "ROLLBACK" to confirm'
+                required: true
+                type: string
+
+env:
+    project: "depleteiq"
+    application: "webapp"
+
+jobs:
+    validate:
+        name: Validate Rollback Request
+        if: github.ref == 'refs/heads/prod' && github.event.inputs.environment == 'prod' || github.ref == 'refs/heads/stage' && github.event.inputs.environment == 'stage' || github.ref == 'refs/heads/dev' && github.event.inputs.environment == 'dev'
+        runs-on: runner
+        steps:
+            - name: Validate confirmation
+              run: |
+                  if [ "${{ github.event.inputs.confirm_rollback }}" != "ROLLBACK" ]; then
+                    echo "Rollback not confirmed. You must type 'ROLLBACK' to proceed."
+                    exit 1
+                  fi
+                  echo "Rollback confirmed"
+
+            - name: Validate backup number
+              run: |
+                  BACKUP_NUM="${{ github.event.inputs.backup_number }}"
+                  if [ "$BACKUP_NUM" -lt 1 ] || [ "$BACKUP_NUM" -gt 5 ]; then
+                    echo "Invalid backup number. Must be between 1 and 5."
+                    exit 1
+                  fi
+                  echo "Backup number validated: $BACKUP_NUM"
+
+            - name: Validate Environment and Branch
+              run: |
+                  CURRENT_BRANCH=${GITHUB_REF#refs/heads/}
+                  INPUT_ENV="${{ github.event.inputs.environment }}"
+
+                  echo "Checking if branch [$CURRENT_BRANCH] matches environment [$INPUT_ENV]..."
+
+                  if [[ "$CURRENT_BRANCH" == "$INPUT_ENV" ]]; then
+                      echo "Validation successful."
+                  else
+                      echo "ERROR: Environment mismatch!"
+                      echo "You cannot rollback to '$INPUT_ENV' from the '$CURRENT_BRANCH' branch."
+                      echo "Please ensure your branch and input environment match."
+                      exit 1
+                  fi
+
+            - name: Display rollback information
+              run: |
+                  echo "================================================"
+                  echo "ROLLBACK INFORMATION"
+                  echo "================================================"
+                  echo "Environment: ${{ github.event.inputs.environment }}"
+                  echo "Backup: #${{ github.event.inputs.backup_number }} (1=latest)"
+                  echo "Triggered by: @${{ github.actor }}"
+                  echo "Time: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+                  echo "================================================"
+
+    rollback:
+        name: Execute Rollback
+        runs-on: runner
+        needs: validate
+        environment: ${{ github.event.inputs.environment }}
+        env:
+            stage: ${{ github.event.inputs.environment }}
+
+        steps:
+            - name: Checkout code (for Ansible playbooks)
+              uses: actions/checkout@v5
+
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v3
+
+            - name: Install AWS CLI
+              uses: unfor19/install-aws-cli-action@v1
+              with:
+                  version: 2.34.8
+
+            - name: Install Ansible
+              if: startsWith(runner.name, 'GitHub Actions')
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install ansible
+                  ansible --version
+
+            - name: Get Terraform state for environment
+              id: ip_output
+              run: |
+                  aws s3 cp "s3://${S3_BUCKET}/${STATE_KEY}" terraform.tfstate
+                  echo "vm_ips=$(terraform output -json vm_ips)" >> $GITHUB_OUTPUT
+                  echo "vm_private_ips=$(terraform output -json vm_private_ips)" >> $GITHUB_OUTPUT
+                  rm terraform.tfstate
+              env:
+                  STATE_KEY: "terraform-orbit/${{ env.project }}/${{ env.stage }}/terraform.tfstate"
+                  S3_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+            - name: Setup SSH key
+              env:
+                  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+                  SSH_KEY_PASSPHRASE: ${{ secrets.SSH_KEY_PASSPHRASE }}
+              run: |
+                  mkdir -p ~/.ssh
+                  chmod 700 ~/.ssh
+
+                  eval "$(ssh-agent -s)"
+                  echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
+                  echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
+
+                  echo "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa
+                  chmod 600 ~/.ssh/id_rsa
+
+                  cat << 'EOF' > ~/.ssh/askpass.sh
+                  #!/bin/bash
+                  echo "${SSH_KEY_PASSPHRASE}"
+                  EOF
+                  chmod +x ~/.ssh/askpass.sh
+
+                  export DISPLAY=:0
+                  export SSH_ASKPASS=~/.ssh/askpass.sh
+                  export SSH_KEY_PASSPHRASE="${SSH_KEY_PASSPHRASE}"
+
+                  ssh-add ~/.ssh/id_rsa < /dev/null
+                  rm ~/.ssh/askpass.sh
+                  ssh-add -l
+
+                  # Add IPs to known_hosts
+                  for ip in $(echo '${{ steps.ip_output.outputs.vm_ips }}' | jq -r '.[]'); do
+                    ssh-keyscan -H $ip >> ~/.ssh/known_hosts 2>/dev/null || true
+                  done
+
+            - name: Create Ansible Inventory
+              run: |
+                  cat > inventory.ini << EOF
+                  [all:vars]
+                  ansible_user=${SSH_USER}
+                  ansible_ssh_common_args=-o StrictHostKeyChecking=no
+                  ansible_python_interpreter=/usr/bin/python3
+
+                  [webapp]
+                  EOF
+
+                  echo '${{ steps.ip_output.outputs.vm_ips }}' | jq -r \
+                    'to_entries[] | 
+                    select(.key | contains("-webapp-")) | 
+                    "\(.key) ansible_host=\(.value)"' >> inventory.ini
+
+                  cat >> inventory.ini << 'EOF'
+
+                  [droplets:children]
+                  webapp
+                  EOF
+
+                  echo "Generated Ansible Inventory:"
+                  cat inventory.ini
+              env:
+                  SSH_USER: ${{ secrets.SSH_USER }}
+
+            - name: List available backups
+              run: |
+                  echo "📦 Listing available backups from S3..."
+                  aws s3 ls s3://${{ secrets.TF_STATE_BUCKET }}/backups/${{ env.project }}-${{ env.application }}/${{ env.stage }}/ \
+                    | grep 'backup_.*\.tar\.gz$' \
+                    | sort -r \
+                    | head -5 \
+                    | nl
+              env:
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+            - name: Execute Rollback
+              run: |
+                  echo "Restoring backup #${{ github.event.inputs.backup_number }}..."
+                  ansible-playbook -i inventory.ini .github/workflows/ansible/rollback-s3.yml
+              env:
+                  PROJECT: "${{ env.project }}-${{ env.application }}"
+                  SSH_USER: ${{ secrets.SSH_USER }}
+                  app_container: ${{ secrets.APP_CONTAINER }}
+                  nginx_container: ${{ secrets.NGINX_CONTAINER }}
+                  postgres_container: ${{ secrets.POSTGRES_CONTAINER }}
+                  S3_BACKUP_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
+                  AWS_REGION: ${{ secrets.AWS_REGION }}
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  BACKUP_NUMBER: ${{ github.event.inputs.backup_number }}
+                  SUPERVISOR_CONFIG: ${{ secrets.SUPERVISOR_CONFIG }}

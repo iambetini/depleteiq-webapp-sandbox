@@ -1,0 +1,575 @@
+---
+#  Rollback for API application
+- name: Rollback Application from S3 Backup for API
+  hosts: "api"
+  become: no
+  vars:
+    app_user: "{{ lookup('env', 'SSH_USER') | default('root') }}"
+    project_name: "{{ lookup('env', 'PROJECT') | default('myapp') }}"
+    deploy_dir: "/home/{{ app_user }}/projects/{{ project_name }}"
+    backup_dir: "/home/{{ app_user }}/backups/{{ project_name }}"
+    temp_restore_dir: "/tmp/restore"
+    backup_number: "{{ lookup('env', 'BACKUP_NUMBER') | default('1') | int }}"
+    s3_bucket: "{{ lookup('env', 'S3_BACKUP_BUCKET') }}"
+    s3_prefix: "backups/{{ project_name }}"
+    aws_region: "{{ lookup('env', 'AWS_REGION') | default('eu-west-2') }}"
+
+    # Container names from your docker-compose
+    app_container: "{{ lookup('env', 'app_container')| default('main_app') }}"
+    nginx_container: "{{ lookup('env', 'proxy_container')| default('server_app') }}"
+    certbot_container: "{{ lookup('env', 'cert_container')| default('cert_app') }}"
+    postgres_container: "{{ lookup('env', 'postgres_container')| default('db_app') }}"
+
+  tasks:
+    - name: Set timestamp once at playbook start
+      set_fact:
+        backup_timestamp: "{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}"
+
+    - name: Validate required variables
+      assert:
+        that:
+          - s3_bucket is defined
+          - s3_bucket | length > 0
+          - backup_number >= 1
+          - backup_number <= 5
+        fail_msg: |
+          Required variables missing or invalid:
+          - S3_BACKUP_BUCKET must be set
+          - BACKUP_NUMBER must be between 1 and 5
+
+    - name: Display rollback information
+      debug:
+        msg: |
+          🔄 ROLLBACK OPERATION
+          =====================
+          Project: {{ project_name }}
+          Target: {{ inventory_hostname }}
+          Deploy directory: {{ deploy_dir }}
+          S3 Bucket: {{ s3_bucket }}
+          Backup to restore: #{{ backup_number }} (1=latest)
+          =====================
+
+    - name: List all available backups in S3
+      aws_s3:
+        bucket: "{{ s3_bucket }}"
+        mode: list
+        prefix: "{{ s3_prefix }}/"
+        region: "{{ aws_region }}"
+      register: s3_backups
+      delegate_to: localhost
+
+    - name: Filter and sort backups
+      set_fact:
+        sorted_backups: "{{ s3_backups.s3_keys | select('match', '.*backup_.*\\.tar\\.gz$') | sort | reverse | list }}"
+      when: s3_backups.s3_keys is defined
+
+    - name: Validate backup exists
+      assert:
+        that:
+          - sorted_backups is defined
+          - sorted_backups | length >= backup_number
+        fail_msg: |
+          Backup #{{ backup_number }} does not exist!
+          Available backups: {{ sorted_backups | length }}
+
+          Please choose a number between 1 and {{ sorted_backups | length }}
+
+    - name: Select backup to restore
+      set_fact:
+        backup_to_restore: "{{ sorted_backups[backup_number - 1] }}"
+        backup_filename: "{{ sorted_backups[backup_number - 1] | basename }}"
+
+    - name: Display selected backup
+      debug:
+        msg: |
+          📦 Selected Backup Information:
+          ================================
+          S3 Key: {{ backup_to_restore }}
+          Filename: {{ backup_filename }}
+          Position: #{{ backup_number }} of {{ sorted_backups | length }} available
+          ================================
+
+    - name: Ensure temporary restore directory exists
+      file:
+        path: "{{ temp_restore_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download backup from S3
+      amazon.aws.s3_object:
+        bucket: "{{ s3_bucket }}"
+        object: "{{ backup_to_restore }}"
+        dest: "{{ temp_restore_dir }}/{{ backup_filename }}"
+        mode: get
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+      register: s3_download
+
+    - name: Verify downloaded backup
+      stat:
+        path: "{{ temp_restore_dir }}/{{ backup_filename }}"
+      register: backup_file
+
+    - name: Display backup size
+      debug:
+        msg: "Downloaded backup size: {{ (backup_file.stat.size / 1024 / 1024) | round(2) }} MB"
+
+    - name: Stop current application (if running)
+      block:
+        - name: Check if docker-compose exists
+          stat:
+            path: "{{ deploy_dir }}/docker-compose.yml"
+          register: docker_compose_check
+
+        - name: Stop Docker containers
+          shell: |
+            cd "{{ deploy_dir }}"
+            docker compose down
+          when: docker_compose_check.stat.exists
+          ignore_errors: yes
+
+        - name: Wait for containers to stop
+          pause:
+            seconds: 10
+      rescue:
+        - debug:
+            msg: "Could not stop containers, continuing..."
+
+    - name: Backup current deployment (safety backup)
+      block:
+        - name: Check if current deployment exists
+          stat:
+            path: "{{ deploy_dir }}"
+          register: current_deployment
+
+        - name: Ensure temporary restore directory exists
+          file:
+            path: "{{ backup_dir }}"
+            state: directory
+            mode: "0755"
+
+        - name: Create safety backup of current state
+          archive:
+            path:
+              - "{{ deploy_dir }}/*"
+              - "{{ deploy_dir }}/.[!.]*"
+            dest: "{{ backup_dir }}/pre-rollback-backup_{{ backup_timestamp }}.tar.gz"
+            format: gz
+            exclude_path:
+              - "{{ deploy_dir }}/node_modules"
+              - "{{ deploy_dir }}/.next"
+              - "{{ deploy_dir }}/out"
+              - "{{ deploy_dir }}/.git"
+              - "{{ deploy_dir }}/storage/logs/*"
+              - "{{ deploy_dir }}/vendor"
+          when: current_deployment.stat.exists
+          register: safety_backup
+
+        - name: Display safety backup location
+          debug:
+            msg: "Safety backup created: {{ temp_restore_dir }}/pre-rollback-backup_{{ backup_timestamp }}.tar.gz"
+          when: safety_backup is changed
+
+      rescue:
+        - debug:
+            msg: "Could not create safety backup, continuing with rollback..."
+
+    - name: Clear deployment directory
+      block:
+        - name: Remove old deployment files (keep markers)
+          shell: |
+            cd "{{ deploy_dir }}"
+            find . -maxdepth 1 \
+              ! -name '.' \
+              ! -name '..' \
+              ! -name '.db_initialized' \
+              ! -name '.ssl-configured' \
+              -exec rm -rf {} + 2>/dev/null || true
+          args:
+            executable: /bin/bash
+          become: yes
+
+        - name: Ensure deployment directory exists and is clean
+          file:
+            path: "{{ deploy_dir }}"
+            state: directory
+            owner: "{{ app_user }}"
+            group: "{{ app_user }}"
+            mode: "0755"
+          become: yes
+
+    - name: Extract backup to deployment directory
+      unarchive:
+        src: "{{ temp_restore_dir }}/{{ backup_filename }}"
+        dest: "{{ deploy_dir }}"
+        remote_src: yes
+      register: extraction
+
+    - name: Fix permissions after extraction
+      file:
+        path: "{{ deploy_dir }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        recurse: yes
+      become: yes
+
+    - name: Clean up temporary files
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "{{ temp_restore_dir }}/{{ backup_filename }}"
+      ignore_errors: yes
+
+    - name: Verify restoration
+      find:
+        paths: "{{ deploy_dir }}"
+        file_type: any
+      register: restored_files
+
+    - name: Check for docker-compose
+      stat:
+        path: "{{ deploy_dir }}/docker-compose.yml"
+      register: docker_compose_check
+
+    - name: Start docker compose services
+      block:
+        - name: Start docker compose safely (nohup)
+          shell: |
+            cd "{{ deploy_dir }}"
+            nohup docker compose up -d --build > /tmp/docker-compose.log 2>&1 &
+          async: 10
+          poll: 0
+          register: docker_up
+
+        - name: Display docker compose output
+          debug:
+            var: docker_up
+
+        - name: Wait for Docker Compose to start containers
+          pause:
+            seconds: 30
+            prompt: "Waiting for containers to initialize..."
+
+        - name: Wait for all containers to be running
+          vars:
+            startup_timeout: 600
+          shell: |
+            cd "{{ deploy_dir }}"
+            timeout={{ startup_timeout }}
+            elapsed=0
+            interval=5
+
+            echo "Waiting for containers to start..."
+            while [ $elapsed -lt $timeout ]; do
+              running=$(docker compose ps -q | xargs docker inspect -f '{{ "{{" }}.State.Running{{ "}}" }}' 2>/dev/null | grep -c true || echo 0)
+              total=$(docker compose ps -q | wc -l)
+              
+              echo "[$elapsed/$timeout seconds] Running: $running/$total containers"
+              
+              if [ "$running" -ge 3 ]; then
+                echo "All containers are running!"
+                exit 0
+              fi
+              
+              sleep $interval
+              elapsed=$((elapsed + interval))
+            done
+
+            echo "Timeout waiting for containers"
+            docker compose ps
+            exit 1
+          args:
+            chdir: "{{ deploy_dir }}"
+          register: wait_containers
+          changed_when: false
+
+        - name: Display container wait result
+          debug:
+            var: wait_containers.stdout_lines
+
+    # Verify containers are running
+    - name: Get running container services
+      shell: |
+        cd "{{ deploy_dir }}" && docker compose ps --services --filter "status=running"
+      register: running_containers
+      changed_when: false
+      retries: 5
+      delay: 10
+      until: running_containers.stdout_lines | length >= 3
+
+    - name: Verify all required containers are running
+      assert:
+        that:
+          - "'app' in running_containers.stdout"
+          - "'webserver' in running_containers.stdout"
+          - "'db' in running_containers.stdout"
+        fail_msg: "Not all required containers are running. Running: {{ running_containers.stdout_lines }}"
+        success_msg: "✓ All required containers are running"
+
+    # Laravel Artisan Commands
+    - name: Clear Laravel caches
+      block:
+        - name: Cache configuration
+          shell: docker exec {{ app_container }} php artisan config:cache
+
+        - name: Cache routes
+          shell: docker exec {{ app_container }} php artisan route:cache
+
+      rescue:
+        - debug:
+            msg: "Some cache commands failed, but continuing with deployment"
+
+    - name: Set Laravel storage permissions
+      shell: |
+        docker exec {{ app_container }} sh -c "
+        chown -R www-data:www-data storage/
+        chmod -R 775 storage/
+        "
+
+    - name: Set Laravel bootstrap cache permissions
+      shell: |
+        docker exec {{ app_container }} sh -c "
+        chown -R www-data:www-data bootstrap/cache/
+        chmod -R 775 bootstrap/cache/
+        "
+
+    # Supervisor Configuration
+    - name: Configure Supervisor for Laravel Workers
+      block:
+        - name: Deploy Supervisor configuration from secret
+          copy:
+            content: "{{ lookup('env', 'SUPERVISOR_CONFIG') }}"
+            dest: "/etc/supervisor/conf.d/{{ project_name }}-workers.conf"
+            mode: "0644"
+          become: yes
+          when: lookup('env', 'SUPERVISOR_CONFIG') != ''
+          register: supervisor_config_updated
+
+        - name: Reread Supervisor configuration
+          command: supervisorctl reread
+          become: yes
+          when: supervisor_config_updated is changed
+
+        - name: Update Supervisor with new configuration
+          command: supervisorctl update
+          become: yes
+          when: supervisor_config_updated is changed
+
+        - name: Restart all Supervisor programs
+          command: supervisorctl restart all
+          become: yes
+          register: supervisor_restart
+
+        - name: Display Supervisor restart result
+          debug:
+            msg: "Supervisor programs restarted: {{ supervisor_restart.stdout }}"
+          when: supervisor_restart.stdout is defined
+
+        - name: Check Supervisor status
+          command: supervisorctl status
+          become: yes
+          register: supervisor_status
+          changed_when: false
+
+        - name: Display Supervisor status
+          debug:
+            var: supervisor_status.stdout_lines
+
+      rescue:
+        - name: Supervisor configuration failed
+          debug:
+            msg: "Supervisor configuration or restart failed. Check logs with: sudo supervisorctl tail -f {{ project_name }}"
+
+# Rollback Web Application
+- name: Rollback Application from S3 Backup for WEBAPP
+  hosts: "webapp"
+  become: no
+  vars:
+    app_user: "{{ lookup('env', 'SSH_USER') | default('root') }}"
+    project_name: "{{ lookup('env', 'PROJECT') | default('myapp') }}"
+    deploy_dir: "/home/{{ app_user }}/projects/{{ project_name }}"
+    backup_dir: "/home/{{ app_user }}/backups/{{ project_name }}"
+    temp_restore_dir: "/tmp/restore"
+    backup_number: "{{ lookup('env', 'BACKUP_NUMBER') | default('1') | int }}"
+    s3_bucket: "{{ lookup('env', 'S3_BACKUP_BUCKET') }}"
+    s3_prefix: "backups/{{ project_name }}"
+    aws_region: "{{ lookup('env', 'AWS_REGION') | default('eu-west-2') }}"
+
+    # Container names from your docker-compose
+    app_container: "{{ lookup('env', 'app_container')| default('main_app') }}"
+    nginx_container: "{{ lookup('env', 'proxy_container')| default('server_app') }}"
+    certbot_container: "{{ lookup('env', 'cert_container')| default('cert_app') }}"
+    postgres_container: "{{ lookup('env', 'postgres_container')| default('db_app') }}"
+
+  tasks:
+    - name: Set timestamp once at playbook start
+      set_fact:
+        backup_timestamp: "{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}"
+
+    - name: Validate required variables
+      assert:
+        that:
+          - s3_bucket is defined
+          - s3_bucket | length > 0
+          - backup_number >= 1
+          - backup_number <= 5
+        fail_msg: |
+          Required variables missing or invalid:
+          - S3_BACKUP_BUCKET must be set
+          - BACKUP_NUMBER must be between 1 and 5
+
+    - name: Display rollback information
+      debug:
+        msg: |
+          🔄 ROLLBACK OPERATION
+          =====================
+          Project: {{ project_name }}
+          Target: {{ inventory_hostname }}
+          Deploy directory: {{ deploy_dir }}
+          S3 Bucket: {{ s3_bucket }}
+          Backup to restore: #{{ backup_number }} (1=latest)
+          =====================
+
+    - name: List all available backups in S3
+      aws_s3:
+        bucket: "{{ s3_bucket }}"
+        mode: list
+        prefix: "{{ s3_prefix }}/"
+        region: "{{ aws_region }}"
+      register: s3_backups
+      delegate_to: localhost
+
+    - name: Filter and sort backups
+      set_fact:
+        sorted_backups: "{{ s3_backups.s3_keys | select('match', '.*backup_.*\\.tar\\.gz$') | sort | reverse | list }}"
+      when: s3_backups.s3_keys is defined
+
+    - name: Validate backup exists
+      assert:
+        that:
+          - sorted_backups is defined
+          - sorted_backups | length >= backup_number
+        fail_msg: |
+          Backup #{{ backup_number }} does not exist!
+          Available backups: {{ sorted_backups | length }}
+
+          Please choose a number between 1 and {{ sorted_backups | length }}
+
+    - name: Select backup to restore
+      set_fact:
+        backup_to_restore: "{{ sorted_backups[backup_number - 1] }}"
+        backup_filename: "{{ sorted_backups[backup_number - 1] | basename }}"
+
+    - name: Display selected backup
+      debug:
+        msg: |
+          📦 Selected Backup Information:
+          ================================
+          S3 Key: {{ backup_to_restore }}
+          Filename: {{ backup_filename }}
+          Position: #{{ backup_number }} of {{ sorted_backups | length }} available
+          ================================
+
+    - name: Ensure temporary restore directory exists
+      file:
+        path: "{{ temp_restore_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download backup from S3
+      amazon.aws.s3_object:
+        bucket: "{{ s3_bucket }}"
+        object: "{{ backup_to_restore }}"
+        dest: "{{ temp_restore_dir }}/{{ backup_filename }}"
+        mode: get
+        region: "{{ aws_region }}"
+        aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+      register: s3_download
+
+    - name: Verify downloaded backup
+      stat:
+        path: "{{ temp_restore_dir }}/{{ backup_filename }}"
+      register: backup_file
+
+    - name: Display backup size
+      debug:
+        msg: "Downloaded backup size: {{ (backup_file.stat.size / 1024 / 1024) | round(2) }} MB"
+
+    - name: Backup current deployment (safety backup)
+      block:
+        - name: Check if current deployment exists
+          stat:
+            path: "{{ deploy_dir }}"
+          register: current_deployment
+
+        - name: Ensure temporary restore directory exists
+          file:
+            path: "{{ backup_dir }}"
+            state: directory
+            mode: "0755"
+
+        - name: Create safety backup of current state
+          archive:
+            path:
+              - "{{ deploy_dir }}/*"
+              - "{{ deploy_dir }}/.[!.]*"
+            dest: "{{ backup_dir }}/pre-rollback-backup_{{ backup_timestamp }}.tar.gz"
+            format: gz
+            exclude_path:
+              - "{{ deploy_dir }}/node_modules"
+              - "{{ deploy_dir }}/.next"
+              - "{{ deploy_dir }}/out"
+              - "{{ deploy_dir }}/.git"
+              - "{{ deploy_dir }}/storage/logs/*"
+              - "{{ deploy_dir }}/.github"
+              - "{{ deploy_dir }}/vendor"
+          when: current_deployment.stat.exists
+          register: safety_backup
+
+        - name: Display safety backup location
+          debug:
+            msg: "Safety backup created: {{ temp_restore_dir }}/pre-rollback-backup_{{ backup_timestamp }}.tar.gz"
+          when: safety_backup is changed
+
+      rescue:
+        - debug:
+            msg: "Could not create safety backup, continuing with rollback..."
+
+    - name: Remove existing build folder
+      file:
+        path: "{{ deploy_dir }}.next"
+        state: absent
+
+    - name: Extract backup to deployment directory
+      unarchive:
+        src: "{{ temp_restore_dir }}/{{ backup_filename }}"
+        dest: "{{ deploy_dir }}"
+        remote_src: yes
+      register: extraction
+
+    - name: Install dependencies with pnpm
+      command: pnpm install --frozen-lockfile
+      args:
+        chdir: "{{ deploy_dir }}"
+      become_user: "{{ app_user }}"
+
+    - name: Build the Next.js application
+      command: pnpm build
+      args:
+        chdir: "{{ deploy_dir }}"
+      become_user: "{{ app_user }}"
+
+    - name: Deploy via PM2 Ecosystem
+      shell: |
+        pm2 delete {{ project_name }} || true
+        pm2 start ecosystem.config.js
+      args:
+        chdir: "{{ deploy_dir }}"
+      become_user: "{{ app_user }}"
+
+    - name: Persist PM2 state
+      command: pm2 save
+      become_user: "{{ app_user }}"
