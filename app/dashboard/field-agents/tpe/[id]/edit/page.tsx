@@ -5,8 +5,8 @@ import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { toast } from "@/hooks/use-toast"
 import { catchError } from "@/lib/utils"
 import {
-    useGetTPEQuery,
-    useUpdateTPEMutation,
+  useGetTPEQuery,
+  useUpdateTPEMutation,
 } from "@/store/tpe"
 import { useRouter, useParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
@@ -23,6 +23,7 @@ export default function EditTPEPage() {
     last_name: "",
     email: "",
     phone: "",
+    market_id: "",
   })
   const formRef = useRef<any>(null)
 
@@ -33,6 +34,7 @@ export default function EditTPEPage() {
         last_name: data.last_name || "",
         email: data.email || "",
         phone: data.phone || "",
+        market_id: data.market?.uuid || "",
       })
     }
   }, [data])
@@ -42,6 +44,7 @@ export default function EditTPEPage() {
     last_name: Yup.string(),
     email: Yup.string().email("Invalid email"),
     phone: Yup.string(),
+    market_id: Yup.string().nullable(),
   })
 
   const handleSubmit = async (values: typeof initialValues, helpers: any) => {
@@ -51,7 +54,7 @@ export default function EditTPEPage() {
         title: "Success",
         description: "TPE user updated successfully",
       })
-      router.push("/dashboard/tpe")
+      router.push("/dashboard/field-agents/tpe")
     } catch (error: any) {
       catchError(error, helpers.setFieldError)
     } finally {
@@ -87,6 +90,16 @@ export default function EditTPEPage() {
       type: "text" as const,
       required: false,
       placeholder: "Enter phone number (international format)",
+    },
+    {
+      name: "market_id",
+      label: "Market",
+      type: "selectWithFetch" as const,
+      required: false,
+      fetchUrl: "/markets",
+      valueKey: "uuid",
+      labelKey: "name",
+      placeholder: "Select a market",
     },
   ]
 

@@ -76,11 +76,11 @@ function getColumns(
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => router.push(`/dashboard/ime-vss/${row.original.uuid}`)}>
+            <DropdownMenuItem onClick={() => router.push(`/dashboard/field-agents/ime-vss/${row.original.uuid}`)}>
               <Eye className="mr-2 h-4 w-4" />
               View Details
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push(`/dashboard/ime-vss/${row.original.uuid}/manage`)}>
+            <DropdownMenuItem onClick={() => router.push(`/dashboard/field-agents/ime-vss/${row.original.uuid}/manage`)}>
               <Edit className="mr-2 h-4 w-4" />
               Manage
             </DropdownMenuItem>
@@ -123,59 +123,59 @@ export default function ImeVssPage() {
 
   return (
     <div>
-        <ListPageHeader
-          title="IME-VSS"
-          description="Manage IME-VSSs and their permissions"
-          showAddButton={true}
-          onAdd={() => router.push("/dashboard/ime-vss/create")}
-          addLabel="Add IME-VSS"
-          showBulkAddButton={true}
-          onBulkAdd={() => setBulkModalOpen(true)}
-          bulkAddLabel="Add Bulk IME/VSS"
-        />
+      <ListPageHeader
+        title="IME-VSS"
+        description="Manage IME-VSSs and their permissions"
+        showAddButton={true}
+        onAdd={() => router.push("/dashboard/field-agents/ime-vss/create")}
+        addLabel="Add IME-VSS"
+        showBulkAddButton={true}
+        onBulkAdd={() => setBulkModalOpen(true)}
+        bulkAddLabel="Add Bulk IME/VSS"
+      />
 
-        <DataTable
-          ref={dataTableRef}
-          columns={columns as unknown as ColumnDef<unknown, unknown>[]}
-          searchKey="first_name"
-          searchPlaceholder="Search IME-VSSs..."
-          store="imeVss"
-          fixedQuery={{ roles }}
-          filters={[
-            {
-              type: "select",
-              label: "Role",
-              param: "roles",
-              options: [
-                { label: "All Roles", value: roles },
-                { label: "IME", value: "ime" },
-                { label: "VSS", value: "vss" },
-              ],
-            },
-            {
-              type: "selectWithFetch",
-              label: "Market",
-              param: "market_id",
-              fetchUrl: "/markets",
-              valueKey: "uuid",
-              labelKey: "full_name",
-              searchParam: "search",
-              placeholder: "Select market...",
-              labelFormatter: (item: any) => `${item.full_name}`,
-            },
-          ]}
-          exportFileName="IME-VSS"
-        />
+      <DataTable
+        ref={dataTableRef}
+        columns={columns as unknown as ColumnDef<unknown, unknown>[]}
+        searchKey="first_name"
+        searchPlaceholder="Search IME-VSSs..."
+        store="imeVss"
+        fixedQuery={{ roles }}
+        filters={[
+          {
+            type: "select",
+            label: "Role",
+            param: "roles",
+            options: [
+              { label: "All Roles", value: roles },
+              { label: "IME", value: "ime" },
+              { label: "VSS", value: "vss" },
+            ],
+          },
+          {
+            type: "selectWithFetch",
+            label: "Market",
+            param: "market_id",
+            fetchUrl: "/markets",
+            valueKey: "uuid",
+            labelKey: "full_name",
+            searchParam: "search",
+            placeholder: "Select market...",
+            labelFormatter: (item: any) => `${item.full_name}`,
+          },
+        ]}
+        exportFileName="IME-VSS"
+      />
 
-        <BulkUploadModal
-          open={bulkModalOpen}
-          onClose={() => setBulkModalOpen(false)}
-          sampleUrl="/sample-ime-vss.xlsx"
-          apiUrl="/users/bulk-store"
-          onSuccess={refreshTable}
-          title="Bulk IME/VSS Upload"
-          label="Upload Bulk IME/VSS (.xlsx)"
-        />
+      <BulkUploadModal
+        open={bulkModalOpen}
+        onClose={() => setBulkModalOpen(false)}
+        sampleUrl="/sample-ime-vss.xlsx"
+        apiUrl="/users/bulk-store"
+        onSuccess={refreshTable}
+        title="Bulk IME/VSS Upload"
+        label="Upload Bulk IME/VSS (.xlsx)"
+      />
     </div>
   )
 }

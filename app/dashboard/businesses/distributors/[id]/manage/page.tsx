@@ -39,7 +39,7 @@ export default function ManageDistributorPage() {
       storeName: "distributors",
       uuid,
       entityLabel: "distributor",
-      onSuccess: () => router.push("/dashboard/distributors"),
+      onSuccess: () => router.push("/dashboard/businesses/distributors"),
     })
   }, [router])
 

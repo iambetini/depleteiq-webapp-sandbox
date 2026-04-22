@@ -88,15 +88,15 @@ const ActionsCell = React.memo(({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => router.push(`/dashboard/distributors/${distributor.uuid}`)}>
+        <DropdownMenuItem onClick={() => router.push(`/dashboard/businesses/distributors/${distributor.uuid}`)}>
           <Eye className="mr-2 h-4 w-4" />
           View Details
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push(`/dashboard/distributors/${distributor.uuid}/manage`)}>
+        <DropdownMenuItem onClick={() => router.push(`/dashboard/businesses/distributors/${distributor.uuid}/manage`)}>
           <Edit className="mr-2 h-4 w-4" />
           Manage
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push(`/dashboard/distributors/${distributor.uuid}/orders`)}>
+        <DropdownMenuItem onClick={() => router.push(`/dashboard/businesses/distributors/${distributor.uuid}/orders`)}>
           <Eye className="mr-2 h-4 w-4" />
           View Orders
         </DropdownMenuItem>

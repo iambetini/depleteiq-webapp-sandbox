@@ -18,6 +18,8 @@ export interface DashboardData {
   };
   total_order_volume: number;
   total_volume: number;
+  total_tpe: number;
+  total_promoters: number;
   brand_category_price_data: BrandCategoryPriceData[];
 }
 

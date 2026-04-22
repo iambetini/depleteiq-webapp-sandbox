@@ -22,6 +22,7 @@ type FieldType =
   | "selectWithFetchAndCreate"
   | "switch"
   | "checkbox"
+  | "custom"
 
 interface FieldOption {
   label: string
@@ -48,6 +49,7 @@ interface FieldConfig {
   createButtonText?: string
   onFocus?: () => void
   section?: string
+  renderCustom?: (formik: any) => React.ReactNode
 }
 
 interface UserFormProps {
@@ -163,6 +165,14 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
                         {section.fields
                           .filter(field => field.type !== "switch" && field.type !== "checkbox")
                           .map((field, idx) => {
+                      if (field.type === "custom" && field.renderCustom) {
+                        const colSpanClass = field.colSpan === 1 ? "md:col-span-1" : "md:col-span-2";
+                        return (
+                          <div className={colSpanClass} key={field.name}>
+                            {field.renderCustom({ values, handleChange, setFieldValue, isSubmitting })}
+                          </div>
+                        )
+                      }
                       if (field.type === "textarea") {
                         return (
                           <div className="space-y-2 md:col-span-2" key={field.name}>

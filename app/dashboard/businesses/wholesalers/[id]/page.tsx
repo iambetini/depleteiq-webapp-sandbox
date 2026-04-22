@@ -27,12 +27,12 @@ export default function ViewWholesalerPage() {
         title={wholesaler.business?.name || "Wholesaler"}
         description="Wholesaler Details"
         showEditButton={true}
-        editHref={`/dashboard/wholesalers/${wholesaler.uuid}/edit`}
+        editHref={`/dashboard/businesses/wholesalers/${wholesaler.uuid}/edit`}
         showDeleteButton={true}
         deleteOptions={{
           storeName: "wholesalers",
           uuid: wholesaler.uuid,
-          redirectPath: "/dashboard/wholesalers",
+          redirectPath: "/dashboard/businesses/wholesalers",
         }}
       />
 
@@ -127,7 +127,7 @@ export default function ViewWholesalerPage() {
                   <p className="text-sm text-[#ababab]">TPE User</p>
                   {wholesaler.tpe_user?.uuid ? (
                     <Link
-                      href={`/dashboard/tpe/${wholesaler.tpe_user.uuid}`}
+                      href={`/dashboard/field-agents/tpe/${wholesaler.tpe_user.uuid}`}
                       className="font-medium text-blue-600 hover:underline"
                     >
                       {wholesaler.tpe_user.first_name} {wholesaler.tpe_user.last_name}
@@ -137,6 +137,46 @@ export default function ViewWholesalerPage() {
                   )}
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Attached Stores Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-[#444444]">Attached Stores</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {wholesaler.business?.stores && wholesaler.business.stores.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {wholesaler.business.stores.map((store: any, index: number) => (
+                    <div key={store.uuid || index} className="p-4 border rounded-md bg-gray-50 space-y-2">
+                      <h4 className="font-medium text-[#444444]">Store {index + 1}</h4>
+                      {store.address && (
+                        <div className="text-sm">
+                          <span className="text-[#ababab]">Address:</span> <span className="text-[#444444]">{store.address}</span>
+                        </div>
+                      )}
+                      {store.type && (
+                        <div className="text-sm">
+                          <span className="text-[#ababab]">Type:</span> <span className="text-[#444444]">{store.type}</span>
+                        </div>
+                      )}
+                      {store.category && (
+                        <div className="text-sm">
+                          <span className="text-[#ababab]">Category:</span> <span className="text-[#444444]">{store.category}</span>
+                        </div>
+                      )}
+                      {store.market && (
+                        <div className="text-sm">
+                          <span className="text-[#ababab]">Market:</span> <span className="text-[#444444]">{store.market.name}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-[#ababab]">No stores attached</p>
+              )}
             </CardContent>
           </Card>
         </div>

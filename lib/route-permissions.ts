@@ -65,6 +65,59 @@ export const routePermissions: RoutePermission[] = [
     pattern: /^\/dashboard\/brands\/\d+\/edit$/,
     permissions: ["edit brands"],
   },
+  // Businesses - Distributors
+  {
+    href: "/dashboard/businesses/distributors",
+    pattern: /^\/dashboard\/businesses\/distributors$/,
+    permissions: ["view dashboard","view distributors"],
+  },
+  {
+    href: "/dashboard/businesses/distributors/create",
+    pattern: /^\/dashboard\/businesses\/distributors\/create$/,
+    permissions: ["create distributors"],
+  },
+  {
+    href: "/dashboard/businesses/distributors/[id]",
+    pattern: /^\/dashboard\/businesses\/distributors\/\d+$/,
+    permissions: ["view distributors"],
+  },
+  {
+    href: "/dashboard/businesses/distributors/[id]/manage",
+    pattern: /^\/dashboard\/businesses\/distributors\/\d+\/manage$/,
+    permissions: ["edit distributors"],
+  },
+  {
+    href: "/dashboard/businesses/distributors/[id]/orders",
+    pattern: /^\/dashboard\/businesses\/distributors\/\d+\/orders$/,
+    permissions: ["view orders"],
+  },
+  {
+    href: "/dashboard/businesses/distributors/[id]/target",
+    pattern: /^\/dashboard\/businesses\/distributors\/\d+\/target$/,
+    permissions: ["edit targets"],
+  },
+
+  // Businesses - Wholesalers
+  {
+    href: "/dashboard/businesses/wholesalers",
+    pattern: /^\/dashboard\/businesses\/wholesalers$/,
+    permissions: ["view wholesalers"],
+  },
+  {
+    href: "/dashboard/businesses/wholesalers/create",
+    pattern: /^\/dashboard\/businesses\/wholesalers\/create$/,
+    permissions: ["create wholesalers"],
+  },
+  {
+    href: "/dashboard/businesses/wholesalers/[id]",
+    pattern: /^\/dashboard\/businesses\/wholesalers\/\d+$/,
+    permissions: ["view wholesalers"],
+  },
+  {
+    href: "/dashboard/businesses/wholesalers/[id]/edit",
+    pattern: /^\/dashboard\/businesses\/wholesalers\/\d+\/edit$/,
+    permissions: ["edit wholesalers"],
+  },
 
   // Dashboard
   {
@@ -105,48 +158,57 @@ export const routePermissions: RoutePermission[] = [
     permissions: ["view deliveries"],
   },
 
-  // Distributors
-  {
-    href: "/dashboard/distributors",
-    pattern: /^\/dashboard\/distributors$/,
-    permissions: ["view distributors"],
-  },
-  {
-    href: "/dashboard/distributors/create",
-    pattern: /^\/dashboard\/distributors\/create$/,
-    permissions: ["create distributors"],
-  },
-  {
-    href: "/dashboard/distributors/[id]",
-    pattern: /^\/dashboard\/distributors\/\d+$/,
-    permissions: ["view distributors"],
-  },
-  {
-    href: "/dashboard/distributors/[id]/manage",
-    pattern: /^\/dashboard\/distributors\/\d+\/manage$/,
-    permissions: ["edit distributors"],
-  },
 
-  // IME/VSS
+  // Field Teams
   {
-    href: "/dashboard/ime-vss",
-    pattern: /^\/dashboard\/ime-vss$/,
+    href: "/dashboard/field-agents/ime-vss",
+    pattern: /^\/dashboard\/field-agents\/ime-vss$/,
     permissions: ["view distributors"],
   },
   {
-    href: "/dashboard/ime-vss/create",
-    pattern: /^\/dashboard\/ime-vss\/create$/,
+    href: "/dashboard/field-agents/ime-vss/create",
+    pattern: /^\/dashboard\/field-agents\/ime-vss\/create$/,
     permissions: ["create distributors"],
   },
   {
-    href: "/dashboard/ime-vss/[id]",
-    pattern: /^\/dashboard\/ime-vss\/\d+$/,
+    href: "/dashboard/field-agents/ime-vss/[id]",
+    pattern: /^\/dashboard\/field-agents\/ime-vss\/\d+$/,
     permissions: ["view distributors"],
   },
   {
-    href: "/dashboard/ime-vss/[id]/edit",
-    pattern: /^\/dashboard\/ime-vss\/\d+\/edit$/,
+    href: "/dashboard/field-agents/ime-vss/[id]/manage",
+    pattern: /^\/dashboard\/field-agents\/ime-vss\/\d+\/manage$/,
     permissions: ["edit distributors"],
+  },
+  {
+    href: "/dashboard/field-agents/ime-vss/[id]/distributors",
+    pattern: /^\/dashboard\/field-agents\/ime-vss\/\d+\/distributors$/,
+    permissions: ["view distributors"],
+  },
+  {
+    href: "/dashboard/field-agents/ime-vss/[id]/orders",
+    pattern: /^\/dashboard\/field-agents\/ime-vss\/\d+\/orders$/,
+    permissions: ["view orders"],
+  },
+  {
+    href: "/dashboard/field-agents/tpe",
+    pattern: /^\/dashboard\/field-agents\/tpe$/,
+    permissions: ["view tpe"],
+  },
+  {
+    href: "/dashboard/field-agents/tpe/create",
+    pattern: /^\/dashboard\/field-agents\/tpe\/create$/,
+    permissions: ["create tpe"],
+  },
+  {
+    href: "/dashboard/field-agents/tpe/[id]",
+    pattern: /^\/dashboard\/field-agents\/tpe\/\d+$/,
+    permissions: ["view tpe"],
+  },
+  {
+    href: "/dashboard/field-agents/tpe/[id]/edit",
+    pattern: /^\/dashboard\/field-agents\/tpe\/\d+\/edit$/,
+    permissions: ["edit tpe"],
   },
 
   // Locations

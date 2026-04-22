@@ -27,7 +27,7 @@ export default function DistributorsPage() {
         title="Distributors"
         description="Manage distributors and their business information"
         showAddButton={true}
-        onAdd={() => router.push("/dashboard/distributors/create")}
+        onAdd={() => router.push("/dashboard/businesses/distributors/create")}
         addLabel="Add Distributor"
         showBulkAddButton={true}
         onBulkAdd={() => setBulkModalOpen(true)}
