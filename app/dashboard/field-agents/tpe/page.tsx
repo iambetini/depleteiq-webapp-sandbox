@@ -1,6 +1,7 @@
 "use client"
 
 import ListPageHeader from "@/components/dashboard/ListPageHeader"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
@@ -10,7 +11,7 @@ import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useRef, useCallback } from "react"
 
-export default function WholesalersPage() {
+export default function TPEPage() {
   const router = useRouter()
   const dataTableRef = useRef<{ refresh: () => void }>(null)
 
@@ -20,7 +21,7 @@ export default function WholesalersPage() {
 
   const deleteHandler = useCallback((uuid: string) => {
     handleDelete({
-      storeName: "wholesalers",
+      storeName: "tpes",
       uuid,
       onSuccess: refreshTable,
     })
@@ -28,43 +29,36 @@ export default function WholesalersPage() {
 
   const columns: ColumnDef<any, any>[] = [
     {
-      accessorKey: "business.name",
-      header: "Business",
-    },
-    {
-      accessorKey: "user.first_name",
-      header: "Contact Person",
+      accessorKey: "first_name",
+      header: "Name",
       cell: ({ row }) => (
         <div>
           <div className="font-medium">
-            {row.original.user?.first_name} {row.original.user?.last_name}
+            {row.original.first_name} {row.original.last_name}
           </div>
-          <div className="text-sm text-muted-foreground">{row.original.user?.email}</div>
+          <div className="text-sm text-muted-foreground">{row.original.email}</div>
         </div>
       ),
     },
     {
-      accessorKey: "business.address",
-      header: "Address",
-      cell: ({ row }) => (
-        <div className="max-w-[250px] truncate text-sm" title={row.original.business?.address}>
-          {row.original.business?.address || "Not provided"}
-        </div>
-      ),
+      accessorKey: "phone",
+      header: "Phone",
     },
     {
-      accessorKey: "tpe_user.first_name",
-      header: "TPE",
+      accessorKey: "market.name",
+      header: "Market",
+      cell: ({ row }) => row.original.market?.name || "Not assigned",
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
       cell: ({ row }) => (
-        <div className="text-sm">
-          {row.original.tpe_user ? (
-              <div className="font-medium">
-                {row.original.tpe_user.first_name} {row.original.tpe_user.last_name}
-              </div>
-          ) : (
-            <span className="text-muted-foreground">Not assigned</span>
-          )}
-        </div>
+        <Badge
+          variant={row.original.status === "active" ? "default" : "destructive"}
+          className={`status ${row.original.status === "active" ? "active" : "inactive"}`}
+        >
+          {row.original.status}
+        </Badge>
       ),
     },
     {
@@ -78,11 +72,11 @@ export default function WholesalersPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => router.push(`/dashboard/wholesalers/${row.original.uuid}`)}>
+            <DropdownMenuItem onClick={() => router.push(`/dashboard/field-agents/tpe/${row.original.uuid}`)}>
               <Eye className="mr-2 h-4 w-4" />
               View Details
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push(`/dashboard/wholesalers/${row.original.uuid}/edit`)}>
+            <DropdownMenuItem onClick={() => router.push(`/dashboard/field-agents/tpe/${row.original.uuid}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />
               Edit
             </DropdownMenuItem>
@@ -102,20 +96,32 @@ export default function WholesalersPage() {
   return (
     <div>
       <ListPageHeader
-        title="Wholesalers"
-        description="Manage wholesalers"
+        title="TPE Management"
+        description="Manage Third Party Executor users"
         showAddButton={true}
-        onAdd={() => router.push("/dashboard/wholesalers/create")}
-        addLabel="Add Wholesaler"
+        onAdd={() => router.push("/dashboard/field-agents/tpe/create")}
+        addLabel="Add TPE"
       />
 
       <DataTable
         ref={dataTableRef}
         columns={columns}
-        searchKey="user.email"
+        searchKey="email"
         searchPlaceholder="Search by email, name..."
-        store="wholesalers"
-        exportFileName="Wholesalers"
+        store="tpes"
+        exportFileName="TPE"
+        filters={[
+          {
+            type: "selectWithFetch",
+            label: "Market",
+            param: "market_id",
+            fetchUrl: "/markets",
+            valueKey: "uuid",
+            labelFormatter: (item: any) => item.name,
+            searchParam: "search",
+            placeholder: "Select Market",
+          },
+        ]}
       />
     </div>
   )

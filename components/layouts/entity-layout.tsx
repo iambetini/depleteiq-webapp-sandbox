@@ -31,10 +31,10 @@ function EntityLayoutContent({ children, entityType, tabs }: EntityLayoutProps) 
   const imeVssData = useImeVssData(entityType === 'ime-vss')
   const targetData = useTargetData(entityType === 'target')
   // Select the appropriate data based on entity type
-  const { entity, isLoading, error } = 
-    entityType === 'distributor' ? distributorData : 
-    entityType === 'ime-vss' ? imeVssData : 
-    targetData
+  const { entity, isLoading, error } =
+    entityType === 'distributor' ? distributorData :
+      entityType === 'ime-vss' ? imeVssData :
+        targetData
 
   if (isLoading) {
     return <LoadingSkeleton />
@@ -118,10 +118,10 @@ export function DistributorLayout({ children }: { children: React.ReactNode }) {
   const distributorId = params.id as string
 
   const tabs: TabConfig[] = [
-    { id: 'view', label: 'Overview', path: `/dashboard/distributors/${distributorId}` },
-    { id: 'orders', label: 'Orders', path: `/dashboard/distributors/${distributorId}/orders` },
-    { id: 'target', label: 'Target', path: `/dashboard/distributors/${distributorId}/target` },
-    { id: 'manage', label: 'Manage', path: `/dashboard/distributors/${distributorId}/manage` },
+    { id: 'view', label: 'Overview', path: `/dashboard/businesses/distributors/${distributorId}` },
+    { id: 'orders', label: 'Orders', path: `/dashboard/businesses/distributors/${distributorId}/orders` },
+    { id: 'target', label: 'Target', path: `/dashboard/businesses/distributors/${distributorId}/target` },
+    { id: 'manage', label: 'Manage', path: `/dashboard/businesses/distributors/${distributorId}/manage` },
   ]
 
   return (
@@ -137,10 +137,10 @@ export function ImeVssLayout({ children }: { children: React.ReactNode }) {
   const imeVssId = params.id as string
 
   const tabs: TabConfig[] = [
-    { id: 'view', label: 'Overview', path: `/dashboard/ime-vss/${imeVssId}` },
-    { id: 'orders', label: 'Orders', path: `/dashboard/ime-vss/${imeVssId}/orders` },
-    { id: 'distributors', label: 'Distributors', path: `/dashboard/ime-vss/${imeVssId}/distributors` },
-    { id: 'manage', label: 'Manage', path: `/dashboard/ime-vss/${imeVssId}/manage` },
+    { id: 'view', label: 'Overview', path: `/dashboard/field-agents/ime-vss/${imeVssId}` },
+    { id: 'orders', label: 'Orders', path: `/dashboard/field-agents/ime-vss/${imeVssId}/orders` },
+    { id: 'distributors', label: 'Distributors', path: `/dashboard/field-agents/ime-vss/${imeVssId}/distributors` },
+    { id: 'manage', label: 'Manage', path: `/dashboard/field-agents/ime-vss/${imeVssId}/manage` },
   ]
 
   return (

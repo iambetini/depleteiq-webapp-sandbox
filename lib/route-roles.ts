@@ -21,17 +21,17 @@ export const routeRoles: RouteRole[] = [
   },
   {
     title: "Distributors",
-    href: "/dashboard/distributors",
-    pattern: /^\/dashboard\/distributors(\/.*)?$/,
+    href: "/dashboard/businesses/distributors",
+    pattern: /^\/dashboard\/businesses\/distributors(\/.*)?$/,
     roles: ["super-admin", "system-admin", "operations"],
   },
   {
     title: "IME/VSS",
-    href: "/dashboard/ime-vss",
-    pattern: /^\/dashboard\/ime-vss(\/.*)?$/,
+    href: "/dashboard/field-agents/ime-vss",
+    pattern: /^\/dashboard\/field-agents\/ime-vss(\/.*)?$/,
     roles: ["super-admin", "system-admin", "operations"],
   },
-    {
+  {
     title: "Target",
     href: "/dashboard/target",
     pattern: /^\/dashboard\/target(\/.*)?$/,

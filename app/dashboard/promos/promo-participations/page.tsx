@@ -84,7 +84,7 @@ export default function PromoParticipationsPage() {
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() =>
-                  router.push(`/dashboard/promos/promo-participations/${participation.uuid}/edit`)
+                  router.push(`/dashboard/promos/promo-participations/${participation.uuid}`)
                 }
               >
                 <Edit className="mr-2 h-4 w-4" />
@@ -121,6 +121,48 @@ export default function PromoParticipationsPage() {
         searchPlaceholder="Search promo participations..."
         store="promoParticipations"
         exportFileName="Promo Participations"
+        filters={[
+          {
+            type: "selectWithFetch",
+            label: "Store",
+            param: "store_id",
+            fetchUrl: "/stores",
+            valueKey: "uuid",
+            labelFormatter: (item: any) => item.name || item.business?.name || "Unknown Store",
+            searchParam: "search",
+            placeholder: "Select Store",
+          },
+          {
+            type: "selectWithFetch",
+            label: "Promoter",
+            param: "promoter_id",
+            fetchUrl: "/promoters",
+            valueKey: "uuid",
+            labelFormatter: (item: any) => `${item.user?.first_name || ""} ${item.user?.last_name || ""}`.trim() || "Unknown Promoter",
+            searchParam: "search",
+            placeholder: "Select Promoter",
+          },
+          {
+            type: "selectWithFetch",
+            label: "Promo",
+            param: "promo_id",
+            fetchUrl: "/promos",
+            valueKey: "uuid",
+            labelKey: "type",
+            searchParam: "search",
+            placeholder: "Select Promo",
+          },
+          {
+            type: "selectWithFetch",
+            label: "Participant",
+            param: "participant_id",
+            fetchUrl: "/participants",
+            valueKey: "uuid",
+            labelFormatter: (item: any) => `${item.first_name || ""} ${item.last_name || ""}`.trim() || "Unknown Participant",
+            searchParam: "search",
+            placeholder: "Select Participant",
+          },
+        ]}
       />
     </div>
   )

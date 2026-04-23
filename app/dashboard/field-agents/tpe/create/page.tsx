@@ -20,6 +20,7 @@ export default function CreateTPEPage() {
     email: "",
     phone: "",
     password: "",
+    market_id: "",
     send_notification: false,
   }
 
@@ -29,6 +30,7 @@ export default function CreateTPEPage() {
     email: Yup.string().email("Invalid email").required("Email is required"),
     phone: Yup.string().required("Phone is required"),
     password: Yup.string().required("Password is required"),
+    market_id: Yup.string().nullable(),
     send_notification: Yup.boolean(),
   })
 
@@ -40,7 +42,7 @@ export default function CreateTPEPage() {
         description: "TPE user created successfully",
       })
       helpers.resetForm()
-      router.push("/dashboard/tpe")
+      router.push("/dashboard/field-agents/tpe")
     } catch (error: any) {
       catchError(error, helpers.setFieldError)
     } finally {
@@ -83,6 +85,16 @@ export default function CreateTPEPage() {
       type: "password" as const,
       required: true,
       placeholder: "Enter password",
+    },
+    {
+      name: "market_id",
+      label: "Market",
+      type: "selectWithFetch" as const,
+      required: false,
+      fetchUrl: "/markets",
+      valueKey: "uuid",
+      labelKey: "name",
+      placeholder: "Select a market",
     },
     {
       name: "send_notification",

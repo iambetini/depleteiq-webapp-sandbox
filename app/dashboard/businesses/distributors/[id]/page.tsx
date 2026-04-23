@@ -67,7 +67,7 @@ const BusinessAndContactInformationCard = memo(() => {
               <p className="text-sm text-[#ababab]">IME/VSS</p>
               {distributor.ime_vss?.uuid ? (
                 <Link
-                  href={`/dashboard/ime-vss/${distributor.ime_vss.uuid}`}
+                  href={`/dashboard/field-agents/ime-vss/${distributor.ime_vss.uuid}`}
                   className="font-medium text-[#444444] hover:underline"
                 >
                   {distributor.ime_vss.first_name} {distributor.ime_vss.last_name} ({distributor.ime_vss.email})

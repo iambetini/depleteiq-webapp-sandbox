@@ -111,9 +111,7 @@ export default function ParticipantsPage() {
       <ListPageHeader
         title="Participants"
         description="Manage participants"
-        showAddButton={true}
-        onAdd={() => router.push("/dashboard/promos/participants/create")}
-        addLabel="Add Participant"
+        showAddButton={false}
       />
 
       <DataTable

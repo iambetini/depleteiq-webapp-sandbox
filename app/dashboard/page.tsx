@@ -8,7 +8,7 @@ import { formatLabelToTitleCase } from "@/lib/label-formatters";
 import type { RootState } from "@/store";
 import { useGetDashboardQuery } from "@/store/dashboard-api";
 import { RevenueWithDay } from "@/types/dashboard";
-import { Package, ShoppingCart } from "lucide-react";
+import { Package, ShoppingCart, UserRound, Users } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useRef, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
@@ -102,7 +102,7 @@ export default function DashboardPage() {
               <CardTitle className="text-[#444444]">{periodType} Revenue Trend</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={400}>
                 <BarChart data={sortedRevenue}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#eeeeee" />
                   <XAxis dataKey="formattedDate" stroke="#ababab" tick={{ fontSize: 10 }} />
@@ -183,6 +183,28 @@ export default function DashboardPage() {
                   <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_order_volume || 0}</p>
                 </div>
                 <ShoppingCart className="h-8 w-8 text-[#ff6600]" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="card-hover">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-[#ababab]">Total TPE</p>
+                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_tpe || 0}</p>
+                </div>
+                <Users className="h-8 w-8 text-[#5b8cff]" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="card-hover">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-[#ababab]">Total Promoters</p>
+                  <p className="text-2xl font-semibold text-[#444444]">{dashboardData.total_promoters || 0}</p>
+                </div>
+                <UserRound className="h-8 w-8 text-[#12b636]" />
               </div>
             </CardContent>
           </Card>

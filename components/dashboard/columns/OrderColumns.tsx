@@ -165,7 +165,7 @@ const ActionsCell = React.memo(
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() =>
-                  router.push(`/dashboard/ime-vss/${order.ime_vss.uuid}`)
+                  router.push(`/dashboard/field-agents/ime-vss/${order.ime_vss.uuid}`)
                 }
               >
                 <Eye className="mr-2 h-4 w-4" />
@@ -177,7 +177,7 @@ const ActionsCell = React.memo(
                 className="cursor-pointer"
                 onClick={() =>
                   router.push(
-                    `/dashboard/distributors/${order.distributor_user?.distributor_details?.uuid}`
+                    `/dashboard/businesses/distributors/${order.distributor_user?.distributor_details?.uuid}`
                   )
                 }
               >

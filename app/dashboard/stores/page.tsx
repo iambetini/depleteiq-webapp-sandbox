@@ -91,11 +91,24 @@ export default function StoresPage() {
 
       <DataTable
         ref={dataTableRef}
-        columns={columns}
+        columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="uuid"
         searchPlaceholder="Search stores..."
         store="stores"
         exportFileName="Stores"
+        filters={[
+          { type: "text", label: "Category", param: "category" },
+          {
+            type: "selectWithFetch",
+            label: "Market",
+            param: "market_id",
+            fetchUrl: "/markets",
+            valueKey: "uuid",
+            labelKey: "name",
+            searchParam: "search",
+            placeholder: "Select market",
+          },
+        ]}
       />
     </div>
   )

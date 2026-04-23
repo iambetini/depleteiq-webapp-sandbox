@@ -36,7 +36,7 @@ export default function ManageImeVssPage() {
       storeName: "imeVss",
       uuid,
       entityLabel: "IME-VSS",
-      onSuccess: () => router.push("/dashboard/ime-vss"),
+      onSuccess: () => router.push("/dashboard/field-agents/ime-vss"),
     })
   }, [router])
 

@@ -14,13 +14,16 @@ export default function CreatePromoterPage() {
   const [createPromoter, { isLoading }] = useCreatePromoterMutation()
   const formRef = useRef<any>(null)
 
+
   const initialValues = {
     market_id: "",
     first_name: "",
     last_name: "",
     email: "",
     tpe_user_id: "",
+    password: "",
   }
+
 
   const validationSchema = Yup.object({
     market_id: Yup.string().required("Market is required"),
@@ -28,6 +31,7 @@ export default function CreatePromoterPage() {
     last_name: Yup.string().required("Last name is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
     tpe_user_id: Yup.string().nullable(),
+    password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
   })
 
   const handleSubmit = async (values: typeof initialValues, helpers: any) => {
@@ -77,6 +81,13 @@ export default function CreatePromoterPage() {
       type: "email" as const,
       required: true,
       placeholder: "Enter email address",
+    },
+    {
+      name: "password",
+      label: "Password",
+      type: "password" as const,
+      required: true,
+      placeholder: "Enter password",
     },
     {
       name: "tpe_user_id",
