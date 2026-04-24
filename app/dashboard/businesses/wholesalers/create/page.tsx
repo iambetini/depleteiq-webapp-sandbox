@@ -29,7 +29,6 @@ export default function CreateWholesalerPage() {
     password: "",
     business_name: "",
     business_address: "",
-    business_category: "",
     tpe_user_id: "",
     send_notification: false,
     stores: [
@@ -50,7 +49,6 @@ export default function CreateWholesalerPage() {
     password: Yup.string().required("Password is required"),
     business_name: Yup.string().required("Business name is required"),
     business_address: Yup.string().required("Business address is required"),
-    business_category: Yup.string().nullable(),
     tpe_user_id: Yup.string().nullable(),
     send_notification: Yup.boolean(),
     stores: Yup.array().of(
@@ -94,14 +92,6 @@ export default function CreateWholesalerPage() {
       type: "text" as const,
       required: true,
       placeholder: "Enter business address",
-      section: "Business Information",
-    },
-    {
-      name: "business_category",
-      label: "Business Category (Optional)",
-      type: "text" as const,
-      required: false,
-      placeholder: "e.g., Retail, Wholesale, Distribution, etc.",
       section: "Business Information",
     },
     {
