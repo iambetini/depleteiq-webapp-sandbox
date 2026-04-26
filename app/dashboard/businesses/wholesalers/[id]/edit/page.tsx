@@ -30,7 +30,6 @@ export default function EditWholesalerPage() {
     phone: "",
     business_name: "",
     business_address: "",
-    business_category: "",
     tpe_user_id: "",
     stores: [],
   })
@@ -45,7 +44,6 @@ export default function EditWholesalerPage() {
         phone: wholesaler.user?.phone || "",
         business_name: wholesaler.business?.name || "",
         business_address: wholesaler.business?.address || "",
-        business_category: wholesaler.business?.type || "",
         tpe_user_id: wholesaler.tpe_user?.uuid || "",
         stores: wholesaler.business?.stores?.map((store: any) => ({
           uuid: store.uuid,
@@ -65,7 +63,6 @@ export default function EditWholesalerPage() {
     phone: Yup.string(),
     business_name: Yup.string(),
     business_address: Yup.string(),
-    business_category: Yup.string().nullable(),
     tpe_user_id: Yup.string().nullable(),
     stores: Yup.array().of(
       Yup.object().shape({
@@ -109,14 +106,6 @@ export default function EditWholesalerPage() {
       type: "text" as const,
       required: false,
       placeholder: "Enter business address",
-      section: "Business Information",
-    },
-    {
-      name: "business_category",
-      label: "Business Category (Optional)",
-      type: "text" as const,
-      required: false,
-      placeholder: "e.g., Retail, Wholesale, Distribution, etc.",
       section: "Business Information",
     },
     {
