@@ -61,6 +61,14 @@ export default function PromotersPage() {
       },
     },
     {
+      accessorKey: "stores",
+      header: "Stores Count",
+      cell: ({ row }: any) => {
+        const stores = row.original.stores
+        return <span>{stores?.length || 0}</span>
+      },
+    },
+    {
       accessorKey: "actions",
       header: "Actions",
       cell: ({ row }: any) => {
@@ -122,6 +130,15 @@ export default function PromotersPage() {
         searchPlaceholder="Search by email, first name, or last name..."
         store="promoters"
         exportFileName="Promoters"
+        filters={[{
+          type: "selectWithFetch",
+          label: "Market",
+          param: "market_id",
+          fetchUrl: "/markets",
+          valueKey: "uuid",
+          labelKey: "name",
+          placeholder: "All Markets"
+        }]}
       />
     </div>
   )

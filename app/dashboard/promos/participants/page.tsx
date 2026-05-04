@@ -121,6 +121,15 @@ export default function ParticipantsPage() {
         searchPlaceholder="Search participants..."
         store="participants"
         exportFileName="Participants"
+        filters={[{
+          type: "selectWithFetch",
+          label: "Market",
+          param: "market_id",
+          fetchUrl: "/markets",
+          valueKey: "uuid",
+          labelKey: "name",
+          placeholder: "All Markets"
+        }]}
       />
     </div>
   )
