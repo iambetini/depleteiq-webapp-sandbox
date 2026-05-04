@@ -214,7 +214,7 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
   const api = createApi({
     reducerPath,
     baseQuery: customBaseQuery,
-    tagTypes,
+    tagTypes: Array.from(new Set([...(tagTypes || []), ...(entityName ? [entityName] : [])])),
     endpoints: (builder) => ({
       getAll: builder.query<T[], QueryArg<Record<string, any>> | void>({
         query: (arg) => {
@@ -225,6 +225,7 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
             config,
           };
         },
+        providesTags: entityName ? [entityName] : undefined,
       }),
 
       getById: builder.query<T, IdArg>({
@@ -237,6 +238,7 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
             config,
           };
         },
+        providesTags: entityName ? [entityName] : undefined,
       }),
 
       getSingle: builder.query<T, QueryArg<Record<string, any>> | void>({
@@ -248,6 +250,7 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
             config,
           };
         },
+        providesTags: entityName ? [entityName] : undefined,
       }),
 
       create: builder.mutation<T, MutationArg<CreateT>>({
@@ -261,6 +264,7 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
             config,
           };
         },
+        invalidatesTags: entityName ? [entityName] : undefined,
       }),
 
       update: builder.mutation<
@@ -281,6 +285,7 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
             config,
           };
         },
+        invalidatesTags: entityName ? [entityName] : undefined,
       }),
 
       patch: builder.mutation<
@@ -301,6 +306,7 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
             config,
           };
         },
+        invalidatesTags: entityName ? [entityName] : undefined,
       }),
 
       delete: builder.mutation<{ success: boolean }, IdArg>({
@@ -313,6 +319,7 @@ export function createEntity<T, CreateT = Partial<T>, UpdateT = Partial<T>>(
             config,
           };
         },
+        invalidatesTags: entityName ? [entityName] : undefined,
       }),
     }),
   });
