@@ -48,7 +48,9 @@ const autoResetMiddleware =
           const isMutation =
             endpointName.startsWith("create") ||
             endpointName.startsWith("update") ||
-            endpointName.startsWith("delete");
+            endpointName.startsWith("delete") ||
+            endpointName.startsWith("assign") ||
+            endpointName.startsWith("unassign");
 
           if (isMutation) {
             // Find the matching API and reset its state

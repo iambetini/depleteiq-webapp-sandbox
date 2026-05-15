@@ -9,7 +9,7 @@ import { useDistributorData } from "@/hooks/use-entity-data"
 import { useImeVssData } from "@/hooks/use-entity-data"
 import { useTargetData } from "@/hooks/use-entity-data"
 
-interface TabConfig {
+export interface TabConfig {
   id: string
   label: string
   path: string
@@ -17,7 +17,7 @@ interface TabConfig {
 
 interface EntityLayoutProps {
   children: React.ReactNode
-  entityType: 'distributor' | 'ime-vss' | 'target'
+  entityType: 'distributor' | 'ime-vss' | 'target' | 'promoter'
   tabs: TabConfig[]
 }
 
