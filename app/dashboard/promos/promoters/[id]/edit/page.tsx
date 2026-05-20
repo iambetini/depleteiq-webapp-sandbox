@@ -97,10 +97,6 @@ export default function EditPromoterPage() {
 
   return (
     <div>
-      <ViewPageHeader
-        title="Edit Promoter"
-        description="Update promoter details"
-      />
       <UserForm
         title="Edit Promoter"
         description="Update the details for this promoter"

@@ -1,34 +1,17 @@
 "use client"
 
-import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useSession } from "next-auth/react"
 import { useContext } from "./layout"
 
 export default function PromoterDetailPage() {
-  const { data: session } = useSession()
-  const user = session?.user
   const { promoter } = useContext()
 
   if (!promoter) {
     return null
   }
 
-  const userRole = user?.role?.name?.toLowerCase() || ""
-
   return (
     <div>
-      <ViewPageHeader
-        title="Promoter Details"
-        description="View detailed information about this promoter"
-        showEditButton={true}
-        editHref={`/dashboard/promos/promoters/${promoter.uuid}/edit`}
-        showDeleteButton={["super-admin", "admin", "manager"].includes(userRole)}
-        deleteOptions={{
-          storeName: "promoters",
-          uuid: promoter.uuid,
-        }}
-      />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
