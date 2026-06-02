@@ -17,12 +17,14 @@ export default function CreatePromoPage() {
   const today = new Date().toISOString().split('T')[0];
 
   const initialValues = {
+    title: '',
     type: '',
     start_date: '',
     end_date: '',
   };
 
   const validationSchema = Yup.object({
+    title: Yup.string().required('Title is required'),
     type: Yup.string().required('Promo type is required'),
     start_date: Yup.string().nullable(),
     end_date: Yup.string().nullable(),
@@ -45,6 +47,13 @@ export default function CreatePromoPage() {
   };
 
   const fields = [
+    {
+      name: 'title',
+      label: 'Title',
+      type: 'text' as const,
+      required: true,
+      placeholder: 'Enter promo title',
+    },
     {
       name: 'type',
       label: 'Promo Type',
