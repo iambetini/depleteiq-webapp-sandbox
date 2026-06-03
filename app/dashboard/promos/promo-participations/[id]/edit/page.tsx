@@ -62,6 +62,7 @@ export default function EditPromoParticipationPage() {
     promo_id: Yup.string().required('Promo is required'),
     promoter_id: Yup.string().required('Promoter is required'),
     store_id: Yup.string().required('Store is required'),
+    participate_in_promo: Yup.boolean().required('Participate in promo is required'),
     receipt_image: Yup.string().nullable(),
     item_purchased: Yup.array().of(
       Yup.object({
@@ -116,6 +117,7 @@ export default function EditPromoParticipationPage() {
     promo_id: promoParticipation.promo?.uuid || '',
     promoter_id: promoParticipation.promoter?.uuid || '',
     store_id: promoParticipation.store?.uuid || '',
+    participate_in_promo: promoParticipation.participate_in_promo || false,
     receipt_image: promoParticipation.receipt_image || '',
     item_purchased: Array.isArray(promoParticipation.item_purchased) ? promoParticipation.item_purchased : [],
     item_gifted: Array.isArray(promoParticipation.item_gifted) ? promoParticipation.item_gifted : [],
@@ -226,6 +228,28 @@ export default function EditPromoParticipationPage() {
                       {errors.store_id && touched.store_id && (
                         <ErrorMessage
                           name="store_id"
+                          component="div"
+                          className="text-red-500 text-sm"
+                        />
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center">
+                        <input
+                          id="participate_in_promo"
+                          name="participate_in_promo"
+                          type="checkbox"
+                          checked={values.participate_in_promo}
+                          onChange={handleChange}
+                          className="h-4 w-4 border-gray-300 rounded"
+                        />
+                        <Label htmlFor="participate_in_promo" className="ml-2 mb-0">
+                          Participate in Promo <span className="text-[#ff0000]">*</span>
+                        </Label>
+                      </div>
+                      {errors.participate_in_promo && touched.participate_in_promo && (
+                        <ErrorMessage
+                          name="participate_in_promo"
                           component="div"
                           className="text-red-500 text-sm"
                         />
