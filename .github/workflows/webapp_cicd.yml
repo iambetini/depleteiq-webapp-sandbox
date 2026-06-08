@@ -10,7 +10,7 @@ run-name: |
 
 on:
   push:
-    branches: ["dev", "stage", "prod", feature/*, bugfix/*, fix/*]
+    branches: ["dev", "stage", "prod"]
   pull_request:
     branches: [prod, dev, stage]
 
