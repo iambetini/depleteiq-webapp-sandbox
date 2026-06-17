@@ -278,11 +278,11 @@ jobs:
           retention: 5
 
       # Deploy latest changes to server with ansible
-      - name: Deploy App
-        run: ansible-playbook -i inventory.ini .github/workflows/ansible/deploy.yml
-        env:
-          PROJECT: "${{ env.project }}-${{ env.application }}"
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SOURCE_DIR: ${{ github.workspace }}
-          SSL_EMAIL: ${{ secrets.SSL_EMAIL }}
-          DOMAIN_NAMES: ${{ secrets.DOMAIN_NAMES }}
+      # - name: Deploy App
+      #   run: ansible-playbook -i inventory.ini .github/workflows/ansible/deploy.yml
+      #   env:
+      #     PROJECT: "${{ env.project }}-${{ env.application }}"
+      #     SSH_USER: ${{ secrets.SSH_USER }}
+      #     SOURCE_DIR: ${{ github.workspace }}
+      #     SSL_EMAIL: ${{ secrets.SSL_EMAIL }}
+      #     DOMAIN_NAMES: ${{ secrets.DOMAIN_NAMES }}
