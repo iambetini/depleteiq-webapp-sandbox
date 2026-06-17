@@ -10,7 +10,7 @@ run-name: |
 
 on:
   push:
-    branches: ["dev", "stage", "prod", "feature/fix-deploy-pipeline"]
+    branches: ["dev", "stage", "prod"]
   pull_request:
     branches: [prod, dev, stage]
 
@@ -27,77 +27,77 @@ permissions:
   pull-requests: write
 
 jobs:
-  # check-source-branch:
-  #   name: Check PR Source Branch
-  #   runs-on: runner
-  #   steps:
-  #     - name: Ensure source is stage
-  #       if: github.event_name == 'pull_request' && github.base_ref == 'prod'
-  #       run: |
-  #         if [[ "${{ github.head_ref }}" != "stage"  && "${{ github.base_ref }}" == "prod" ]]; then
-  #           echo "Error: You can only merge into 'prod' from the 'stage' branch."
-  #           exit 1
-  #         fi
+  check-source-branch:
+    name: Check PR Source Branch
+    runs-on: runner
+    steps:
+      - name: Ensure source is stage
+        if: github.event_name == 'pull_request' && github.base_ref == 'prod'
+        run: |
+          if [[ "${{ github.head_ref }}" != "stage"  && "${{ github.base_ref }}" == "prod" ]]; then
+            echo "Error: You can only merge into 'prod' from the 'stage' branch."
+            exit 1
+          fi
 
-  #     - name: Close PR to Prod
-  #       uses: actions/github-script@v9
-  #       if: failure() && github.event_name == 'pull_request' && github.base_ref == 'prod'
-  #       with:
-  #         script: |
-  #           const body = `**PR Closed**: This repository only allows merges from \`staging\` branch to \`${{ github.base_ref }}\`.
+      - name: Close PR to Prod
+        uses: actions/github-script@v9
+        if: failure() && github.event_name == 'pull_request' && github.base_ref == 'prod'
+        with:
+          script: |
+            const body = `**PR Closed**: This repository only allows merges from \`staging\` branch to \`${{ github.base_ref }}\`.
 
-  #           Please close this PR and open a new one from \`staging\` → \`${{ github.base_ref }}\`.`;
-  #           console.log(body);
-  #           console.log('Closing PR #' + context.issue.number);
+            Please close this PR and open a new one from \`staging\` → \`${{ github.base_ref }}\`.`;
+            console.log(body);
+            console.log('Closing PR #' + context.issue.number);
 
-  #           await github.rest.pulls.update({
-  #             owner: context.repo.owner,
-  #             repo: context.repo.repo,
-  #             pull_number: context.issue.number,
-  #             state: 'closed'
-  #           });
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+              state: 'closed'
+            });
 
-  # build_and_test:
-  #   name: Buld and Test
-  #   needs: check-source-branch
-  #   runs-on: runner
-  #   steps:
-  #     - uses: actions/checkout@v4
+  build_and_test:
+    name: Buld and Test
+    needs: check-source-branch
+    runs-on: runner
+    steps:
+      - uses: actions/checkout@v4
 
-  #     - uses: pnpm/action-setup@v4
-  #       name: Install pnpm
-  #       with:
-  #         version: 9
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9
 
-  #     - name: Setup Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: "20"
-  #         cache: "pnpm"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
 
-  #     - name: Install dependencies
-  #       run: pnpm install --frozen-lockfile
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-  #     - name: Lint (check only)
-  #       run: pnpm lint
-  #       continue-on-error: true # Don't fail on lint errors
+      - name: Lint (check only)
+        run: pnpm lint
+        continue-on-error: true # Don't fail on lint errors
 
-  #     - name: Type check
-  #       run: pnpm type-check
-  #       continue-on-error: true
-  #       env:
-  #         NODE_OPTIONS: --max-old-space-size=4096
+      - name: Type check
+        run: pnpm type-check
+        continue-on-error: true
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
 
-  #     - name: Build
-  #       run: pnpm build
+      - name: Build
+        run: pnpm build
 
   deploy:
     name: Deploy to Server
     runs-on: runner
     # Requires successful build and test
-    # needs: build_and_test
+    needs: build_and_test
     # Run job if branch is prod, stage and dev
-    if: github.ref == 'refs/heads/prod' || github.ref == 'refs/heads/stage' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/feature/fix-deploy-pipeline'
+    if: github.ref == 'refs/heads/prod' || github.ref == 'refs/heads/stage' || github.ref == 'refs/heads/dev'
     # Set environment for job based on branch
     environment: ${{  github.ref == 'refs/heads/prod' && 'prod' || github.ref == 'refs/heads/stage' && 'stage' || 'dev' }}
     # Set stage variable to branch name
@@ -278,11 +278,11 @@ jobs:
           retention: 5
 
       # Deploy latest changes to server with ansible
-      # - name: Deploy App
-      #   run: ansible-playbook -i inventory.ini .github/workflows/ansible/deploy.yml
-      #   env:
-      #     PROJECT: "${{ env.project }}-${{ env.application }}"
-      #     SSH_USER: ${{ secrets.SSH_USER }}
-      #     SOURCE_DIR: ${{ github.workspace }}
-      #     SSL_EMAIL: ${{ secrets.SSL_EMAIL }}
-      #     DOMAIN_NAMES: ${{ secrets.DOMAIN_NAMES }}
+      - name: Deploy App
+        run: ansible-playbook -i inventory.ini .github/workflows/ansible/deploy.yml
+        env:
+          PROJECT: "${{ env.project }}-${{ env.application }}"
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SOURCE_DIR: ${{ github.workspace }}
+          SSL_EMAIL: ${{ secrets.SSL_EMAIL }}
+          DOMAIN_NAMES: ${{ secrets.DOMAIN_NAMES }}
