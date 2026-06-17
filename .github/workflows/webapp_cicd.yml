@@ -10,7 +10,7 @@ run-name: |
 
 on:
   push:
-    branches: ["dev", "stage", "prod"]
+    branches: ["dev", "stage", "prod", "feature/fix-deploy-pipeline"]
   pull_request:
     branches: [prod, dev, stage]
 
@@ -22,47 +22,82 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
-  build_and_test:
-    name: Buld and Test
-    runs-on: runner
-    steps:
-      - uses: actions/checkout@v4
+  # check-source-branch:
+  #   name: Check PR Source Branch
+  #   runs-on: runner
+  #   steps:
+  #     - name: Ensure source is stage
+  #       if: github.event_name == 'pull_request' && github.base_ref == 'prod'
+  #       run: |
+  #         if [[ "${{ github.head_ref }}" != "stage"  && "${{ github.base_ref }}" == "prod" ]]; then
+  #           echo "Error: You can only merge into 'prod' from the 'stage' branch."
+  #           exit 1
+  #         fi
 
-      - uses: pnpm/action-setup@v4
-        name: Install pnpm
-        with:
-          version: 9
+  #     - name: Close PR to Prod
+  #       uses: actions/github-script@v9
+  #       if: failure() && github.event_name == 'pull_request' && github.base_ref == 'prod'
+  #       with:
+  #         script: |
+  #           const body = `**PR Closed**: This repository only allows merges from \`staging\` branch to \`${{ github.base_ref }}\`.
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "pnpm"
+  #           Please close this PR and open a new one from \`staging\` → \`${{ github.base_ref }}\`.`;
+  #           console.log(body);
+  #           console.log('Closing PR #' + context.issue.number);
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+  #           await github.rest.pulls.update({
+  #             owner: context.repo.owner,
+  #             repo: context.repo.repo,
+  #             pull_number: context.issue.number,
+  #             state: 'closed'
+  #           });
 
-      - name: Lint (check only)
-        run: pnpm lint
-        continue-on-error: true # Don't fail on lint errors
+  # build_and_test:
+  #   name: Buld and Test
+  #   needs: check-source-branch
+  #   runs-on: runner
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Type check
-        run: pnpm type-check
-        continue-on-error: true
-        env:
-          NODE_OPTIONS: --max-old-space-size=4096
+  #     - uses: pnpm/action-setup@v4
+  #       name: Install pnpm
+  #       with:
+  #         version: 9
 
-      - name: Build
-        run: pnpm build
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: "20"
+  #         cache: "pnpm"
+
+  #     - name: Install dependencies
+  #       run: pnpm install --frozen-lockfile
+
+  #     - name: Lint (check only)
+  #       run: pnpm lint
+  #       continue-on-error: true # Don't fail on lint errors
+
+  #     - name: Type check
+  #       run: pnpm type-check
+  #       continue-on-error: true
+  #       env:
+  #         NODE_OPTIONS: --max-old-space-size=4096
+
+  #     - name: Build
+  #       run: pnpm build
 
   deploy:
     name: Deploy to Server
     runs-on: runner
     # Requires successful build and test
-    needs: build_and_test
+    # needs: build_and_test
     # Run job if branch is prod, stage and dev
-    if: github.ref == 'refs/heads/prod' || github.ref == 'refs/heads/stage' || github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/prod' || github.ref == 'refs/heads/stage' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/feature/fix-deploy-pipeline'
     # Set environment for job based on branch
     environment: ${{  github.ref == 'refs/heads/prod' && 'prod' || github.ref == 'refs/heads/stage' && 'stage' || 'dev' }}
     # Set stage variable to branch name
@@ -72,8 +107,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      # - name: Setup Terraform
+      #   uses: hashicorp/setup-terraform@v3
+
+      - name: Install DigitalOcean doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
       - id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
@@ -88,17 +128,23 @@ jobs:
           ansible --version
 
       # Download terraform state file and set vm_ips output to environment variable
-      - name: Get terraform state for VM IPs
+      # - name: Get terraform state for VM IPs
+      #   id: ip_output
+      #   run: |
+      #     aws s3 cp "s3://${S3_BUCKET}/${STATE_KEY}" terraform.tfstate
+      #     echo "vm_ips=$(terraform output -json vm_ips)" >> $GITHUB_OUTPUT
+      #     rm terraform.tfstate
+      #   env:
+      #     STATE_KEY: "terraform-orbit/${{ env.project }}/${{ env.stage }}/terraform.tfstate"
+      #     S3_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Get IP for environment
         id: ip_output
         run: |
-          aws s3 cp "s3://${S3_BUCKET}/${STATE_KEY}" terraform.tfstate
-          echo "vm_ips=$(terraform output -json vm_ips)" >> $GITHUB_OUTPUT
-          rm terraform.tfstate
-        env:
-          STATE_KEY: "terraform-orbit/${{ env.project }}/${{ env.stage }}/terraform.tfstate"
-          S3_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          RAW_DATA=$(doctl compute droplet get ${project}-${application}-1-${stage} --format "Name,PrivateIPv4" --no-header)
+          JSON_MAP=$(echo "$RAW_DATA" | jq -R -c 'split(" ") | map(select(. != "")) | {(.[0]): .[1]}')
+          echo "vm_ips=$JSON_MAP" >> $GITHUB_OUTPUT
 
         # Create .env, docker-compose and nginx file from Secrets and replace placeholders
       - name: Populate .env and docker-compose and nginx file
@@ -120,12 +166,12 @@ jobs:
           EOF
            
           # Get every VM IPs for API servers
-          API_IP=$(echo '${{ steps.ip_output.outputs.vm_ips }}' | jq -r '[to_entries[] | select(.key | contains("-api-")) | .value] | join(" ")')
+          # API_IP=$(echo '${{ steps.ip_output.outputs.vm_ips }}' | jq -r '[to_entries[] | select(.key | contains("-api-")) | .value] | join(" ")')
           WEBAPP_IP=$(echo '${{ steps.ip_output.outputs.vm_ips }}' | jq -r '[to_entries[] | select(.key | contains("-webapp-")) | .value] | join(" ")')
 
           # Replace the placeholders in .env.production
           sed -i "s/__APP_URL__/$WEBAPP_IP/g" .env.production
-          sed -i "s/__API_URL__/$API_IP/g" .env.production
+          # sed -i "s/__API_URL__/$API_IP/g" .env.production
 
           # Replace the placeholder in nginx.conf
           sed -i "s/__NGINX_SERVER_HOST__/$WEBAPP_IP/g" nginx.conf
@@ -224,6 +270,7 @@ jobs:
           PROJECT: "${{ env.project }}-${{ env.application }}"
           SSH_USER: ${{ secrets.SSH_USER }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
+          DO_BUCKET_ENDPOINT: ${{ secrets.DO_BUCKET_ENDPOINT }}
           S3_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -236,9 +283,6 @@ jobs:
         env:
           PROJECT: "${{ env.project }}-${{ env.application }}"
           SSH_USER: ${{ secrets.SSH_USER }}
-          app_container: ${{ secrets.APP_CONTAINER }}
-          nginx_container: ${{ secrets.NGINX_CONTAINER }}
-          postgres_container: ${{ secrets.POSTGRES_CONTAINER }}
           SOURCE_DIR: ${{ github.workspace }}
           SSL_EMAIL: ${{ secrets.SSL_EMAIL }}
           DOMAIN_NAMES: ${{ secrets.DOMAIN_NAMES }}

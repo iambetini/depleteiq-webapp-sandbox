@@ -1,6 +1,6 @@
 ---
 - name: Backup Current Deployment to AWS S3
-  hosts: "webapp"
+  hosts: "api"
   become: no
   vars:
       app_user: "{{ lookup('env', 'SSH_USER')| default('root') }}"
@@ -74,9 +74,8 @@
                 - "{{ deploy_dir }}/.next"
                 - "{{ deploy_dir }}/out"
                 - "{{ deploy_dir }}/.git"
-                - "{{ deploy_dir }}/.github"
-                - "{{ deploy_dir }}/*.log"
-                - "{{ deploy_dir }}/*.tmp"
+                - "{{ deploy_dir }}/storage/logs/*"
+                - "{{ deploy_dir }}/vendor"
             remove: no
         when:
             - deployment_exists.stat.exists
@@ -116,13 +115,15 @@
                   src: "{{ temp_backup_dir }}/backup_{{ backup_timestamp }}.tar.gz"
                   mode: put
                   region: "{{ aws_region }}"
-                  encrypt: yes
+                  encrypt: false
+                  rgw: true
                   metadata:
                       project: "{{ project_name }}"
                       timestamp: "{{ backup_timestamp }}"
                       server: "{{ inventory_hostname }}"
                   aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
                   aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+                  endpoint_url: "{{ lookup('env', 'DO_BUCKET_ENDPOINT') }}"
               when: backup_fetched is changed
               register: s3_upload
 
@@ -142,19 +143,18 @@
               when: backup_created is changed
 
       - name: List all backups in S3
-        aws_s3:
+        amazon.aws.s3_object:
             bucket: "{{ s3_bucket }}"
             mode: list
             prefix: "{{ s3_prefix }}/"
             region: "{{ aws_region }}"
+            aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+            aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+            endpoint_url: "{{ lookup('env', 'DO_BUCKET_ENDPOINT') }}"
         register: s3_backups
         when:
             - deployment_exists.stat.exists
             - deployment_files.matched > 0
-        environment:
-            AWS_ACCESS_KEY_ID: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
-            AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
-            AWS_REGION: "{{ aws_region }}"
 
       - name: Sort backups by name (timestamp based)
         set_fact:
@@ -169,20 +169,19 @@
             - sorted_backups | length > backup_retention | int
 
       - name: Delete old backups from S3
-        aws_s3:
+        amazon.aws.s3_object:
             bucket: "{{ s3_bucket }}"
             object: "{{ item }}"
             mode: delobj
             region: "{{ aws_region }}"
+            aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+            aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+            endpoint_url: "{{ lookup('env', 'DO_BUCKET_ENDPOINT') }}"
         loop: "{{ backups_to_delete }}"
         when:
             - backups_to_delete is defined
             - backups_to_delete | length > 0
         register: deleted_backups
-        environment:
-            AWS_ACCESS_KEY_ID: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
-            AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
-            AWS_REGION: "{{ aws_region }}"
 
       - name: Display backup information
         debug:
