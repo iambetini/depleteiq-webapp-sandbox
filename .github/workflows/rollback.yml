@@ -96,8 +96,13 @@ jobs:
             - name: Checkout code (for Ansible playbooks)
               uses: actions/checkout@v5
 
-            - name: Setup Terraform
-              uses: hashicorp/setup-terraform@v3
+            # - name: Setup Terraform
+            #   uses: hashicorp/setup-terraform@v3
+
+            - name: Install DigitalOcean doctl
+              uses: digitalocean/action-doctl@v2
+              with:
+                  token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
             - name: Install AWS CLI
               uses: unfor19/install-aws-cli-action@v1
@@ -111,18 +116,25 @@ jobs:
                   pip install ansible
                   ansible --version
 
-            - name: Get Terraform state for environment
+            # - name: Get Terraform state for environment
+            #   id: ip_output
+            #   run: |
+            #       aws s3 cp "s3://${S3_BUCKET}/${STATE_KEY}" terraform.tfstate
+            #       echo "vm_ips=$(terraform output -json vm_ips)" >> $GITHUB_OUTPUT
+            #       echo "vm_private_ips=$(terraform output -json vm_private_ips)" >> $GITHUB_OUTPUT
+            #       rm terraform.tfstate
+            #   env:
+            #       STATE_KEY: "terraform-orbit/${{ env.project }}/${{ env.stage }}/terraform.tfstate"
+            #       S3_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
+            #       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            #       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+            - name: Get IP for environment
               id: ip_output
               run: |
-                  aws s3 cp "s3://${S3_BUCKET}/${STATE_KEY}" terraform.tfstate
-                  echo "vm_ips=$(terraform output -json vm_ips)" >> $GITHUB_OUTPUT
-                  echo "vm_private_ips=$(terraform output -json vm_private_ips)" >> $GITHUB_OUTPUT
-                  rm terraform.tfstate
-              env:
-                  STATE_KEY: "terraform-orbit/${{ env.project }}/${{ env.stage }}/terraform.tfstate"
-                  S3_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  RAW_DATA=$(doctl compute droplet get ${project}-${application}-1-${stage} --format "Name,PrivateIPv4" --no-header)
+                  JSON_MAP=$(echo "$RAW_DATA" | jq -R -c 'split(" ") | map(select(. != "")) | {(.[0]): .[1]}')
+                  echo "vm_ips=$JSON_MAP" >> $GITHUB_OUTPUT
 
             - name: Setup SSH key
               env:
@@ -166,18 +178,18 @@ jobs:
                   ansible_ssh_common_args=-o StrictHostKeyChecking=no
                   ansible_python_interpreter=/usr/bin/python3
 
-                  [webapp]
+                  [api]
                   EOF
 
                   echo '${{ steps.ip_output.outputs.vm_ips }}' | jq -r \
                     'to_entries[] | 
-                    select(.key | contains("-webapp-")) | 
+                    select(.key | contains("-api-")) | 
                     "\(.key) ansible_host=\(.value)"' >> inventory.ini
 
                   cat >> inventory.ini << 'EOF'
 
                   [droplets:children]
-                  webapp
+                  api
                   EOF
 
                   echo "Generated Ansible Inventory:"
@@ -189,6 +201,7 @@ jobs:
               run: |
                   echo "📦 Listing available backups from S3..."
                   aws s3 ls s3://${{ secrets.TF_STATE_BUCKET }}/backups/${{ env.project }}-${{ env.application }}/${{ env.stage }}/ \
+                    --endpoint-url https://${{ secrets.AWS_REGION }}.digitaloceanspaces.com \
                     | grep 'backup_.*\.tar\.gz$' \
                     | sort -r \
                     | head -5 \
@@ -196,6 +209,7 @@ jobs:
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  AWS_REGION: ${{ secrets.AWS_REGION }}
 
             - name: Execute Rollback
               run: |
@@ -204,12 +218,9 @@ jobs:
               env:
                   PROJECT: "${{ env.project }}-${{ env.application }}"
                   SSH_USER: ${{ secrets.SSH_USER }}
-                  app_container: ${{ secrets.APP_CONTAINER }}
-                  nginx_container: ${{ secrets.NGINX_CONTAINER }}
-                  postgres_container: ${{ secrets.POSTGRES_CONTAINER }}
                   S3_BACKUP_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
                   AWS_REGION: ${{ secrets.AWS_REGION }}
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                   BACKUP_NUMBER: ${{ github.event.inputs.backup_number }}
-                  SUPERVISOR_CONFIG: ${{ secrets.SUPERVISOR_CONFIG }}
+                  DO_BUCKET_ENDPOINT: ${{ secrets.DO_BUCKET_ENDPOINT }}

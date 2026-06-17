@@ -49,14 +49,26 @@
           Backup to restore: #{{ backup_number }} (1=latest)
           =====================
 
-    - name: List all available backups in S3
-      aws_s3:
+    - name: List all backups in S3
+      amazon.aws.s3_object:
         bucket: "{{ s3_bucket }}"
         mode: list
         prefix: "{{ s3_prefix }}/"
         region: "{{ aws_region }}"
+        endpoint_url: "{{ lookup('env', 'DO_BUCKET_ENDPOINT') }}"
       register: s3_backups
-      delegate_to: localhost
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+
+    # - name: List all available backups in S3
+    #   aws_s3:
+    #     bucket: "{{ s3_bucket }}"
+    #     mode: list
+    #     prefix: "{{ s3_prefix }}/"
+    #     region: "{{ aws_region }}"
+    #   register: s3_backups
+    #   delegate_to: localhost
 
     - name: Filter and sort backups
       set_fact:
@@ -104,7 +116,19 @@
         region: "{{ aws_region }}"
         aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
         aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+        endpoint_url: "{{ lookup('env', 'DO_BUCKET_ENDPOINT') }}"
       register: s3_download
+
+    # - name: Download backup from S3
+    #   amazon.aws.s3_object:
+    #     bucket: "{{ s3_bucket }}"
+    #     object: "{{ backup_to_restore }}"
+    #     dest: "{{ temp_restore_dir }}/{{ backup_filename }}"
+    #     mode: get
+    #     region: "{{ aws_region }}"
+    #     aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+    #     aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+    #   register: s3_download
 
     - name: Verify downloaded backup
       stat:
@@ -117,6 +141,10 @@
 
     - name: Stop current application (if running)
       block:
+        - name: Stop supervisor services
+          shell: docker exec {{ app_container }} php artisan horizon:terminate || true
+          ignore_errors: yes
+
         - name: Check if docker-compose exists
           stat:
             path: "{{ deploy_dir }}/docker-compose.yml"
@@ -432,14 +460,26 @@
           Backup to restore: #{{ backup_number }} (1=latest)
           =====================
 
-    - name: List all available backups in S3
-      aws_s3:
+    - name: List all backups in S3
+      amazon.aws.s3_object:
         bucket: "{{ s3_bucket }}"
         mode: list
         prefix: "{{ s3_prefix }}/"
         region: "{{ aws_region }}"
+        endpoint_url: "{{ lookup('env', 'DO_BUCKET_ENDPOINT') }}"
       register: s3_backups
-      delegate_to: localhost
+      environment:
+        AWS_ACCESS_KEY_ID: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
+        AWS_SECRET_ACCESS_KEY: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+
+    # - name: List all available backups in S3
+    #   aws_s3:
+    #     bucket: "{{ s3_bucket }}"
+    #     mode: list
+    #     prefix: "{{ s3_prefix }}/"
+    #     region: "{{ aws_region }}"
+    #   register: s3_backups
+    #   delegate_to: localhost
 
     - name: Filter and sort backups
       set_fact:
@@ -487,6 +527,7 @@
         region: "{{ aws_region }}"
         aws_access_key: "{{ lookup('env', 'AWS_ACCESS_KEY_ID') }}"
         aws_secret_key: "{{ lookup('env', 'AWS_SECRET_ACCESS_KEY') }}"
+        endpoint_url: "{{ lookup('env', 'DO_BUCKET_ENDPOINT') }}"
       register: s3_download
 
     - name: Verify downloaded backup
