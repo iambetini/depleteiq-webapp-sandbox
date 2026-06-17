@@ -1,6 +1,6 @@
 ---
 - name: Backup Current Deployment to AWS S3
-  hosts: "api"
+  hosts: "webapp"
   become: no
   vars:
       app_user: "{{ lookup('env', 'SSH_USER')| default('root') }}"
