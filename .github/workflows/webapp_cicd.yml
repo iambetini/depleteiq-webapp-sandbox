@@ -17,6 +17,7 @@ on:
 env:
   project: "depleteiq"
   application: "webapp"
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

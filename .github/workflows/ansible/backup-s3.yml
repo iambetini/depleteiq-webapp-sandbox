@@ -74,8 +74,9 @@
                 - "{{ deploy_dir }}/.next"
                 - "{{ deploy_dir }}/out"
                 - "{{ deploy_dir }}/.git"
-                - "{{ deploy_dir }}/storage/logs/*"
-                - "{{ deploy_dir }}/vendor"
+                - "{{ deploy_dir }}/.github"
+                - "{{ deploy_dir }}/*.log"
+                - "{{ deploy_dir }}/*.tmp"
             remove: no
         when:
             - deployment_exists.stat.exists
