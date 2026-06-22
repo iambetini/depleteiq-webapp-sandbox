@@ -48,6 +48,16 @@ export default function PromoParticipationDetailPage() {
             </div>
 
             <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">Promo Slab</label>
+              <p className="text-base font-semibold">{promoParticipation.promo_slab?.title || "—"}</p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">Purchase Value</label>
+              <p className="text-base font-semibold">{promoParticipation.purchase_value ?? "—"}</p>
+            </div>
+
+            <div className="space-y-2">
               <label className="text-sm font-medium text-muted-foreground">Store</label>
               <p className="text-base font-semibold">{promoParticipation.store?.name || "—"}</p>
             </div>
