@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { handleDelete } from "@/lib/handleDelete"
 import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react"
@@ -109,8 +109,8 @@ export default function ParticipantsPage() {
   return (
     <div>
       <ListPageHeader
-        title="Participants"
-        description="Manage participants"
+        title="Sign ups"
+        description="Manage sign ups"
         showAddButton={false}
       />
 
@@ -118,9 +118,9 @@ export default function ParticipantsPage() {
         ref={dataTableRef}
         columns={columns}
         searchKey="phone"
-        searchPlaceholder="Search participants..."
+        searchPlaceholder="Search sign ups..."
         store="participants"
-        exportFileName="Participants"
+        exportFileName="Sign ups"
         filters={[{
           type: "selectWithFetch",
           label: "Market",
