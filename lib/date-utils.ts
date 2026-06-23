@@ -1,16 +1,26 @@
 import { format } from "date-fns";
 
 export type DateFilterOption =
+  | "Today"
   | "This week"
   | "This month"
   | "This quarter"
   | "All time"
   | "Custom";
 
+/** Mirrors preset keys sent as `period` to `/dashboard/operations` (plus `custom`, `all_time`). */
+export type DateRangePeriodType =
+  | "today"
+  | "week"
+  | "month"
+  | "quarter"
+  | "all_time"
+  | "custom";
+
 export interface DateRange {
   start_date: string;
   end_date: string;
-  period_type?: string;
+  period_type?: DateRangePeriodType;
 }
 
 export interface CustomDateRange {
@@ -29,6 +39,8 @@ export function calculateDateRange(
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   switch (filter) {
+    case "Today":
+      return { ...getTodayRange(today), period_type: "today" };
     case "This week":
       return { ...getWeekRange(today), period_type: "week" };
     case "This month":
@@ -42,6 +54,13 @@ export function calculateDateRange(
     default:
       return { ...getWeekRange(today), period_type: "week" };
   }
+}
+
+function getTodayRange(today: Date): DateRange {
+  return {
+    start_date: format(today, "yyyy-MM-dd"),
+    end_date: format(today, "yyyy-MM-dd"),
+  };
 }
 
 function getWeekRange(today: Date): DateRange {
@@ -87,30 +106,56 @@ function getAllTimeRange(today: Date): DateRange {
   };
 }
 
+/**
+ * Ensures `from` / `to` (yyyy-MM-dd) are not after local calendar today
+ * (API: "to must be a date before or equal to today").
+ */
+export function clampDateRangeToToday(from: string, to: string): { from: string; to: string } {
+  const today = format(new Date(), "yyyy-MM-dd");
+  let end = to > today ? today : to;
+  let start = from > end ? end : from;
+  if (start > today) start = today;
+  return { from: start, to: end };
+}
+
 function getCustomRange(customRange?: { from?: Date; to?: Date }): DateRange {
   if (customRange?.from && customRange?.to) {
+    const start_date = format(customRange.from, "yyyy-MM-dd");
+    const end_date = format(customRange.to, "yyyy-MM-dd");
+    const clamped = clampDateRangeToToday(start_date, end_date);
     return {
-      start_date: format(customRange.from, "yyyy-MM-dd"),
-      end_date: format(customRange.to, "yyyy-MM-dd"),
+      start_date: clamped.from,
+      end_date: clamped.to,
+      period_type: "custom",
     };
   }
   // Fallback to current week if custom range is incomplete
-  return getWeekRange(new Date());
+  return { ...getWeekRange(new Date()), period_type: "week" };
 }
 
 /**
  * Format custom date range for display
  */
 export function formatCustomDateRange(from: string, to: string): string {
-  const fromDate = new Date(from);
-  const toDate = new Date(to);
+  const fromDate = parseCalendarDate(from);
+  const toDate = parseCalendarDate(to);
   return `${format(fromDate, "MMM dd")} - ${format(toDate, "MMM dd, yyyy")}`;
+}
+
+/** Parse `yyyy-MM-dd` or fall back to `Date` parsing (legacy ISO strings). */
+export function parseCalendarDate(value: string): Date {
+  const trimmed = value.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return parse(trimmed, "yyyy-MM-dd", new Date());
+  }
+  return new Date(trimmed);
 }
 
 /**
  * Get all available filter options
  */
 export const DATE_FILTER_OPTIONS: DateFilterOption[] = [
+  "Today",
   "This week",
   "This month",
   "This quarter",
