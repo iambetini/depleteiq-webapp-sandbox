@@ -210,6 +210,26 @@ export const routePermissions: RoutePermission[] = [
     pattern: /^\/dashboard\/field-agents\/tpe\/\d+\/edit$/,
     permissions: ["edit tpe"],
   },
+  {
+    href: "/dashboard/field-agents/promoters",
+    pattern: /^\/dashboard\/field-agents\/promoters$/,
+    permissions: ["view promoters"],
+  },
+  {
+    href: "/dashboard/field-agents/promoters/create",
+    pattern: /^\/dashboard\/field-agents\/promoters\/create$/,
+    permissions: ["create promoters"],
+  },
+  {
+    href: "/dashboard/field-agents/promoters/[id]",
+    pattern: /^\/dashboard\/field-agents\/promoters\/[a-f0-9-]+$/,
+    permissions: ["view promoters"],
+  },
+  {
+    href: "/dashboard/field-agents/promoters/[id]/edit",
+    pattern: /^\/dashboard\/field-agents\/promoters\/[a-f0-9-]+\/edit$/,
+    permissions: ["edit promoters"],
+  },
 
   // Locations
   {

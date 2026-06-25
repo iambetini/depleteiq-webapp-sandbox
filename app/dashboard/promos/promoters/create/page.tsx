@@ -42,7 +42,7 @@ export default function CreatePromoterPage() {
         description: "Promoter created successfully",
       })
       helpers.resetForm()
-      router.push("/dashboard/promos/promoters")
+      router.push("/dashboard/field-agents/promoters")
     } catch (error: any) {
       catchError(error, helpers.setFieldError)
     } finally {

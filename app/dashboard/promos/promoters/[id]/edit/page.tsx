@@ -1,7 +1,6 @@
 'use client'
 
 import UserForm from '@/components/dashboard/UserForm'
-import ViewPageHeader from '@/components/dashboard/ViewPageHeader'
 import { toast } from '@/hooks/use-toast'
 import { catchError } from '@/lib/utils'
 import { useUpdatePromoterMutation } from '@/store/promoters'
@@ -34,7 +33,7 @@ export default function EditPromoterPage() {
         description: 'Promoter updated successfully',
       })
       fetchEntity()
-      router.push(`/dashboard/promos/promoters/${promoter.uuid}`)
+      router.push(`/dashboard/field-agents/promoters/${promoter.uuid}`)
     } catch (error: any) {
       catchError(error, helpers.setFieldError)
     } finally {

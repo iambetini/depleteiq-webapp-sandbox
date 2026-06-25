@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { handleDelete } from "@/lib/handleDelete"
 import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react"
@@ -18,6 +18,7 @@ import { useCallback, useRef } from "react"
 export default function PromotersPage() {
   const router = useRouter()
   const dataTableRef = useRef<{ refresh: () => void }>(null)
+  const promoterBasePath = "/dashboard/field-agents/promoters"
 
   const refreshTable = useCallback(() => {
     dataTableRef.current?.refresh()
@@ -84,7 +85,7 @@ export default function PromotersPage() {
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() =>
-                  router.push(`/dashboard/promos/promoters/${promoter.uuid}`)
+                  router.push(`${promoterBasePath}/${promoter.uuid}`)
                 }
               >
                 <Eye className="mr-2 h-4 w-4" />
@@ -93,7 +94,7 @@ export default function PromotersPage() {
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() =>
-                  router.push(`/dashboard/promos/promoters/${promoter.uuid}/edit`)
+                  router.push(`${promoterBasePath}/${promoter.uuid}/edit`)
                 }
               >
                 <Edit className="mr-2 h-4 w-4" />
@@ -119,7 +120,7 @@ export default function PromotersPage() {
         title="Promoters"
         description="Manage promoters"
         showAddButton={true}
-        onAdd={() => router.push("/dashboard/promos/promoters/create")}
+        onAdd={() => router.push(`${promoterBasePath}/create`)}
         addLabel="Add Promoter"
       />
 
