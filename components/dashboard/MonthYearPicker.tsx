@@ -70,7 +70,7 @@ export function MonthYearPicker({
           onChange={handleYearChange}
         >
           {years.map((year) => (
-            <option key={year} value={year.toString()}>
+            <option key={year} value={String(year)}>
               {year}
             </option>
           ))}

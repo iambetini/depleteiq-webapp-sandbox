@@ -31,8 +31,8 @@ export function LocationModal({ open, onClose, onLocationCreated, existingLocati
     region: existingLocationData?.region || "",
     country: existingLocationData?.country || "",
     postal_code: existingLocationData?.postal_code || "",
-    latitude: existingLocationData?.latitude !== undefined ? existingLocationData.latitude.toString() : "",
-    longitude: existingLocationData?.longitude !== undefined ? existingLocationData.longitude.toString() : "",
+    latitude: existingLocationData?.latitude != null ? String(existingLocationData.latitude) : "",
+    longitude: existingLocationData?.longitude != null ? String(existingLocationData.longitude) : "",
   };
 
   const validationSchema = Yup.object({
@@ -57,8 +57,8 @@ export function LocationModal({ open, onClose, onLocationCreated, existingLocati
       // Convert string coordinates to numbers
       const locationData = {
         ...values,
-        latitude: parseFloat(values.latitude.toString()),
-        longitude: parseFloat(values.longitude.toString()),
+        latitude: parseFloat(values.latitude),
+        longitude: parseFloat(values.longitude),
       }
       const result = await createLocation({ data: locationData, config: { showToast: false } }).unwrap();
       helpers.resetForm();

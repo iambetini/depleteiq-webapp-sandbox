@@ -142,7 +142,7 @@ const writeWorkbookToFile = (ws: any, exportFileName: string, scope: "current_pa
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
   const now = new Date();
-  const pad = (n: number) => n.toString().padStart(2, "0");
+  const pad = (n: number) => String(n).padStart(2, "0");
   const datetime = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}_${pad(now.getMinutes())}_${pad(now.getSeconds())}`;
   const baseName = exportFileName.replace(/\.xlsx$/, "");
   XLSX.writeFile(wb, `ORBIT_${baseName}_Report_${datetime}_${scope}.xlsx`);
@@ -746,7 +746,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                     const wb = XLSX.utils.book_new();
                     XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
                     const now = new Date();
-                    const pad = (n: number) => n.toString().padStart(2, "0");
+                    const pad = (n: number) => String(n).padStart(2, "0");
                     const datetime = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}_${pad(now.getMinutes())}_${pad(now.getSeconds())}`;
                     const baseName = exportFileName.replace(/\.xlsx$/, "");
                     XLSX.writeFile(
