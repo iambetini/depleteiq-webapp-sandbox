@@ -19,8 +19,8 @@ export default function ParticipantDetailPage() {
   return (
     <div>
       <ViewPageHeader
-          title="Sign up Details"
-          description="View detailed information about this sign up"
+        title="Sign up Details"
+        description="View detailed information about this sign up"
         showEditButton={true}
         editHref={`/dashboard/promos/participants/${participant.uuid}/edit`}
         showDeleteButton={["super-admin", "admin", "manager"].includes(userRole)}
@@ -33,7 +33,7 @@ export default function ParticipantDetailPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-[#444444]">Information</CardTitle>
-              <CardDescription>Sign up details</CardDescription>
+            <CardDescription>Sign up details</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">

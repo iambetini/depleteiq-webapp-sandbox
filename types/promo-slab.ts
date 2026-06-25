@@ -1,13 +1,16 @@
 import type { Promo } from "@/types/promo"
 
-export interface PromoSlab {
-  id: string
+export interface PromoSlabSummary {
   uuid: string
-  promo_id?: string
   title: string
   bundle?: string | null
   reward?: string | null
   value?: string | number | null
+}
+
+export interface PromoSlab extends PromoSlabSummary {
+  id: string
+  promo_id?: string
   promo?: Promo | null
   created_at?: string
   updated_at?: string
