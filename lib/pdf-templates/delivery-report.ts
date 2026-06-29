@@ -233,7 +233,7 @@ export async function generateDeliveryReportTemplate(
     pdf.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
 
     pdf.text(metric.label, 25, rowY);
-    pdf.text(metric.value.toString(), pageWidth - 25, rowY, { align: "right" });
+    pdf.text(String(metric.value ?? ""), pageWidth - 25, rowY, { align: "right" });
   });
 
   yPosition += metrics.length * 8 + 15;

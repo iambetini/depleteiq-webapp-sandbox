@@ -194,7 +194,7 @@ const exportIMEVSSPerformance = (
   XLSX.utils.book_append_sheet(wb, ws, "IME-VSS Performance");
 
   const now = new Date();
-  const pad = (n: number) => n.toString().padStart(2, "0");
+  const pad = (n: number) => String(n).padStart(2, "0");
   const datetime = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}_${pad(now.getMinutes())}_${pad(now.getSeconds())}`;
   const baseName = (exportFileName || "IME-VSS-Performance").replace(
     /\.xlsx$/,
