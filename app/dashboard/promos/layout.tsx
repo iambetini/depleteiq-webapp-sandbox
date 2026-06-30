@@ -8,6 +8,7 @@ function PromosLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter()
 
   const getActiveTab = () => {
+    if (pathname.includes('/promo-slabs')) return 'promo-slabs'
     if (pathname.includes('/participants')) return 'participants'
     if (pathname.includes('/promo-participations')) return 'promo-participations'
     return 'promos'
@@ -15,7 +16,8 @@ function PromosLayoutContent({ children }: { children: React.ReactNode }) {
 
   const tabs = [
     { id: 'promos', label: 'Promos', path: `/dashboard/promos` },
-    { id: 'participants', label: 'Participants', path: `/dashboard/promos/participants` },
+    { id: 'promo-slabs', label: 'Promo Slabs', path: `/dashboard/promos/promo-slabs` },
+    { id: 'participants', label: 'Sign ups', path: `/dashboard/promos/participants` },
     { id: 'promo-participations', label: 'Promo Participations', path: `/dashboard/promos/promo-participations` },
   ]
 

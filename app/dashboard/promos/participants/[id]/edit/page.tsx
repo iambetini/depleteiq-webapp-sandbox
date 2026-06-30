@@ -31,7 +31,7 @@ export default function EditParticipantPage() {
       await updateParticipant({ id: participant.uuid, data: values }).unwrap()
       toast({
         title: 'Success',
-        description: 'Participant updated successfully',
+        description: 'Sign up updated successfully',
       })
       fetchEntity()
       router.push(`/dashboard/promos/participants/${participant.uuid}`)
@@ -91,18 +91,18 @@ export default function EditParticipantPage() {
   return (
     <div>
       <ViewPageHeader
-        title="Edit Participant"
-        description="Update participant details"
+        title="Edit Sign up"
+        description="Update sign up details"
       />
       <BusinessForm
-        title="Edit Participant"
-        description="Update the details for this participant"
+        title="Edit Sign up"
+        description="Update the details for this sign up"
         initialValues={initialValues}
         validationSchema={validationSchema}
         fields={fields}
         isLoading={false}
         onSubmit={handleSubmit}
-        submitLabel="Update Participant"
+        submitLabel="Update Sign up"
         onCancel={() => router.back()}
         cardClassName="max-w-2xl"
       />

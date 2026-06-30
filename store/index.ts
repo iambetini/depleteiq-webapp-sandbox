@@ -7,6 +7,7 @@ import { participants } from "@/store/participants";
 import { promoters } from "@/store/promoters";
 import { promoParticipations } from "@/store/promo-participations";
 import { promos } from "@/store/promos";
+import { promoSlabs } from "@/store/promo-slabs";
 import { qrCodes } from "@/store/qr-codes";
 import { stores } from "@/store/stores";
 import { tpes } from "@/store/tpe";
@@ -91,6 +92,7 @@ export const store = configureStore({
     [promoters.reducerPath]: promoters.reducer,
     [promoParticipations.reducerPath]: promoParticipations.reducer,
     [promos.reducerPath]: promos.reducer,
+    [promoSlabs.reducerPath]: promoSlabs.reducer,
     [qrCodes.reducerPath]: qrCodes.reducer,
     [reports.reducerPath]: reports.reducer,
     [roles.reducerPath]: roles.reducer,
@@ -125,6 +127,7 @@ export const store = configureStore({
       promoters.middleware,
       promoParticipations.middleware,
       promos.middleware,
+      promoSlabs.middleware,
       qrCodes.middleware,
       reports.middleware,
       roles.middleware,
@@ -158,6 +161,7 @@ export const storeApis = {
   promoters,
   promoParticipations,
   promos,
+  promoSlabs,
   qrCodes,
   reports,
   roles,

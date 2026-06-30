@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { handleDelete } from "@/lib/handleDelete"
 import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react"
@@ -49,6 +49,19 @@ export default function PromoParticipationsPage() {
       cell: ({ row }: any) => {
         const promo = row.original.promo
         return promo?.type || "-"
+      },
+    },
+    {
+      accessorKey: "promo_slab",
+      header: "Promo Slab",
+      cell: ({ row }: any) => row.original.promo_slab?.title || "-",
+    },
+    {
+      accessorKey: "purchase_value",
+      header: "Purchase Value",
+      cell: ({ row }: any) => {
+        const value = row.original.purchase_value
+        return value !== null && value !== undefined && value !== "" ? String(value) : "-"
       },
     },
     {

@@ -87,18 +87,18 @@ export default function CreateParticipantPage() {
   return (
     <div>
       <ViewPageHeader
-        title="Create Participant"
-        description="Add a new participant to the system"
+        title="Create Sign up"
+        description="Add a new sign up to the system"
       />
       <BusinessForm
-        title="Create Participant"
-        description="Enter the details for the new participant"
+        title="Create Sign up"
+        description="Enter the details for the new sign up"
         initialValues={initialValues}
         validationSchema={validationSchema}
         fields={fields}
         isLoading={isLoading}
         onSubmit={handleSubmit}
-        submitLabel="Create Participant"
+        submitLabel="Create Sign up"
         onCancel={() => router.back()}
         cardClassName="max-w-2xl"
         ref={formRef}
