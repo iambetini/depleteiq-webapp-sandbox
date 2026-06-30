@@ -13,12 +13,14 @@ function FieldTeamsLayoutContent({ children }: { children: React.ReactNode }) {
 	const getActiveTab = () => {
 		if (pathname.includes('/tpe')) return 'tpe'
 		if (pathname.includes('/ime-vss')) return 'ime-vss'
+		if (pathname.includes('/promoters')) return 'promoters'
 		return 'tpe'
 	}
 
 	const allTabs = [
         { id: 'ime-vss', label: 'IME VSS', path: `/dashboard/field-agents/ime-vss` },
 		{ id: 'tpe', label: 'TPE', path: `/dashboard/field-agents/tpe` },
+		{ id: 'promoters', label: 'Promoters', path: `/dashboard/field-agents/promoters` },
 	]
 
 	const tabs = allTabs.filter((tab) =>

@@ -10,7 +10,6 @@ function PromosLayoutContent({ children }: { children: React.ReactNode }) {
   const getActiveTab = () => {
     if (pathname.includes('/participants')) return 'participants'
     if (pathname.includes('/promo-participations')) return 'promo-participations'
-    if (pathname.includes('/promoters')) return 'promoters'
     return 'promos'
   }
 
@@ -18,7 +17,6 @@ function PromosLayoutContent({ children }: { children: React.ReactNode }) {
     { id: 'promos', label: 'Promos', path: `/dashboard/promos` },
     { id: 'participants', label: 'Participants', path: `/dashboard/promos/participants` },
     { id: 'promo-participations', label: 'Promo Participations', path: `/dashboard/promos/promo-participations` },
-    { id: 'promoters', label: 'Promoters', path: `/dashboard/promos/promoters` },
   ]
 
   const activeTab = getActiveTab()
