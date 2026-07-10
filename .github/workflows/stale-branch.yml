@@ -1,0 +1,41 @@
+name: Stale Branches
+
+on:
+    schedule:
+        - cron: "0 0 */3 * *"
+    workflow_dispatch:
+
+permissions:
+    contents: write
+    pull-requests: write
+    issues: write
+
+jobs:
+    stale-branches:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Dry Run Stale Branches for feature branches
+              uses: int128/stale-branch-action@v1
+              with:
+                  expiration-days: 90
+                  #   dry-run: true
+                  ref-prefix: refs/heads/feature/
+
+            - name: Dry Run Stale Branches for feature branches
+              uses: int128/stale-branch-action@v1
+              with:
+                  expiration-days: 90
+                  #   dry-run: true
+                  ref-prefix: refs/heads/fix/
+
+            - name: Dry Run Stale Branches for feature branches
+              uses: int128/stale-branch-action@v1
+              with:
+                  expiration-days: 90
+                  dry-run: true
+                  exclude-refs: |
+                      refs/heads/prod
+                      refs/heads/dev
+                      refs/heads/stage
