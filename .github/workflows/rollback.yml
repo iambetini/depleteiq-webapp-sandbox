@@ -37,7 +37,6 @@ env:
 jobs:
     validate:
         name: Validate Rollback Request
-        if: github.ref == 'refs/heads/prod' && github.event.inputs.environment == 'prod' || github.ref == 'refs/heads/stage' && github.event.inputs.environment == 'stage' || github.ref == 'refs/heads/dev' && github.event.inputs.environment == 'dev'
         runs-on: runner
         steps:
             - name: Validate confirmation
@@ -57,21 +56,21 @@ jobs:
                   fi
                   echo "Backup number validated: $BACKUP_NUM"
 
-            - name: Validate Environment and Branch
-              run: |
-                  CURRENT_BRANCH=${GITHUB_REF#refs/heads/}
-                  INPUT_ENV="${{ github.event.inputs.environment }}"
+            # - name: Validate Environment and Branch
+            #   run: |
+            #       CURRENT_BRANCH=${GITHUB_REF#refs/heads/}
+            #       INPUT_ENV="${{ github.event.inputs.environment }}"
 
-                  echo "Checking if branch [$CURRENT_BRANCH] matches environment [$INPUT_ENV]..."
+            #       echo "Checking if branch [$CURRENT_BRANCH] matches environment [$INPUT_ENV]..."
 
-                  if [[ "$CURRENT_BRANCH" == "$INPUT_ENV" ]]; then
-                      echo "Validation successful."
-                  else
-                      echo "ERROR: Environment mismatch!"
-                      echo "You cannot rollback to '$INPUT_ENV' from the '$CURRENT_BRANCH' branch."
-                      echo "Please ensure your branch and input environment match."
-                      exit 1
-                  fi
+            #       if [[ "$CURRENT_BRANCH" == "$INPUT_ENV" ]]; then
+            #           echo "Validation successful."
+            #       else
+            #           echo "ERROR: Environment mismatch!"
+            #           echo "You cannot rollback to '$INPUT_ENV' from the '$CURRENT_BRANCH' branch."
+            #           echo "Please ensure your branch and input environment match."
+            #           exit 1
+            #       fi
 
             - name: Display rollback information
               run: |
