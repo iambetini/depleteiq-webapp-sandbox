@@ -200,8 +200,8 @@ jobs:
             - name: List available backups
               run: |
                   echo "📦 Listing available backups from S3..."
-                  aws s3 ls s3://${{ secrets.TF_STATE_BUCKET }}/backups/${{ env.project }}-${{ env.application }}/${{ env.stage }}/ \
-                    --endpoint-url https://${{ secrets.AWS_REGION }}.digitaloceanspaces.com \
+                  aws s3 ls s3://${{ secrets.TF_STATE_BUCKET }}/terraform-orbit/backups/${{ env.project }}-${{ env.application }}/${{ env.stage }}/ \
+                    --endpoint-url ${{ secrets.DO_BUCKET_ENDPOINT }} \
                     | grep 'backup_.*\.tar\.gz$' \
                     | sort -r \
                     | head -5 \

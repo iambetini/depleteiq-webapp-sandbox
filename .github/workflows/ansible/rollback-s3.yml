@@ -11,7 +11,7 @@
     temp_restore_dir: "/tmp/restore"
     backup_number: "{{ lookup('env', 'BACKUP_NUMBER') | default('1') | int }}"
     s3_bucket: "{{ lookup('env', 'S3_BACKUP_BUCKET') }}"
-    s3_prefix: "backups/{{ project_name }}"
+    s3_prefix: "terraform-orbit/backups/{{ project_name }}"
     aws_region: "{{ lookup('env', 'AWS_REGION') | default('eu-west-2') }}"
 
     # Container names from your docker-compose
@@ -422,7 +422,7 @@
     temp_restore_dir: "/tmp/restore"
     backup_number: "{{ lookup('env', 'BACKUP_NUMBER') | default('1') | int }}"
     s3_bucket: "{{ lookup('env', 'S3_BACKUP_BUCKET') }}"
-    s3_prefix: "backups/{{ project_name }}"
+    s3_prefix: "terraform-orbit/backups/{{ project_name }}"
     aws_region: "{{ lookup('env', 'AWS_REGION') | default('eu-west-2') }}"
 
     # Container names from your docker-compose

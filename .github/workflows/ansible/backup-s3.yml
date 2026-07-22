@@ -11,7 +11,7 @@
       local_backup_dir: "/tmp/backups"
       backup_retention: "{{ lookup('env', 'retention') | default(5) }}"
       s3_bucket: "{{ lookup('env', 'S3_BUCKET') }}"
-      s3_prefix: "backups/{{ project_name }}/{{ stage}}"
+      s3_prefix: "terraform-orbit/backups/{{ project_name }}/{{ stage}}"
       aws_region: "{{ lookup('env', 'AWS_REGION') | default('eu-west-2') }}"
 
   tasks:
