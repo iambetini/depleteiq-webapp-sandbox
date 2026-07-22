@@ -115,18 +115,18 @@ jobs:
                   pip install ansible
                   ansible --version
 
-            # - name: Get Terraform state for environment
-            #   id: ip_output
-            #   run: |
-            #       aws s3 cp "s3://${S3_BUCKET}/${STATE_KEY}" terraform.tfstate
-            #       echo "vm_ips=$(terraform output -json vm_ips)" >> $GITHUB_OUTPUT
-            #       echo "vm_private_ips=$(terraform output -json vm_private_ips)" >> $GITHUB_OUTPUT
-            #       rm terraform.tfstate
-            #   env:
-            #       STATE_KEY: "terraform-orbit/${{ env.project }}/${{ env.stage }}/terraform.tfstate"
-            #       S3_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
-            #       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-            #       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            - name: Get Terraform state for environment
+              id: ip_output
+              run: |
+                  aws s3 cp "s3://${S3_BUCKET}/${STATE_KEY}" terraform.tfstate
+                  echo "vm_ips=$(terraform output -json vm_ips)" >> $GITHUB_OUTPUT
+                  echo "vm_private_ips=$(terraform output -json vm_private_ips)" >> $GITHUB_OUTPUT
+                  rm terraform.tfstate
+              env:
+                  STATE_KEY: "terraform-orbit/${{ env.project }}/${{ env.stage }}/terraform.tfstate"
+                  S3_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
+                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
             - name: Get IP for environment
               id: ip_output
