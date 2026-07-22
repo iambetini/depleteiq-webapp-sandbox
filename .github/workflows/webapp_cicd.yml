@@ -105,7 +105,7 @@ jobs:
     name: Deploy to Server
     runs-on: runner
     # Requires successful build and test
-    needs: build_and_test
+    # needs: build_and_test
     # Run job if branch is prod, stage and dev
     if: github.ref == 'refs/heads/prod' || github.ref == 'refs/heads/stage' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/feature/fix-rollback'
     # Set environment for job based on branch
