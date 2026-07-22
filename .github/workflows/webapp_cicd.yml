@@ -10,7 +10,7 @@ run-name: |
 
 on:
   push:
-    branches: ["dev", "stage", "prod", "feature/fix-rollback"]
+    branches: ["dev", "stage", "prod"]
   pull_request:
     branches: [prod, dev, stage]
 
@@ -60,7 +60,6 @@ jobs:
 
   build_and_test:
     name: Buld and Test
-    if: github.ref == 'refs/heads/prod'
     needs: check-source-branch
     runs-on: runner
     steps:
@@ -105,9 +104,9 @@ jobs:
     name: Deploy to Server
     runs-on: runner
     # Requires successful build and test
-    # needs: build_and_test
+    needs: build_and_test
     # Run job if branch is prod, stage and dev
-    if: github.ref == 'refs/heads/prod' || github.ref == 'refs/heads/stage' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/feature/fix-rollback'
+    if: github.ref == 'refs/heads/prod' || github.ref == 'refs/heads/stage' || github.ref == 'refs/heads/dev'
     # Set environment for job based on branch
     environment: ${{  github.ref == 'refs/heads/prod' && 'prod' || github.ref == 'refs/heads/stage' && 'stage' || 'dev' }}
     # Set stage variable to branch name
@@ -288,11 +287,11 @@ jobs:
           retention: 5
 
       # Deploy latest changes to server with ansible
-      # - name: Deploy App
-      #   run: ansible-playbook -i inventory.ini .github/workflows/ansible/deploy.yml
-      #   env:
-      #     PROJECT: "${{ env.project }}-${{ env.application }}"
-      #     SSH_USER: ${{ secrets.SSH_USER }}
-      #     SOURCE_DIR: ${{ github.workspace }}
-      #     SSL_EMAIL: ${{ secrets.SSL_EMAIL }}
-      #     DOMAIN_NAMES: ${{ secrets.DOMAIN_NAMES }}
+      - name: Deploy App
+        run: ansible-playbook -i inventory.ini .github/workflows/ansible/deploy.yml
+        env:
+          PROJECT: "${{ env.project }}-${{ env.application }}"
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SOURCE_DIR: ${{ github.workspace }}
+          SSL_EMAIL: ${{ secrets.SSL_EMAIL }}
+          DOMAIN_NAMES: ${{ secrets.DOMAIN_NAMES }}
