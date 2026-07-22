@@ -177,18 +177,18 @@ jobs:
                   ansible_ssh_common_args=-o StrictHostKeyChecking=no
                   ansible_python_interpreter=/usr/bin/python3
 
-                  [api]
+                  [webapp]
                   EOF
 
                   echo '${{ steps.ip_output.outputs.vm_ips }}' | jq -r \
                     'to_entries[] | 
-                    select(.key | contains("-api-")) | 
+                    select(.key | contains("-webapp-")) | 
                     "\(.key) ansible_host=\(.value)"' >> inventory.ini
 
                   cat >> inventory.ini << 'EOF'
 
                   [droplets:children]
-                  api
+                  webapp
                   EOF
 
                   echo "Generated Ansible Inventory:"
