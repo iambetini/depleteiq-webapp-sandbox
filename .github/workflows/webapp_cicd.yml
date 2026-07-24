@@ -76,6 +76,14 @@ jobs:
           node-version: "20"
           cache: "pnpm"
 
+      - name: Cache Framework Build Artifacts
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-build-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ hashFiles('**/pnpm-lock.yaml') }}-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 

@@ -16,14 +16,14 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
-            - name: Dry Run Stale Branches for feature branches
+            - name: Delete Stale Branches for feature branches
               uses: int128/stale-branch-action@v1
               with:
                   expiration-days: 90
                   #   dry-run: true
                   ref-prefix: refs/heads/feature/
 
-            - name: Dry Run Stale Branches for feature branches
+            - name: Delete Stale Branches for fix branches
               uses: int128/stale-branch-action@v1
               with:
                   expiration-days: 90

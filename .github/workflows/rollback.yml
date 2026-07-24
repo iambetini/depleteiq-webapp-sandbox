@@ -37,7 +37,6 @@ env:
 jobs:
     validate:
         name: Validate Rollback Request
-        if: github.ref == 'refs/heads/prod' && github.event.inputs.environment == 'prod' || github.ref == 'refs/heads/stage' && github.event.inputs.environment == 'stage' || github.ref == 'refs/heads/dev' && github.event.inputs.environment == 'dev'
         runs-on: runner
         steps:
             - name: Validate confirmation
@@ -178,18 +177,18 @@ jobs:
                   ansible_ssh_common_args=-o StrictHostKeyChecking=no
                   ansible_python_interpreter=/usr/bin/python3
 
-                  [api]
+                  [webapp]
                   EOF
 
                   echo '${{ steps.ip_output.outputs.vm_ips }}' | jq -r \
                     'to_entries[] | 
-                    select(.key | contains("-api-")) | 
+                    select(.key | contains("-webapp-")) | 
                     "\(.key) ansible_host=\(.value)"' >> inventory.ini
 
                   cat >> inventory.ini << 'EOF'
 
                   [droplets:children]
-                  api
+                  webapp
                   EOF
 
                   echo "Generated Ansible Inventory:"
@@ -200,8 +199,8 @@ jobs:
             - name: List available backups
               run: |
                   echo "📦 Listing available backups from S3..."
-                  aws s3 ls s3://${{ secrets.TF_STATE_BUCKET }}/backups/${{ env.project }}-${{ env.application }}/${{ env.stage }}/ \
-                    --endpoint-url https://${{ secrets.AWS_REGION }}.digitaloceanspaces.com \
+                  aws s3 ls s3://${{ secrets.TF_STATE_BUCKET }}/terraform-orbit/backups/${{ env.project }}-${{ env.application }}/${{ env.stage }}/ \
+                    --endpoint-url ${{ secrets.DO_BUCKET_ENDPOINT }} \
                     | grep 'backup_.*\.tar\.gz$' \
                     | sort -r \
                     | head -5 \
