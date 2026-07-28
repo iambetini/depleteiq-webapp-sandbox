@@ -101,7 +101,7 @@ export const sidebarItems: SidebarItem[] = [
   },
   {
     title: "Field Agents",
-    href: "/dashboard/field-agents/ime-vss",
+    href: "/dashboard/field-agents",
     permissions: ["view ime-vss", "view tpe", "view promoters"],
     icon: "Users",
   },
@@ -188,14 +188,13 @@ function filterSidebarItems(items: SidebarItem[], userPermissions: string[]): Si
 
 // Helper function to find the active sidebar item for a given pathname
 function findActiveSidebarItem(pathname: string): SidebarItem | null {
-  // First try to find exact match
-  const exactMatch = sidebarItems.find(item => item.href === pathname);
-  if (exactMatch) return exactMatch;
-
-  // Then find closest parent route
+  // Prefer the most specific route match (exact or parent prefix)
   return sidebarItems
-    .filter((item) => pathname.startsWith(item.href + "/"))
-    .sort((a, b) => b.href.length - a.href.length)[0];
+    .filter(
+      (item) =>
+        pathname === item.href || pathname.startsWith(item.href + "/")
+    )
+    .sort((a, b) => b.href.length - a.href.length)[0] ?? null;
 }
 
 const handleLogout = async () => {
