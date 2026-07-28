@@ -3,7 +3,7 @@ import { createEntity } from "./entityFactory"
 
 export const promoParticipations = createEntity<PromoParticipation>({
   reducerPath: "promoParticipationsApi",
-  entityEndpoint: "promo-participations",
+  entityEndpoint: "promo-participants",
   entityName: "PromoParticipation",
 })
 

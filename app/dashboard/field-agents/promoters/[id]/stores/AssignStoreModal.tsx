@@ -4,6 +4,7 @@ import { Modal } from "@/components/ui/modal";
 import { SelectWithFetch } from "@/components/ui/select";
 import { useGetStoresQuery } from "@/store/stores";
 import { useGetPromoterQuery } from "@/store/promoters";
+import type { Store } from "@/types/store";
 
 interface AssignStoreModalProps {
   open: boolean;
@@ -25,17 +26,25 @@ export default function AssignStoreModal({ open, onClose, promoterUuid, onAssign
     selectedMarket ? { params: { market_id: selectedMarket, has_promoter: false } } : { params: { has_promoter: false } },
     { skip: !selectedMarket }
   );
-  // Fetch promoter to get assigned stores
-  const { data: promoterResp } = useGetPromoterQuery(promoterUuid, { skip: !promoterUuid });
+  // getById returns the promoter item directly
+  const { data: promoter } = useGetPromoterQuery(promoterUuid, { skip: !promoterUuid });
   const assignedStoreUuids = useMemo(
-    () => (promoterResp?.item?.stores?.map((s: any) => s.store?.uuid || s.store_uuid) || []),
-    [promoterResp]
+    () =>
+      (promoter?.stores ?? [])
+        .map((s) => s.store?.uuid || s.store_uuid || s.uuid)
+        .filter((uuid): uuid is string => Boolean(uuid)),
+    [promoter]
   );
-  // Only show unassigned stores
-  const stores = useMemo(
-    () => (storesResp?.data?.items || []).filter((store: any) => !assignedStoreUuids.includes(store.uuid)),
-    [storesResp, assignedStoreUuids]
-  );
+
+  // getAll returns the full API envelope at runtime
+  const stores = useMemo(() => {
+    const items = (
+      Array.isArray(storesResp)
+        ? storesResp
+        : ((storesResp as { data?: { items?: Store[] } } | undefined)?.data?.items ?? [])
+    ) as Store[];
+    return items.filter((store) => !assignedStoreUuids.includes(store.uuid));
+  }, [storesResp, assignedStoreUuids]);
 
   return (
     <Modal open={open} onClose={onClose} size="xlg-center" title="Assign Stores to Promoter">
@@ -73,8 +82,8 @@ export default function AssignStoreModal({ open, onClose, promoterUuid, onAssign
                     }}
                   />
                   <span className="font-medium">{store.business?.name || "Unnamed"}</span>
-                  <span className="text-xs text-muted-foreground">{store.address}</span>
-                  <span className="text-xs text-muted-foreground">{store.type}</span>
+                  <span className="text-xs text-muted-foreground">{store.business?.address}</span>
+                  <span className="text-xs text-muted-foreground capitalize">{store.business?.type}</span>
                   <span className="text-xs text-muted-foreground">{store.category}</span>
                 </label>
               ))}

@@ -135,12 +135,12 @@ export default function QrCodeDetailPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">Type</label>
-                <p className="text-base font-semibold">{qrcode.type || "—"}</p>
+                <p className="text-base font-semibold">{qrcode.type || "-"}</p>
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-muted-foreground">Status</label>
-                <p className="text-base font-semibold">{qrcode.status || "—"}</p>
+                <p className="text-base font-semibold">{qrcode.status || "-"}</p>
               </div>
 
               <div className="space-y-2">
@@ -148,7 +148,7 @@ export default function QrCodeDetailPage() {
                 <p className="text-base font-semibold">
                   {qrcode.created_at
                     ? new Date(qrcode.created_at).toLocaleDateString()
-                    : "—"}
+                    : "-"}
                 </p>
               </div>
 
@@ -157,7 +157,7 @@ export default function QrCodeDetailPage() {
                 <p className="text-base font-semibold">
                   {qrcode.updated_at
                     ? new Date(qrcode.updated_at).toLocaleDateString()
-                    : "—"}
+                    : "-"}
                 </p>
               </div>
             </CardContent>
@@ -172,16 +172,23 @@ export default function QrCodeDetailPage() {
               {qrcode.store ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">Assigned Store</p>
-                      <p className="text-sm text-muted-foreground">
-                        {qrcode.store.name || qrcode.store.uuid}
-                      </p>
-                      {qrcode.store.address && (
-                        <p className="text-xs text-muted-foreground">
-                          {qrcode.store.address}
+                    <div className="space-y-4 flex-1">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">
+                          Assigned Store
+                        </label>
+                        <p className="text-base font-semibold">
+                          {qrcode.store.name || qrcode.store.uuid}
                         </p>
-                      )}
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-muted-foreground">
+                          Address
+                        </label>
+                        <p className="text-base font-semibold">
+                          {qrcode.store.address || "-"}
+                        </p>
+                      </div>
                     </div>
                     <Badge>Assigned</Badge>
                   </div>

@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@/components/ui/data-table-types"
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { handleDelete } from "@/lib/handleDelete"
+import type { PromoParticipation } from "@/types/promo-participation"
 import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useCallback, useRef } from "react"
@@ -34,48 +35,100 @@ export default function PromoParticipationsPage() {
     [refreshTable]
   )
 
-  const columns: ColumnDef<any, any>[] = [
+  const columns: ColumnDef<PromoParticipation>[] = [
     {
-      accessorKey: "participant",
-      header: "Participant",
-      cell: ({ row }: any) => {
-        const participant = row.original.participant
-        return participant ? `${participant.first_name} ${participant.last_name}` : "-"
+      accessorKey: "participation_code",
+      header: "Code",
+      cell: ({ row }) => (
+        <span className="font-medium text-sm">
+          {row.original.participation_code || "—"}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "customer",
+      header: "Customer",
+      cell: ({ row }) => {
+        const customer = row.original.customer
+        if (!customer) return "—"
+        return (
+          <div>
+            <div className="font-medium">
+              {[customer.first_name, customer.last_name].filter(Boolean).join(" ")}
+            </div>
+          </div>
+        )
       },
     },
     {
-      accessorKey: "promo",
-      header: "Promo Type",
-      cell: ({ row }: any) => {
+      accessorKey: "customer.phone",
+      header: "Phone",
+      cell: ({ row }) => row.original.customer?.phone || "—",
+    },
+    {
+      accessorKey: "promo.title",
+      header: "Promo",
+      cell: ({ row }) => {
         const promo = row.original.promo
-        return promo?.type || "-"
+        if (!promo) return "—"
+        return (
+          <div>
+            <div className="font-medium">{promo.title || promo.type || "-"}</div>
+            {promo.title && promo.type && (
+              <div className="text-sm text-muted-foreground">{promo.type}</div>
+            )}
+          </div>
+        )
       },
     },
     {
-      accessorKey: "promo_slab",
-      header: "Promo Slab",
-      cell: ({ row }: any) => row.original.promo_slab?.title || "-",
+      accessorKey: "promo_slab.title",
+      header: "Slab",
+      cell: ({ row }) => row.original.promo_slab?.title || "-",
+    },
+    {
+      accessorKey: "promoter.full_name",
+      header: "Promoter",
+      cell: ({ row }) => {
+        const promoter = row.original.promoter
+        if (!promoter) return "-"
+        return (
+          promoter.full_name ||
+          [promoter.first_name, promoter.last_name].filter(Boolean).join(" ") ||
+          "-"
+        )
+      },
+    },
+    {
+      accessorKey: "promoter.market_assignment.name",
+      header: "Market",
+      cell: ({ row }) => {
+        const market = row.original.promoter?.market_assignment
+        return market?.full_name || market?.name || "-"
+      },
+    },
+    {
+      accessorKey: "store.business.name",
+      header: "Store",
+      cell: ({ row }) =>
+        row.original.store?.business?.name || row.original.store?.name || "-",
     },
     {
       accessorKey: "purchase_value",
       header: "Purchase Value",
-      cell: ({ row }: any) => {
+      cell: ({ row }) => {
         const value = row.original.purchase_value
-        return value !== null && value !== undefined && value !== "" ? String(value) : "-"
+        if (value === null || value === undefined || value === "") return "-"
+        const num = Number(value)
+        return Number.isFinite(num)
+          ? num.toLocaleString(undefined, { minimumFractionDigits: 2 })
+          : String(value)
       },
     },
     {
-      accessorKey: "store",
-      header: "Store",
-      cell: ({ row }: any) => {
-        const store = row.original.store
-        return store?.name || "-"
-      },
-    },
-    {
-      accessorKey: "actions",
+      id: "actions",
       header: "Actions",
-      cell: ({ row }: any) => {
+      cell: ({ row }) => {
         const participation = row.original
         return (
           <DropdownMenu>
@@ -88,7 +141,9 @@ export default function PromoParticipationsPage() {
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() =>
-                  router.push(`/dashboard/promos/promo-participations/${participation.uuid}`)
+                  router.push(
+                    `/dashboard/promos/promo-participations/${participation.uuid}`
+                  )
                 }
               >
                 <Eye className="mr-2 h-4 w-4" />
@@ -97,7 +152,9 @@ export default function PromoParticipationsPage() {
               <DropdownMenuItem
                 className="cursor-pointer"
                 onClick={() =>
-                  router.push(`/dashboard/promos/promo-participations/${participation.uuid}`)
+                  router.push(
+                    `/dashboard/promos/promo-participations/${participation.uuid}/edit`
+                  )
                 }
               >
                 <Edit className="mr-2 h-4 w-4" />
@@ -129,7 +186,7 @@ export default function PromoParticipationsPage() {
 
       <DataTable
         ref={dataTableRef}
-        columns={columns}
+        columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="uuid"
         searchPlaceholder="Search promo participations..."
         store="promoParticipations"
@@ -137,11 +194,22 @@ export default function PromoParticipationsPage() {
         filters={[
           {
             type: "selectWithFetch",
+            label: "Market",
+            param: "market_id",
+            fetchUrl: "/markets",
+            valueKey: "uuid",
+            labelKey: "name",
+            searchParam: "search",
+            placeholder: "Select Market",
+          },
+          {
+            type: "selectWithFetch",
             label: "Store",
             param: "store_id",
             fetchUrl: "/stores",
             valueKey: "uuid",
-            labelFormatter: (item: any) => item.name || item.business?.name || "Unknown Store",
+            labelFormatter: (item: any) =>
+              item.name || item.business?.name || "Unknown Store",
             searchParam: "search",
             placeholder: "Select Store",
           },
@@ -151,7 +219,11 @@ export default function PromoParticipationsPage() {
             param: "promoter_id",
             fetchUrl: "/promoters",
             valueKey: "uuid",
-            labelFormatter: (item: any) => `${item.user?.first_name || ""} ${item.user?.last_name || ""}`.trim() || "Unknown Promoter",
+            labelFormatter: (item: any) =>
+              item.user?.full_name ||
+              `${item.user?.first_name || ""} ${item.user?.last_name || ""}`.trim() ||
+              item.full_name ||
+              "Unknown Promoter",
             searchParam: "search",
             placeholder: "Select Promoter",
           },
@@ -161,19 +233,21 @@ export default function PromoParticipationsPage() {
             param: "promo_id",
             fetchUrl: "/promos",
             valueKey: "uuid",
-            labelKey: "type",
+            labelKey: "title",
             searchParam: "search",
             placeholder: "Select Promo",
           },
           {
             type: "selectWithFetch",
-            label: "Participant",
-            param: "participant_id",
-            fetchUrl: "/participants",
+            label: "Customer",
+            param: "customer_id",
+            fetchUrl: "/customers",
             valueKey: "uuid",
-            labelFormatter: (item: any) => `${item.first_name || ""} ${item.last_name || ""}`.trim() || "Unknown Participant",
+            labelFormatter: (item: any) =>
+              `${item.first_name || ""} ${item.last_name || ""}`.trim() ||
+              "Unknown Customer",
             searchParam: "search",
-            placeholder: "Select Participant",
+            placeholder: "Select Customer",
           },
         ]}
       />

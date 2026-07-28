@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
 import { redirect } from "next/navigation";
 
 export default function FieldTeamsPage() {
-	redirect("/dashboard/field-agents/ime-vss");
+  redirect("/dashboard/field-agents/ime-vss");
 }

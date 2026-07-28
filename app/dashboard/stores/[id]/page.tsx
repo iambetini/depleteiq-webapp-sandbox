@@ -1,9 +1,21 @@
 "use client"
 
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useSession } from "next-auth/react"
 import { useContext } from "./layout"
+
+const CATEGORY_LABELS: Record<string, string> = {
+  pc: "Personal Care",
+  pharma: "Pharmaceutical",
+  "food and bev": "Food & Beverage",
+}
+
+const formatCategory = (category?: string | null) => {
+  if (!category) return null
+  return CATEGORY_LABELS[category.toLowerCase()] || category
+}
 
 export default function StoreDetailPage() {
   const { data: session } = useSession()
@@ -15,12 +27,14 @@ export default function StoreDetailPage() {
   }
 
   const userRole = user?.role?.name?.toLowerCase() || ""
+  const storeUser = store.business?.user
+  const categoryLabel = formatCategory(store.category)
 
   return (
     <div>
       <ViewPageHeader
-        title="Store Details"
-        description="View detailed information about this store"
+        title={store.business?.name || "Store Details"}
+        description="Store Details"
         showEditButton={true}
         editHref={`/dashboard/stores/${store.uuid}/edit`}
         showDeleteButton={["super-admin", "admin", "manager"].includes(userRole)}
@@ -29,53 +43,246 @@ export default function StoreDetailPage() {
           uuid: store.uuid,
         }}
       />
+
       <Card className="w-full max-w-3xl">
-        <CardHeader>
-          <CardTitle className="text-[#444444]">Store Information</CardTitle>
-          <CardDescription>View all details for this store</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">Business</label>
-              <p className="text-base font-semibold">{store.business?.name}</p>
-              {store.business?.type && (
-                <p className="text-sm text-muted-foreground">Type: {store.business.type}</p>
-              )}
+            <div>
+              <p className="text-sm text-muted-foreground">Business Name</p>
+              <p className="font-medium text-lg text-[#444444]">
+                {store.business?.name || "—"}
+              </p>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">Store Type</label>
-              <p className="text-base font-semibold">{store.type || "—"}</p>
+            <div>
+              <p className="text-sm text-muted-foreground">Business Type</p>
+              <p className="font-medium text-lg capitalize text-[#444444]">
+                {store.business?.type || "—"}
+              </p>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">Category</label>
-              <p className="text-base font-semibold">{store.category || "—"}</p>
-            </div>
+            {categoryLabel && (
+              <div>
+                <p className="text-sm text-muted-foreground">Category</p>
+                <Badge variant="secondary" className="mt-1">
+                  {categoryLabel}
+                </Badge>
+              </div>
+            )}
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">Market</label>
-              <p className="text-base font-semibold">{store.market?.name || "—"}</p>
+            {store.promo_class && (
+              <div>
+                <p className="text-sm text-muted-foreground">Promo Class</p>
+                <Badge variant="outline" className="mt-1 capitalize">
+                  {store.promo_class}
+                </Badge>
+              </div>
+            )}
+
+            <div>
+              <p className="text-sm text-muted-foreground">Market</p>
+              <p className="font-medium text-[#444444]">
+                {store.market?.full_name || store.market?.name || "—"}
+              </p>
               {store.market?.type && (
-                <p className="text-sm text-muted-foreground">Type: {store.market.type}</p>
+                <p className="text-sm text-muted-foreground capitalize mt-0.5">
+                  {store.market.type}
+                </p>
               )}
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-muted-foreground">Address</label>
-            <p className="text-base whitespace-pre-wrap">{store.address || "—"}</p>
-          </div>
+            <div>
+              <p className="text-sm text-muted-foreground">In Market</p>
+              <Badge
+                variant={store.in_market ? "default" : "secondary"}
+                className="mt-1"
+              >
+                {store.in_market ? "Yes" : "No"}
+              </Badge>
+            </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-muted-foreground">Created</label>
-            <p className="text-sm text-muted-foreground">
-              {store.created_at ? new Date(store.created_at).toLocaleDateString() : "—"}
-            </p>
+            <div>
+              <p className="text-sm text-muted-foreground">Has QR Code</p>
+              <Badge
+                variant={store.has_qr ? "default" : "secondary"}
+                className="mt-1"
+              >
+                {store.has_qr ? "Yes" : "No"}
+              </Badge>
+            </div>
+
+            {store.business?.address && (
+              <div className="md:col-span-2">
+                <p className="text-sm text-muted-foreground">Business Address</p>
+                <p className="font-medium text-[#444444] whitespace-pre-wrap">
+                  {store.business.address}
+                </p>
+              </div>
+            )}
+
+            {storeUser && (
+              <div className="md:col-span-2">
+                <p className="text-sm text-muted-foreground mb-2">Contact Person</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Name</p>
+                    <p className="font-medium text-[#444444]">
+                      {storeUser.full_name ||
+                        `${storeUser.first_name} ${storeUser.last_name}`}
+                    </p>
+                  </div>
+                  {storeUser.email && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Email</p>
+                      <p className="font-medium text-[#444444]">{storeUser.email}</p>
+                    </div>
+                  )}
+                  {storeUser.phone && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Phone</p>
+                      <p className="font-medium text-[#444444]">{storeUser.phone}</p>
+                    </div>
+                  )}
+                  {storeUser.status && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Status</p>
+                      <Badge
+                        variant={
+                          storeUser.status === "active" ? "default" : "secondary"
+                        }
+                        className="mt-1 capitalize"
+                      >
+                        {storeUser.status}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {store.location && (
+              <div className="md:col-span-2">
+                <p className="text-sm text-muted-foreground mb-3">Location Details</p>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  {store.location.full_location && (
+                    <div className="col-span-2">
+                      <p className="text-xs text-muted-foreground">Full Address</p>
+                      <p className="font-medium text-[#444444]">
+                        {store.location.full_location}
+                      </p>
+                    </div>
+                  )}
+                  {store.location.street && (
+                    <div className="col-span-2">
+                      <p className="text-xs text-muted-foreground">Street</p>
+                      <p className="font-medium text-[#444444]">{store.location.street}</p>
+                    </div>
+                  )}
+                  {store.location.city && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">City</p>
+                      <p className="font-medium text-[#444444]">{store.location.city}</p>
+                    </div>
+                  )}
+                  {store.location.state && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">State</p>
+                      <p className="font-medium text-[#444444]">{store.location.state}</p>
+                    </div>
+                  )}
+                  {store.location.region && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Region</p>
+                      <p className="font-medium text-[#444444]">{store.location.region}</p>
+                    </div>
+                  )}
+                  {store.location.country && (
+                    <div>
+                      <p className="text-xs text-muted-foreground">Country</p>
+                      <p className="font-medium text-[#444444]">{store.location.country}</p>
+                    </div>
+                  )}
+                </div>
+                {(store.location.latitude || store.location.longitude) && (
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-sm text-muted-foreground mb-2">Coordinates</p>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      {store.location.latitude != null && (
+                        <div>
+                          <p className="text-xs text-muted-foreground">Latitude</p>
+                          <p className="font-medium text-[#444444]">
+                            {store.location.latitude}
+                          </p>
+                        </div>
+                      )}
+                      {store.location.longitude != null && (
+                        <div>
+                          <p className="text-xs text-muted-foreground">Longitude</p>
+                          <p className="font-medium text-[#444444]">
+                            {store.location.longitude}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div>
+              <p className="text-sm text-muted-foreground">Created At</p>
+              <p className="font-medium text-[#444444]">
+                {store.created_at
+                  ? new Date(store.created_at).toLocaleString()
+                  : "—"}
+              </p>
+            </div>
+
+            {store.updated_at && (
+              <div>
+                <p className="text-sm text-muted-foreground">Updated At</p>
+                <p className="font-medium text-[#444444]">
+                  {new Date(store.updated_at).toLocaleString()}
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
+
+      {store.qr_code && (
+        <Card className="w-full max-w-3xl mt-6">
+          <CardHeader>
+            <CardTitle className="text-[#444444]">QR Code Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Reference</p>
+                <p className="font-medium font-mono text-[#444444]">
+                  {store.qr_code.reference}
+                </p>
+              </div>
+              {store.qr_code.type && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Type</p>
+                  <p className="font-medium capitalize text-[#444444]">
+                    {store.qr_code.type}
+                  </p>
+                </div>
+              )}
+              {store.qr_code.status && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Status</p>
+                  <Badge variant="default" className="mt-1 capitalize">
+                    {store.qr_code.status}
+                  </Badge>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }
