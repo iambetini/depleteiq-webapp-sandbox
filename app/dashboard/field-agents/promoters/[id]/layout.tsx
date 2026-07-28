@@ -11,36 +11,34 @@ import type { Promoter } from "@/types/promoter"
 
 const { Layout, useContext } = createEntityLayout<Promoter>({
   storeName: "promoters",
-})
+});
 
-export { useContext }
+export { useContext };
+
 
 export default function PromoterLayout({ children }: { children: React.ReactNode }) {
   const params = useParams()
   const pathname = usePathname()
   const router = useRouter()
   const promoterId = params.id as string
-  const { data: promoter, isLoading } = useGetPromoterQuery(promoterId)
+  const { data: promoter, isLoading } = useGetPromoterQuery(promoterId);
 
   const tabs: TabConfig[] = [
-    { id: "view", label: "Overview", path: `/dashboard/field-agents/promoters/${promoterId}` },
-    { id: "stores", label: "Stores", path: `/dashboard/field-agents/promoters/${promoterId}/stores` },
+    { id: 'view', label: 'Overview', path: `/dashboard/field-agents/promoters/${promoterId}` },
+    { id: 'stores', label: 'Stores', path: `/dashboard/field-agents/promoters/${promoterId}/stores` },
   ]
 
+  // Determine the active tab based on the current path
   const getActiveTab = () => {
-    if (pathname.endsWith("/view")) return "view"
-    if (pathname.endsWith("/stores")) return "stores"
-    return "view"
+    if (pathname.endsWith('/view')) return 'view'
+    if (pathname.endsWith('/stores')) return 'stores'
+    return 'view'
   }
 
   const activeTab = getActiveTab()
 
-  if (isLoading) {
-    return <LoadingSkeleton />
-  }
-  if (!promoter) {
-    notFound()
-  }
+  if (isLoading) { return <LoadingSkeleton /> }
+  if (!promoter) { notFound() }
 
   return (
     <Layout>
@@ -55,6 +53,7 @@ export default function PromoterLayout({ children }: { children: React.ReactNode
           uuid: promoter.uuid,
         }}
       />
+      {/* Tab Navigation */}
       <div className="border-b border-gray-200 mb-4">
         <nav className="-mb-px flex space-x-8" aria-label="Tabs">
           {tabs.map((tab) => (
@@ -67,7 +66,7 @@ export default function PromoterLayout({ children }: { children: React.ReactNode
                   ? "border-orange-500 text-orange-600"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               )}
-              aria-current={activeTab === tab.id ? "page" : undefined}
+              aria-current={activeTab === tab.id ? 'page' : undefined}
             >
               {tab.label}
             </button>

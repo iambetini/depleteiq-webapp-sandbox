@@ -16,6 +16,7 @@ type FieldType =
   | "text"
   | "email"
   | "password"
+  | "number"
   | "textarea"
   | "select"
   | "selectWithFetch"
@@ -45,6 +46,9 @@ interface FieldConfig {
   params?: Record<string, any>
   rows?: number
   colSpan?: number
+  min?: number
+  max?: number
+  step?: number
   onCreateNew?: () => void
   createButtonText?: string
   onFocus?: () => void
@@ -269,7 +273,7 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
                           </div>
                         )
                       }
-                      // Default: text, email, password
+                      // Default: text, email, password, number
                       return (
                         <div className="space-y-2" key={field.name}>
                           <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>
@@ -280,6 +284,9 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
                             value={values[field.name]}
                             onChange={handleChange}
                             placeholder={field.placeholder}
+                            min={field.type === "number" ? field.min : undefined}
+                            max={field.type === "number" ? field.max : undefined}
+                            step={field.type === "number" ? field.step : undefined}
                           />
                           <ErrorMessage name={field.name} component="p" className="text-sm text-red-500" />
                         </div>

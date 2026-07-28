@@ -2,12 +2,12 @@
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import DeliveryPdfExportButton from "@/components/dashboard/DeliveryPdfExportButton";
 import { Card, CardContent } from "@/components/ui/card";
-import { Boxes, Calendar, Flame, Package, Percent, Ruler, Scale, Truck, MapPin, MessageSquare } from "lucide-react";
+import { Boxes, Calendar, Flame, Package, Percent, Ruler, Scale, Truck, MapPin, MessageSquare, type LucideIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import type { ComponentType, SVGProps } from "react";
 import { useContext } from "./layout";
 import { formatLabelToTitleCase } from "@/lib/label-formatters";
+import type { Permission } from "@/types/permission";
 
 export default function DeliveryDetailPage() {
   const { data: session } = useSession();
@@ -17,7 +17,7 @@ export default function DeliveryDetailPage() {
 
   if (!delivery) { return null; }
 
-  const icons: Record<string, ComponentType<SVGProps<SVGSVGElement>> | undefined> = {
+  const icons: Record<string, LucideIcon | undefined> = {
     orderRef: Package,
     vehicleNumber: Truck,
     vehicleType: Truck,
@@ -45,7 +45,10 @@ export default function DeliveryDetailPage() {
         description="View detailed information about this delivery"
         showEditButton={true}
         editHref={`/dashboard/deliveries/${delivery.uuid}/edit`}
-        showDeleteButton={user?.role?.permissions.some(permission => permission.name === "delete orders")}
+        showDeleteButton={user?.role?.permissions?.some(
+          (permission: Permission | string) =>
+            typeof permission !== "string" && permission.name === "delete orders"
+        )}
         deleteOptions={{
           storeName: "deliveries",
           uuid: delivery.uuid,

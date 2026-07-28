@@ -10,13 +10,6 @@ function FieldTeamsLayoutContent({ children }: { children: React.ReactNode }) {
 	const router = useRouter()
 	const { data: session } = useSession()
 
-	const getActiveTab = () => {
-		if (pathname.includes('/tpe')) return 'tpe'
-		if (pathname.includes('/ime-vss')) return 'ime-vss'
-		if (pathname.includes('/promoters')) return 'promoters'
-		return 'tpe'
-	}
-
 	const allTabs = [
         { id: 'ime-vss', label: 'IME VSS', path: `/dashboard/field-agents/ime-vss` },
 		{ id: 'tpe', label: 'TPE', path: `/dashboard/field-agents/tpe` },
@@ -26,6 +19,13 @@ function FieldTeamsLayoutContent({ children }: { children: React.ReactNode }) {
 	const tabs = allTabs.filter((tab) =>
 		hasPermissionForRoute(tab.path, session?.user?.role?.permissions)
 	)
+
+	const getActiveTab = () => {
+		if (pathname.includes('/ime-vss')) return 'ime-vss'
+		if (pathname.includes('/tpe')) return 'tpe'
+		if (pathname.includes('/promoters')) return 'promoters'
+		return tabs[0]?.id ?? 'ime-vss'
+	}
 
 	const activeTab = getActiveTab()
 

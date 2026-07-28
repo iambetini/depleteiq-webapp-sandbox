@@ -105,7 +105,7 @@ export default function TPEPage() {
 
       <DataTable
         ref={dataTableRef}
-        columns={columns}
+        columns={columns as ColumnDef<unknown, unknown>[]}
         searchKey="email"
         searchPlaceholder="Search by email, name..."
         store="tpes"

@@ -58,7 +58,7 @@ export default function EditPromoParticipationPage() {
   }
 
   const validationSchema = Yup.object({
-    participant_id: Yup.string().required('Participant is required'),
+    customer_id: Yup.string().required('Customer is required'),
     promo_id: Yup.string().required('Promo is required'),
     promoter_id: Yup.string().required('Promoter is required'),
     store_id: Yup.string().required('Store is required'),
@@ -113,7 +113,7 @@ export default function EditPromoParticipationPage() {
   }
 
   const initialValues = {
-    participant_id: promoParticipation.participant?.uuid || '',
+    customer_id: promoParticipation.customer?.uuid || promoParticipation.participant?.uuid || '',
     promo_id: promoParticipation.promo?.uuid || '',
     promoter_id: promoParticipation.promoter?.uuid || '',
     store_id: promoParticipation.store?.uuid || '',
@@ -148,23 +148,23 @@ export default function EditPromoParticipationPage() {
                   <h3 className="text-xl font-bold text-[#444444]">Basic Information</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="participant_id">
-                        Participant <span className="text-[#ff0000]">*</span>
+                      <Label htmlFor="customer_id">
+                        Customer <span className="text-[#ff0000]">*</span>
                       </Label>
                       <SelectWithFetch
-                        fetchUrl="/participants"
-                        value={values.participant_id}
-                        onChange={(value) => setFieldValue('participant_id', value)}
+                        fetchUrl="/customers"
+                        value={values.customer_id}
+                        onChange={(value) => setFieldValue('customer_id', value)}
                         valueKey="uuid"
                         labelKey="first_name"
-                        labelFormatter={(participant: any) =>
-                          `${participant.first_name} ${participant.last_name} (${participant.email})`
+                        labelFormatter={(customer: any) =>
+                          `${customer.first_name} ${customer.last_name} (${customer.email || customer.phone || ""})`
                         }
-                        placeholder="Select participant"
+                        placeholder="Select customer"
                       />
-                      {errors.participant_id && touched.participant_id && (
+                      {errors.customer_id && touched.customer_id && (
                         <ErrorMessage
-                          name="participant_id"
+                          name="customer_id"
                           component="div"
                           className="text-red-500 text-sm"
                         />
@@ -201,7 +201,8 @@ export default function EditPromoParticipationPage() {
                         valueKey="uuid"
                         labelKey="uuid"
                         labelFormatter={(promoter: any) =>
-                          `${promoter.user?.first_name} ${promoter.user?.last_name}`
+                          promoter.full_name ||
+                          `${promoter.first_name || promoter.user?.first_name || ""} ${promoter.last_name || promoter.user?.last_name || ""}`.trim()
                         }
                         placeholder="Select promoter"
                       />

@@ -1,15 +1,16 @@
 "use client"
 
+import ListPageHeader from "@/components/dashboard/ListPageHeader"
 import { DataTable } from "@/components/ui/data-table"
 import React, { useState } from "react"
 import { useContext } from "../layout"
 import { useStoreColumns } from "@/components/tables/storeColumns"
-import { Button } from "@/components/ui/button"
-import AssignStoreModal from "@/app/dashboard/promos/promoters/[id]/stores/AssignStoreModal"
+import AssignStoreModal from "./AssignStoreModal"
 import { assignStoresToPromoter } from "@/lib/promoter-assign"
 import { useToast } from "@/hooks/use-toast"
 import { useDispatch } from "react-redux"
 import { storeApis } from "@/store"
+import { ColumnDef } from "@tanstack/react-table"
 
 export default function PromoterStoresPage() {
   const { promoter } = useContext()
@@ -37,21 +38,27 @@ export default function PromoterStoresPage() {
     } catch (e: any) {
       toast({
         title: "Error",
-        description: e?.response?.data?.message || e?.message || "Failed to assign stores",
+        description:
+          e?.response?.data?.message || e?.message || "Failed to assign stores",
         variant: "destructive",
       })
+      // eslint-disable-next-line no-console
       console.error(e)
     }
   }
 
   return (
     <div>
-      <div className="flex justify-end mb-4 gap-2">
-        <Button onClick={() => setModalOpen(true)}>Assign Stores</Button>
-      </div>
+      <ListPageHeader
+        title="Stores"
+        description="Stores assigned to this promoter"
+        showAddButton={true}
+        onAdd={() => setModalOpen(true)}
+        addLabel="Assign Stores"
+      />
       <DataTable
         key={refreshKey}
-        columns={columns}
+        columns={columns as ColumnDef<unknown, unknown>[]}
         searchPlaceholder="Search stores..."
         store="stores"
         exportFileName="Stores"

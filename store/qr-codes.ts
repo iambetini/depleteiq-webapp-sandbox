@@ -1,7 +1,17 @@
 import type { QrCode } from "../types/qr-code"
 import { createEntity } from "./entityFactory"
 
-const qrCodesBase = createEntity<QrCode>({
+type CreateQrCodePayload = {
+  type: "store" | "device" | "order"
+  quantity: number
+}
+
+type UpdateQrCodePayload = Partial<{
+  type: "store" | "device" | "order"
+  status: "active" | "inactive"
+}>
+
+const qrCodesBase = createEntity<QrCode, CreateQrCodePayload, UpdateQrCodePayload>({
   reducerPath: "qrCodesApi",
   entityEndpoint: "qr-codes",
   entityName: "QrCode",

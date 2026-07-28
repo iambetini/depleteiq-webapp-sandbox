@@ -7,7 +7,11 @@ import { catchError } from "@/lib/utils"
 import { useUpdateQrCodeMutation } from "@/store/qr-codes"
 import { useRouter } from "next/navigation"
 import { useContext } from "../layout"
-import * as Yup from "yup"
+import {
+  qrCodeEditFormFields,
+  qrCodeUpdateValidationSchema,
+  type QRCodeEditFormValues,
+} from "../../qr-code-form-config"
 
 export default function EditQrCodePage() {
   const router = useRouter()
@@ -18,14 +22,15 @@ export default function EditQrCodePage() {
     return null
   }
 
-  const validationSchema = Yup.object({
-    type: Yup.string().nullable(),
-    status: Yup.string().nullable(),
-  })
-
-  const handleSubmit = async (values: any, helpers: any) => {
+  const handleSubmit = async (values: QRCodeEditFormValues, helpers: any) => {
     try {
-      await updateQrCode({ id: qrcode.uuid, data: values }).unwrap()
+      await updateQrCode({
+        id: qrcode.uuid,
+        data: {
+          ...(values.type ? { type: values.type } : {}),
+          ...(values.status ? { status: values.status } : {}),
+        },
+      }).unwrap()
       toast({
         title: "Success",
         description: "QR code updated successfully",
@@ -39,26 +44,12 @@ export default function EditQrCodePage() {
     }
   }
 
-  const fields = [
-    {
-      name: "type",
-      label: "Type",
-      type: "text" as const,
-      required: false,
-      placeholder: "Enter QR code type",
-    },
-    {
-      name: "status",
-      label: "Status",
-      type: "text" as const,
-      required: false,
-      placeholder: "e.g., active, inactive",
-    },
-  ]
-
-  const initialValues = {
-    type: qrcode.type || "",
-    status: qrcode.status || "active",
+  const initialValues: QRCodeEditFormValues = {
+    type: (qrcode.type as QRCodeEditFormValues["type"]) || "",
+    status:
+      qrcode.status === "active" || qrcode.status === "inactive"
+        ? qrcode.status
+        : "active",
   }
 
   return (
@@ -71,8 +62,8 @@ export default function EditQrCodePage() {
         title="Edit QR Code"
         description="Update the details for this QR code"
         initialValues={initialValues}
-        validationSchema={validationSchema}
-        fields={fields}
+        validationSchema={qrCodeUpdateValidationSchema}
+        fields={qrCodeEditFormFields as any}
         isLoading={false}
         onSubmit={handleSubmit}
         submitLabel="Update QR Code"
