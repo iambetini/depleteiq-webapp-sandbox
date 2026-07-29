@@ -113,6 +113,14 @@ export function useStoreColumns(
       ),
     },
     {
+      accessorKey: "created_at",
+      header: "Created At",
+      cell: ({ row }) =>
+        row.original.created_at
+          ? new Date(row.original.created_at).toLocaleString()
+          : "-",
+    },
+    {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
