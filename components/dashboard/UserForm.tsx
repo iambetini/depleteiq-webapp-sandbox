@@ -7,10 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectWithFetch } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { apiClient } from "@/lib/api-client";
 import { ErrorMessage, Form, Formik } from "formik";
 import { Plus, Save } from "lucide-react";
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useImperativeHandle, useRef } from "react";
 
 type FieldType =
   | "text"
@@ -43,6 +42,7 @@ interface FieldConfig {
   labelKey?: string
   labelFormatter?: (item: any) => string
   initialSearch?: string
+  selectedLabel?: string
   params?: Record<string, any>
   rows?: number
   colSpan?: number
@@ -87,8 +87,6 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
   cardClassName,
   onFieldUpdate,
 }, ref) => {
-  // For selectWithFetch fields, manage fetched options
-  const [fetchedOptions, setFetchedOptions] = useState<Record<string, FieldOption[]>>({})
   const setFieldValueRef = useRef<((field: string, value: any) => void) | null>(null)
 
   useImperativeHandle(ref, () => ({
@@ -98,26 +96,6 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
       }
     }
   }), [])
-
-  useEffect(() => {
-    fields.forEach(field => {
-      if (field.type === "selectWithFetch" && field.fetchUrl) {
-        apiClient.get(field.fetchUrl)
-          .then(({ data }: any) => {
-            setFetchedOptions(prev => ({
-              ...prev,
-              [field.name]: (data.items || []).map((item: any) => ({
-                label: item[field.labelKey || "name"],
-                value: item[field.valueKey || "uuid"],
-              })),
-            }))
-          })
-          .catch(() => {
-            setFetchedOptions(prev => ({ ...prev, [field.name]: [] }))
-          })
-      }
-    })
-  }, [fields])
 
   return (
     <Card className={cardClassName || "max-w-2xl"}>
@@ -230,6 +208,7 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
                               labelKey={field.labelKey}
                               labelFormatter={field.labelFormatter}
                               initialSearch={field.initialSearch}
+                              selectedLabel={field.selectedLabel}
                               placeholder={field.placeholder}
                               params={field.params}
                             />
@@ -252,6 +231,7 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
                                   labelKey={field.labelKey}
                                   labelFormatter={field.labelFormatter}
                                   initialSearch={field.initialSearch}
+                                  selectedLabel={field.selectedLabel}
                                   placeholder={field.placeholder}
                                   params={field.params}
                                 />

@@ -125,7 +125,7 @@ export default function ImeVssPage() {
     <div>
       <ListPageHeader
         title="IME-VSS"
-        description="Manage IME-VSSs and their permissions"
+        description="Manage IME-VSS(s) and their permissions"
         showAddButton={true}
         onAdd={() => router.push("/dashboard/field-agents/ime-vss/create")}
         addLabel="Add IME-VSS"
@@ -138,7 +138,7 @@ export default function ImeVssPage() {
         ref={dataTableRef}
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="first_name"
-        searchPlaceholder="Search IME-VSSs..."
+        searchPlaceholder="Search IME-VSS(s)..."
         store="imeVss"
         fixedQuery={{ roles }}
         filters={[

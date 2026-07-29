@@ -15,7 +15,88 @@ import { useSelector } from "react-redux";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useOrderColumns } from "@/hooks/useOrderColumns";
 import { useSession } from "next-auth/react";
+import { Skeleton } from "@/components/ui/skeleton";
 
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-6" aria-label="Loading dashboard">
+      <div className="flex items-center justify-between gap-4">
+        <div className="space-y-2">
+          <Skeleton className="h-9 w-44" />
+          <Skeleton className="h-4 w-72 max-w-[70vw]" />
+        </div>
+        <Skeleton className="h-10 w-36" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
+        <Card className="h-full">
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+          </CardHeader>
+          <CardContent>
+            <div className="relative h-[400px] border-b border-l border-border">
+              <div className="absolute inset-0 flex items-end justify-around gap-3 px-6 pb-1">
+                {[42, 68, 50, 82, 61, 74, 55].map((height, index) => (
+                  <Skeleton
+                    key={index}
+                    className="w-full max-w-10 rounded-b-none"
+                    style={{ height: `${height}%` }}
+                  />
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <Card key={index}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="space-y-3">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-8 w-24" />
+                    {index > 0 && index < 4 && (
+                      <Skeleton className="h-4 w-20" />
+                    )}
+                  </div>
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <Skeleton className="h-6 w-36" />
+          <Skeleton className="h-4 w-14" />
+        </CardHeader>
+        <CardContent className="px-0 pb-0">
+          <div className="grid grid-cols-5 gap-4 border-y px-6 py-4">
+            {Array.from({ length: 5 }).map((_, index) => (
+              <Skeleton key={index} className="h-4 w-20 max-w-full" />
+            ))}
+          </div>
+          {Array.from({ length: 5 }).map((_, rowIndex) => (
+            <div
+              key={rowIndex}
+              className="grid grid-cols-5 gap-4 border-b px-6 py-4 last:border-b-0"
+            >
+              {Array.from({ length: 5 }).map((_, columnIndex) => (
+                <Skeleton
+                  key={columnIndex}
+                  className="h-4 w-24 max-w-full"
+                />
+              ))}
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
 
 export default function DashboardPage() {
   const { data: session } = useSession();
@@ -57,22 +138,7 @@ export default function DashboardPage() {
   }, [dashboardData, updatePeriodType]);
 
   if (isLoading) {
-    return (
-      <div>
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-[#444444]">Dashboard</h1>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-20 bg-gray-200 rounded"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (!dashboardData) {
@@ -115,10 +181,10 @@ export default function DashboardPage() {
                     }}
                   />
                   <Tooltip
-                    formatter={(value: string | number, name) => {
-                      const formatted = `₦${Number(value).toLocaleString()}`;
-                      return [formatted, "Total"];
-                    }}
+                    formatter={(value) => [
+                      `₦${Number(value ?? 0).toLocaleString()}`,
+                      "Total",
+                    ]}
                   />
                   <Bar dataKey="total" fill="#ff6600" />
                 </BarChart>

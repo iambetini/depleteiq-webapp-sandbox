@@ -36,6 +36,11 @@ export default function PromosPage() {
 
   const columns: ColumnDef<any, any>[] = [
     {
+      accessorKey: 'title',
+      header: 'Title',
+      cell: ({ row }: any) => row.original.title || '—',
+    },
+    {
       accessorKey: 'type',
       header: 'Type',
     },
@@ -112,7 +117,7 @@ export default function PromosPage() {
 
       <DataTable
         ref={dataTableRef}
-        columns={columns}
+        columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="type"
         searchPlaceholder="Search promos..."
         store="promos"

@@ -1,5 +1,6 @@
 "use client"
 
+import ImagePreviewModal from "@/components/dashboard/ImagePreviewModal"
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/table"
 import { normalizeParticipationItems } from "@/types/promo-participation"
 import { useSession } from "next-auth/react"
+import { useState } from "react"
 import { useContext } from "./layout"
 
 function ItemsTable({
@@ -67,6 +69,7 @@ export default function PromoParticipationDetailPage() {
   const { data: session } = useSession()
   const user = session?.user
   const { promoParticipation } = useContext()
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false)
 
   if (!promoParticipation) {
     return null
@@ -82,6 +85,7 @@ export default function PromoParticipationDetailPage() {
   const purchaseValue = promoParticipation.purchase_value
   const purchasedItems = normalizeParticipationItems(promoParticipation.item_purchased)
   const giftedItems = normalizeParticipationItems(promoParticipation.item_gifted)
+  const receiptImage = promoParticipation.receipt_image
 
   return (
     <div>
@@ -97,9 +101,10 @@ export default function PromoParticipationDetailPage() {
         }}
       />
 
-      <Card className="w-full max-w-3xl">
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <Card className="h-full w-full">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <p className="text-sm text-muted-foreground">Participation Code</p>
               <p className="font-medium text-lg text-[#444444]">
@@ -221,34 +226,42 @@ export default function PromoParticipationDetailPage() {
                 </p>
               </div>
             )}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+          </CardContent>
+        </Card>
+
+        {receiptImage && (
+          <Card className="h-full w-full">
+            <CardHeader>
+              <CardTitle className="text-[#444444]">Receipt Image</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <button
+                type="button"
+                onClick={() => setReceiptModalOpen(true)}
+                className="relative block w-full overflow-hidden rounded-lg border bg-muted/20 hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={receiptImage}
+                  alt="Receipt"
+                  className="w-full max-h-[36rem] object-contain"
+                />
+              </button>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       <ItemsTable title="Items Purchased" items={purchasedItems} />
       <ItemsTable title="Items Gifted" items={giftedItems} />
 
-      {promoParticipation.receipt_image && (
-        <Card className="w-full max-w-3xl mt-6">
-          <CardHeader>
-            <CardTitle className="text-[#444444]">Receipt Image</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <a
-              href={promoParticipation.receipt_image}
-              target="_blank"
-              rel="noreferrer"
-              className="block border rounded-lg overflow-hidden hover:opacity-90 transition-opacity"
-            >
-              <img
-                src={promoParticipation.receipt_image}
-                alt="Receipt"
-                className="w-full max-h-96 object-contain bg-muted/20"
-              />
-            </a>
-          </CardContent>
-        </Card>
-      )}
+      <ImagePreviewModal
+        open={receiptModalOpen}
+        onOpenChange={setReceiptModalOpen}
+        url={receiptImage}
+        title="Receipt Image"
+      />
     </div>
   )
 }

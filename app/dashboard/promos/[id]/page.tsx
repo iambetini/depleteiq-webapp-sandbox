@@ -1,26 +1,38 @@
-'use client';
+'use client'
 
-import ViewPageHeader from '@/components/dashboard/ViewPageHeader';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useSession } from 'next-auth/react';
-import { useContext } from './layout';
+import ViewPageHeader from '@/components/dashboard/ViewPageHeader'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useSession } from 'next-auth/react'
+import { useContext } from './layout'
+import { PromoSlabSummary } from '@/types/promo-slab'
+
+const formatValue = (value?: string | number | null) => {
+  if (value === null || value === undefined || value === '') return '—'
+  const numericValue = Number(value)
+  if (Number.isNaN(numericValue)) return String(value)
+
+  return numericValue.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+}
 
 export default function PromoDetailPage() {
-  const { data: session } = useSession();
-  const user = session?.user;
-  const { promo } = useContext();
+  const { data: session } = useSession()
+  const user = session?.user
+  const { promo } = useContext()
 
   if (!promo) {
-    return null;
+    return null
   }
 
-  const userRole = user?.role?.name?.toLowerCase() || '';
+  const userRole = user?.role?.name?.toLowerCase() || ''
 
   return (
     <div>
       <ViewPageHeader
-        title="Promo Details"
-        description="View detailed information about this promo"
+        title={promo.title || 'Promo Details'}
+        description="Promo Details"
         showEditButton={true}
         editHref={`/dashboard/promos/${promo.uuid}/edit`}
         showDeleteButton={['super-admin', 'admin', 'manager'].includes(userRole)}
@@ -29,78 +41,109 @@ export default function PromoDetailPage() {
           uuid: promo.uuid,
         }}
       />
-      <div className="grid grid-cols-1 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-[#444444]">Information</CardTitle>
-            <CardDescription>Promo details</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">Type</label>
-              <p className="text-base font-semibold">{promo.type}</p>
-            </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">Title</label>
-              <p className="text-base font-semibold">{promo.title || 'N/A'}</p>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">Start Date</label>
-              <p className="text-base font-semibold">
-                {promo.start_date ? new Date(promo.start_date).toLocaleDateString() : 'N/A'}
+      <Card className="w-full max-w-3xl">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <p className="text-sm text-muted-foreground">Title</p>
+              <p className="font-medium text-lg text-[#444444]">
+                {promo.title || '—'}
               </p>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-muted-foreground">End Date</label>
-              <p className="text-base font-semibold">
-                {promo.end_date ? new Date(promo.end_date).toLocaleDateString() : 'N/A'}
+            <div>
+              <p className="text-sm text-muted-foreground">Type</p>
+              <p className="font-medium text-lg capitalize text-[#444444]">
+                {promo.type || '—'}
               </p>
             </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-[#444444]">Promo Slabs</CardTitle>
-            <CardDescription>Configured slab tiers for this promo</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {promo.promo_slabs && promo.promo_slabs.length > 0 ? (
-              <div className="space-y-4">
-                {promo.promo_slabs.map((slab) => (
-                  <div key={slab.uuid} className="rounded-lg border border-border bg-muted/30 p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-base font-semibold text-foreground">{slab.title}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {slab.bundle || 'No bundle description provided'}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium text-muted-foreground">Value</p>
-                        <p className="text-base font-semibold">{slab.value ?? 'N/A'}</p>
-                      </div>
-                    </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Start Date</p>
+              <p className="font-medium text-[#444444]">
+                {promo.start_date || '—'}
+              </p>
+            </div>
 
-                    {slab.reward && (
-                      <div className="mt-3 space-y-1">
-                        <p className="text-sm font-medium text-muted-foreground">Reward</p>
-                        <p className="text-sm text-foreground whitespace-pre-wrap">{slab.reward}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
+            <div>
+              <p className="text-sm text-muted-foreground">End Date</p>
+              <p className="font-medium text-[#444444]">
+                {promo.end_date || '—'}
+              </p>
+            </div>
+
+            {promo.description && (
+              <div className="md:col-span-2">
+                <p className="text-sm text-muted-foreground">Description</p>
+                <p className="font-medium text-[#444444] whitespace-pre-wrap">
+                  {promo.description}
+                </p>
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No promo slabs have been configured for this promo yet.</p>
             )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
-}
 
+            <div>
+              <p className="text-sm text-muted-foreground">Created At</p>
+              <p className="font-medium text-[#444444]">
+                {promo.created_at || '—'}
+              </p>
+            </div>
+
+            {promo.updated_at && (
+              <div>
+                <p className="text-sm text-muted-foreground">Updated At</p>
+                <p className="font-medium text-[#444444]">{promo.updated_at}</p>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="w-full max-w-3xl mt-6">
+        <CardHeader>
+          <CardTitle className="text-[#444444]">Promo Slabs</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {promo.promo_slabs && promo.promo_slabs.length > 0 ? (
+            <div className="space-y-4">
+              {promo.promo_slabs.map((slab: PromoSlabSummary) => (
+                <div
+                  key={slab.uuid}
+                  className="rounded-lg border border-border bg-muted/30 p-4"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-medium text-[#444444]">{slab.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {slab.bundle || 'No bundle description provided'}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">Value</p>
+                      <p className="font-medium text-[#444444]">
+                        {formatValue(slab.value)}
+                      </p>
+                    </div>
+                  </div>
+
+                  {slab.reward && (
+                    <div className="mt-3">
+                      <p className="text-sm text-muted-foreground">Reward</p>
+                      <p className="font-medium text-[#444444] whitespace-pre-wrap">
+                        {slab.reward}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No promo slabs have been configured for this promo yet.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}

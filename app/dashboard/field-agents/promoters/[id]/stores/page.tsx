@@ -67,7 +67,6 @@ export default function PromoterStoresPage() {
       <AssignStoreModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        promoterUuid={promoterId}
         onAssign={handleAssign}
       />
     </div>

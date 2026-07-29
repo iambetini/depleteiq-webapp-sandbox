@@ -4,40 +4,31 @@ import UserForm from "@/components/dashboard/UserForm"
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { toast } from "@/hooks/use-toast"
 import { catchError } from "@/lib/utils"
-import {
-  useGetTPEQuery,
-  useUpdateTPEMutation,
-} from "@/store/tpe"
-import { useRouter, useParams } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
+import { useUpdateTPEMutation } from "@/store/tpe"
+import { useRouter } from "next/navigation"
+import { useRef } from "react"
 import * as Yup from "yup"
+import { useContext } from "../layout"
 
 export default function EditTPEPage() {
   const router = useRouter()
-  const params = useParams()
-  const id = params.id as string
-  const { data, isLoading: isFetching } = useGetTPEQuery(id)
+  const { tpe, fetchEntity } = useContext()
   const [updateTPE, { isLoading }] = useUpdateTPEMutation()
-  const [initialValues, setInitialValues] = useState({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    market_id: "",
-  })
   const formRef = useRef<any>(null)
 
-  useEffect(() => {
-    if (data) {
-      setInitialValues({
-        first_name: data.first_name || "",
-        last_name: data.last_name || "",
-        email: data.email || "",
-        phone: data.phone || "",
-        market_id: data.market?.uuid || "",
-      })
-    }
-  }, [data])
+  if (!tpe) {
+    return null
+  }
+
+  const assignedMarket = tpe.market_assignment || tpe.market
+
+  const initialValues = {
+    first_name: tpe.first_name || "",
+    last_name: tpe.last_name || "",
+    email: tpe.email || "",
+    phone: tpe.phone || "",
+    market_id: assignedMarket?.uuid || "",
+  }
 
   const validationSchema = Yup.object({
     first_name: Yup.string(),
@@ -49,11 +40,12 @@ export default function EditTPEPage() {
 
   const handleSubmit = async (values: typeof initialValues, helpers: any) => {
     try {
-      await updateTPE({ id, data: values }).unwrap()
+      await updateTPE({ id: tpe.uuid, data: values }).unwrap()
       toast({
         title: "Success",
         description: "TPE user updated successfully",
       })
+      fetchEntity()
       router.push("/dashboard/field-agents/tpe")
     } catch (error: any) {
       catchError(error, helpers.setFieldError)
@@ -100,25 +92,18 @@ export default function EditTPEPage() {
       valueKey: "uuid",
       labelKey: "name",
       placeholder: "Select a market",
+      selectedLabel: assignedMarket?.name || assignedMarket?.full_name || "",
     },
   ]
-
-  if (isFetching) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    )
-  }
 
   return (
     <div>
       <ViewPageHeader
-        title="Edit TPE"
+        title="Update TPE"
         description="Update TPE user details"
       />
       <UserForm
-        title="Edit TPE"
+        title="TPE Information"
         description="Update the details for this TPE user"
         initialValues={initialValues}
         validationSchema={validationSchema}

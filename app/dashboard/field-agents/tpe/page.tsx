@@ -45,9 +45,12 @@ export default function TPEPage() {
       header: "Phone",
     },
     {
-      accessorKey: "market.name",
+      accessorKey: "market_assignment.name",
       header: "Market",
-      cell: ({ row }) => row.original.market?.name || "Not assigned",
+      cell: ({ row }) => {
+        const market = row.original.market_assignment || row.original.market
+        return market?.name || "Not assigned"
+      },
     },
     {
       accessorKey: "status",

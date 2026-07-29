@@ -2,10 +2,8 @@
 
 import { ViewPageHeader } from "@/components/dashboard/ViewPageHeader"
 import { TabConfig } from "@/components/layouts/entity-layout"
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
-import { useGetPromoterQuery } from "@/store/promoters"
 import { cn } from "@/lib/utils"
-import { notFound, useParams, usePathname, useRouter } from "next/navigation"
+import { useParams, usePathname, useRouter } from "next/navigation"
 import { createEntityLayout } from "@/lib/entity-layout-factory"
 import type { Promoter } from "@/types/promoter"
 
@@ -17,11 +15,19 @@ export { useContext };
 
 
 export default function PromoterLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Layout>
+      <PromoterLayoutContent>{children}</PromoterLayoutContent>
+    </Layout>
+  )
+}
+
+function PromoterLayoutContent({ children }: { children: React.ReactNode }) {
   const params = useParams()
   const pathname = usePathname()
   const router = useRouter()
   const promoterId = params.id as string
-  const { data: promoter, isLoading } = useGetPromoterQuery(promoterId);
+  const { promoter } = useContext()
 
   const tabs: TabConfig[] = [
     { id: 'view', label: 'Overview', path: `/dashboard/field-agents/promoters/${promoterId}` },
@@ -37,14 +43,19 @@ export default function PromoterLayout({ children }: { children: React.ReactNode
 
   const activeTab = getActiveTab()
 
-  if (isLoading) { return <LoadingSkeleton /> }
-  if (!promoter) { notFound() }
+  if (!promoter) { return null }
+
+  const displayName =
+    promoter.full_name ||
+    [promoter.first_name, promoter.last_name].filter(Boolean).join(" ") ||
+    [promoter.user?.first_name, promoter.user?.last_name].filter(Boolean).join(" ") ||
+    "Promoter Details"
 
   return (
-    <Layout>
+    <>
       <ViewPageHeader
-        title="Promoter Details"
-        description="View detailed information about this promoter"
+        title={displayName}
+        description="Promoter Details"
         showEditButton={true}
         editHref={`/dashboard/field-agents/promoters/${promoter.uuid}/edit`}
         showDeleteButton={true}
@@ -74,6 +85,6 @@ export default function PromoterLayout({ children }: { children: React.ReactNode
         </nav>
       </div>
       {children}
-    </Layout>
+    </>
   )
 }
