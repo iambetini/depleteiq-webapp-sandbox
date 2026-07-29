@@ -34,7 +34,7 @@ export default function EditTPEPage() {
         last_name: data.last_name || "",
         email: data.email || "",
         phone: data.phone || "",
-        market_id: data.market?.uuid || "",
+        market_id: data.market_assignment?.uuid || data.market?.uuid || "",
       })
     }
   }, [data])
@@ -114,11 +114,11 @@ export default function EditTPEPage() {
   return (
     <div>
       <ViewPageHeader
-        title="Edit TPE"
+        title="Update TPE"
         description="Update TPE user details"
       />
       <UserForm
-        title="Edit TPE"
+        title="TPE Information"
         description="Update the details for this TPE user"
         initialValues={initialValues}
         validationSchema={validationSchema}

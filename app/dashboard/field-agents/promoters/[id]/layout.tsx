@@ -40,11 +40,17 @@ export default function PromoterLayout({ children }: { children: React.ReactNode
   if (isLoading) { return <LoadingSkeleton /> }
   if (!promoter) { notFound() }
 
+  const displayName =
+    promoter.full_name ||
+    [promoter.first_name, promoter.last_name].filter(Boolean).join(" ") ||
+    [promoter.user?.first_name, promoter.user?.last_name].filter(Boolean).join(" ") ||
+    "Promoter Details"
+
   return (
     <Layout>
       <ViewPageHeader
-        title="Promoter Details"
-        description="View detailed information about this promoter"
+        title={displayName}
+        description="Promoter Details"
         showEditButton={true}
         editHref={`/dashboard/field-agents/promoters/${promoter.uuid}/edit`}
         showDeleteButton={true}

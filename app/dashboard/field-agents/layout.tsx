@@ -11,7 +11,7 @@ function FieldTeamsLayoutContent({ children }: { children: React.ReactNode }) {
 	const { data: session } = useSession()
 
 	const allTabs = [
-        { id: 'ime-vss', label: 'IME VSS', path: `/dashboard/field-agents/ime-vss` },
+        { id: 'ime-vss', label: 'IME-VSS', path: `/dashboard/field-agents/ime-vss` },
 		{ id: 'tpe', label: 'TPE', path: `/dashboard/field-agents/tpe` },
 		{ id: 'promoters', label: 'Promoters', path: `/dashboard/field-agents/promoters` },
 	]
