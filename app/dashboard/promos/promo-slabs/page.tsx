@@ -59,7 +59,13 @@ export default function PromoSlabsPage() {
       header: 'Value',
       cell: ({ row }: any) => {
         const value = row.original.value
-        return value !== null && value !== undefined && value !== '' ? String(value) : '-'
+        if (value === null || value === undefined || value === '') return '-'
+        const num = Number(value)
+        if (Number.isNaN(num)) return String(value)
+        return num.toLocaleString(undefined, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
       },
     },
     {
@@ -119,7 +125,7 @@ export default function PromoSlabsPage() {
 
       <DataTable
         ref={dataTableRef}
-        columns={columns}
+        columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="title"
         searchPlaceholder="Search promo slabs..."
         store="promoSlabs"

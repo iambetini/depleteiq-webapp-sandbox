@@ -49,7 +49,7 @@ export default function TPEPage() {
       header: "Market",
       cell: ({ row }) => {
         const market = row.original.market_assignment || row.original.market
-        return market?.full_name || market?.name || "Not assigned"
+        return market?.name || "Not assigned"
       },
     },
     {

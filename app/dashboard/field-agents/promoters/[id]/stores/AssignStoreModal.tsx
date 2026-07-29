@@ -3,17 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { SelectWithFetch } from "@/components/ui/select";
 import { useGetStoresQuery } from "@/store/stores";
-import { useGetPromoterQuery } from "@/store/promoters";
 import type { Store } from "@/types/store";
+import { useContext } from "../layout";
 
 interface AssignStoreModalProps {
   open: boolean;
   onClose: () => void;
-  promoterUuid: string;
   onAssign: (storeUuids: string[]) => void;
 }
 
-export default function AssignStoreModal({ open, onClose, promoterUuid, onAssign }: AssignStoreModalProps) {
+export default function AssignStoreModal({ open, onClose, onAssign }: AssignStoreModalProps) {
   const [selectedMarket, setSelectedMarket] = useState("");
   const [selectedStores, setSelectedStores] = useState<string[]>([]);
   useEffect(() => {
@@ -26,13 +25,12 @@ export default function AssignStoreModal({ open, onClose, promoterUuid, onAssign
     selectedMarket ? { params: { market_id: selectedMarket, has_promoter: false } } : { params: { has_promoter: false } },
     { skip: !selectedMarket }
   );
-  // getById returns the promoter item directly
-  const { data: promoter } = useGetPromoterQuery(promoterUuid, { skip: !promoterUuid });
+  const { promoter } = useContext();
   const assignedStoreUuids = useMemo(
     () =>
       (promoter?.stores ?? [])
-        .map((s) => s.store?.uuid || s.store_uuid || s.uuid)
-        .filter((uuid): uuid is string => Boolean(uuid)),
+        .map((s: any) => s.store?.uuid || s.store_uuid || s.uuid)
+        .filter((uuid: unknown): uuid is string => Boolean(uuid)),
     [promoter]
   );
 

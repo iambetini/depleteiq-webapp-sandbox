@@ -21,6 +21,7 @@ interface SelectWithFetchProps<T = any> {
   searchParam?: string
   initialSearch?: string
   placeholder?: string
+  selectedLabel?: string
   disabled?: boolean
   labelFormatter?: (item: T) => string
   className?: string
@@ -187,6 +188,7 @@ function SelectWithFetch<T = any>({
   searchParam = "search",
   initialSearch = "",
   placeholder = "Select...",
+  selectedLabel,
   disabled = false,
   labelFormatter,
   className,
@@ -264,6 +266,13 @@ function SelectWithFetch<T = any>({
 
   const isLoading = store ? (storeQuery?.isLoading ?? false) : loading
 
+  // Radix only renders a label for the current value when a matching item exists,
+  // so keep the preselected option available even when it is filtered out or not fetched yet
+  const hasSelectedOption = finalOptions.some(
+    (item: any) => getNestedValue(item, valueKey) === value
+  )
+  const showFallbackOption = Boolean(value) && !hasSelectedOption && Boolean(selectedLabel)
+
   // Memoize search handler to prevent unnecessary re-renders
   const handleSearchChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setIsTyping(true)
@@ -333,10 +342,13 @@ function SelectWithFetch<T = any>({
           />
         </div>
         {isLoading && <div className="px-3 py-2 text-gray-400">Searching...</div>}
-        {finalOptions.length === 0 && !isLoading && (
+        {finalOptions.length === 0 && !isLoading && !showFallbackOption && (
           <div className="px-3 py-2 text-gray-400">No options found</div>
         )}
         <div className="max-h-60 overflow-y-auto">
+          {showFallbackOption && (
+            <SelectItem value={value}>{selectedLabel}</SelectItem>
+          )}
           {finalOptions.map((item: any) => {
             const itemValue = getNestedValue(item, valueKey)
             const displayLabel = labelFormatter

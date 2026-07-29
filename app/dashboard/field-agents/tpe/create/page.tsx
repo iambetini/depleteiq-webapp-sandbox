@@ -108,7 +108,7 @@ export default function CreateTPEPage() {
     <div>
       <ViewPageHeader
         title="Create TPE"
-        description="Add a new TPE (Third Party Executor) to the system"
+        description="Add a new TPE (Trade Promo Executive) to the system"
       />
       <UserForm
         title="Create TPE"

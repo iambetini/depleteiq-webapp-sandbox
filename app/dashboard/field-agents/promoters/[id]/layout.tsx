@@ -2,10 +2,8 @@
 
 import { ViewPageHeader } from "@/components/dashboard/ViewPageHeader"
 import { TabConfig } from "@/components/layouts/entity-layout"
-import { LoadingSkeleton } from "@/components/ui/loading-skeleton"
-import { useGetPromoterQuery } from "@/store/promoters"
 import { cn } from "@/lib/utils"
-import { notFound, useParams, usePathname, useRouter } from "next/navigation"
+import { useParams, usePathname, useRouter } from "next/navigation"
 import { createEntityLayout } from "@/lib/entity-layout-factory"
 import type { Promoter } from "@/types/promoter"
 
@@ -17,11 +15,19 @@ export { useContext };
 
 
 export default function PromoterLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <Layout>
+      <PromoterLayoutContent>{children}</PromoterLayoutContent>
+    </Layout>
+  )
+}
+
+function PromoterLayoutContent({ children }: { children: React.ReactNode }) {
   const params = useParams()
   const pathname = usePathname()
   const router = useRouter()
   const promoterId = params.id as string
-  const { data: promoter, isLoading } = useGetPromoterQuery(promoterId);
+  const { promoter } = useContext()
 
   const tabs: TabConfig[] = [
     { id: 'view', label: 'Overview', path: `/dashboard/field-agents/promoters/${promoterId}` },
@@ -37,8 +43,7 @@ export default function PromoterLayout({ children }: { children: React.ReactNode
 
   const activeTab = getActiveTab()
 
-  if (isLoading) { return <LoadingSkeleton /> }
-  if (!promoter) { notFound() }
+  if (!promoter) { return null }
 
   const displayName =
     promoter.full_name ||
@@ -47,7 +52,7 @@ export default function PromoterLayout({ children }: { children: React.ReactNode
     "Promoter Details"
 
   return (
-    <Layout>
+    <>
       <ViewPageHeader
         title={displayName}
         description="Promoter Details"
@@ -80,6 +85,6 @@ export default function PromoterLayout({ children }: { children: React.ReactNode
         </nav>
       </div>
       {children}
-    </Layout>
+    </>
   )
 }

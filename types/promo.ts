@@ -5,6 +5,7 @@ export interface IPromo {
   uuid: string;
   type: string;
   title?: string | null;
+  description?: string | null;
   start_date?: string | null;
   end_date?: string | null;
   promo_slabs?: PromoSlabSummary[];

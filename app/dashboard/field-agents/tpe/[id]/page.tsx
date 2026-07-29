@@ -86,7 +86,7 @@ export default function TPEDetailPage() {
             <div>
               <p className="text-sm text-muted-foreground">Market</p>
               <p className="font-medium text-[#444444]">
-                {market?.full_name || market?.name || "—"}
+                {market?.name || "Not assigned"}
               </p>
               {market?.type && (
                 <p className="text-sm text-muted-foreground capitalize mt-0.5">
