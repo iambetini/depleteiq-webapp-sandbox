@@ -15,7 +15,7 @@ interface Role {
   name: string
 }
 
-export default function CreateImeVssPage() {
+export default function CreateImePage() {
   const { roles, isLoading: isRolesLoading } = useRoles()
   const [createUser, { isLoading }] = useCreateUserMutation()
   const router = useRouter()
@@ -48,7 +48,7 @@ export default function CreateImeVssPage() {
       await createUser(values).unwrap()
       toast({
         title: "Success",
-        description: "IME-VSS created successfully",
+        description: "IME created successfully",
       })
       helpers.resetForm()
     } catch (error: any) {
@@ -101,7 +101,7 @@ export default function CreateImeVssPage() {
       required: true,
       placeholder: "Select role",
       options: roles
-        .filter((role) => ["ime", "vss"].includes(role.name.toLowerCase()))
+        .filter((role) => role.name.toLowerCase() === "ime")
         .map((role) => ({
           label: role.name,
           value: role.uuid,
@@ -125,16 +125,16 @@ export default function CreateImeVssPage() {
 
   return (
     <div>
-      <ViewPageHeader title="Create IME-VSS" description="Add a new IME-VSS to the system" />
+      <ViewPageHeader title="Create IME" description="Add a new IME to the system" />
       <UserForm
-        title="IME-VSS Information"
-        description="Enter the details for the new IME-VSS"
+        title="IME Information"
+        description="Enter the details for the new IME"
         initialValues={initialValues}
         validationSchema={validationSchema}
         fields={fields}
         isLoading={isLoading || isRolesLoading}
         onSubmit={handleSubmit}
-        submitLabel="Create IME-VSS"
+        submitLabel="Create IME"
         onCancel={() => router.back()}
       />
     </div>

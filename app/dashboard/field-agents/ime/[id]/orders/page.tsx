@@ -7,11 +7,11 @@ import { useOrderColumns } from "@/hooks/useOrderColumns";
 import { useParams } from "next/navigation";
 import React from "react";
 
-export default function ImeVssOrdersPage() {
+export default function ImeOrdersPage() {
   const { columns } = useOrderColumns();
   const routeParams = useParams();
-  const imeVssId = routeParams?.id as string;
-  const fixedQuery = React.useMemo(() => ({ ime_vss: imeVssId }), [imeVssId]);
+  const imeId = routeParams?.id as string;
+  const fixedQuery = React.useMemo(() => ({ ime_vss: imeId }), [imeId]);
 
   return (
     <div>
@@ -21,7 +21,7 @@ export default function ImeVssOrdersPage() {
         searchPlaceholder="Search orders..."
         store="orders"
         fixedQuery={fixedQuery}
-        exportFileName="IME-VSS-Orders"
+        exportFileName="IME-Orders"
         filters={ORDER_FILTERS}
       />
     </div>

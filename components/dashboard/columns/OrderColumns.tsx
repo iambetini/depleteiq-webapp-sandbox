@@ -161,17 +161,22 @@ const ActionsCell = React.memo(
                 Cancel Order
               </DropdownMenuItem>
             )}
-            {showViewImeVss && order.ime_vss?.uuid && (
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() =>
-                  router.push(`/dashboard/field-agents/ime-vss/${order.ime_vss.uuid}`)
-                }
-              >
-                <Eye className="mr-2 h-4 w-4" />
-                View IME-VSS
-              </DropdownMenuItem>
-            )}
+            {showViewImeVss && order.ime_vss?.uuid && (() => {
+              const roleName = order.ime_vss?.role?.name?.toLowerCase()
+              const agentPath = roleName === 'vss'
+                ? `/dashboard/field-agents/vss/${order.ime_vss.uuid}`
+                : `/dashboard/field-agents/ime/${order.ime_vss.uuid}`
+              const agentLabel = roleName === 'vss' ? 'View VSS' : 'View IME'
+              return (
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => router.push(agentPath)}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  {agentLabel}
+                </DropdownMenuItem>
+              )
+            })()}
             {showViewDistributor && order.distributor_user?.uuid && (
               <DropdownMenuItem
                 className="cursor-pointer"

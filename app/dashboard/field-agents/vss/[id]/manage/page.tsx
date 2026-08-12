@@ -8,14 +8,14 @@ import UserForm from "@/components/dashboard/UserForm"
 import { handleDelete } from "@/lib/handleDelete"
 import { toast } from "@/hooks/use-toast"
 import { catchError } from "@/lib/utils"
-import { useUpdateIMEVSSMutation } from "@/store/ime-vss"
+import { useUpdateVSSMutation } from "@/store/vss"
 import { useRouter } from "next/navigation"
 import { useEffect, useState, useCallback, useMemo } from "react"
 import * as Yup from "yup"
-import { useImeVssData } from "@/hooks/use-entity-data"
+import { useVssData } from "@/hooks/use-entity-data"
 import { Edit, MapPin, Shield, Trash2, User } from "lucide-react"
 
-export default function ManageImeVssPage() {
+export default function ManageVssPage() {
   const [initialValues, setInitialValues] = useState({
     first_name: "",
     last_name: "",
@@ -27,32 +27,32 @@ export default function ManageImeVssPage() {
   })
   const [isEditMode, setIsEditMode] = useState(false)
   const { roles, isLoading: isRolesLoading } = useRoles()
-  const { entity: imeVss, refetch } = useImeVssData()
+  const { entity: vss, refetch } = useVssData()
   const router = useRouter()
-  const [updateIMEVSS] = useUpdateIMEVSSMutation()
+  const [updateVSS] = useUpdateVSSMutation()
 
   const deleteHandler = useCallback((uuid: string) => {
     handleDelete({
-      storeName: "imeVss",
+      storeName: "vss",
       uuid,
-      entityLabel: "IME-VSS",
-      onSuccess: () => router.push("/dashboard/field-agents/ime-vss"),
+      entityLabel: "VSS",
+      onSuccess: () => router.push("/dashboard/field-agents/vss"),
     })
   }, [router])
 
   useEffect(() => {
-    if (imeVss && roles.length > 0) {
+    if (vss && roles.length > 0) {
       setInitialValues({
-        first_name: imeVss.first_name,
-        last_name: imeVss.last_name,
-        email: imeVss.email,
-        phone: imeVss.phone,
-        market_id: imeVss.market?.uuid || "",
-        role_id: imeVss.role?.uuid || "",
-        status: imeVss.status,
+        first_name: vss.first_name,
+        last_name: vss.last_name,
+        email: vss.email,
+        phone: vss.phone,
+        market_id: vss.market?.uuid || "",
+        role_id: vss.role?.uuid || "",
+        status: vss.status,
       })
     }
-  }, [imeVss, roles])
+  }, [vss, roles])
 
   const validationSchema = Yup.object({
     first_name: Yup.string().required("First name is required"),
@@ -100,7 +100,7 @@ export default function ManageImeVssPage() {
       required: true,
       placeholder: "Select role",
       options: roles
-        .filter((role) => ["vss", "ime"].includes(role.name.toLowerCase()))
+        .filter((role) => role.name.toLowerCase() === "vss")
         .map((role) => ({
           label: role.name,
           value: role.uuid,
@@ -115,7 +115,7 @@ export default function ManageImeVssPage() {
       store: "markets",
       valueKey: "uuid",
       labelKey: "name",
-      initialSearch: imeVss?.market?.name || "",
+      initialSearch: vss?.market?.name || "",
     },
     {
       name: "status",
@@ -128,16 +128,16 @@ export default function ManageImeVssPage() {
         { label: "Inactive", value: "inactive" },
       ],
     },
-  ], [roles, imeVss])
+  ], [roles, vss])
 
-  if (!imeVss) { return null; }
+  if (!vss) { return null; }
 
   const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
     try {
-      await updateIMEVSS({ id: imeVss.uuid, data: values }).unwrap()
+      await updateVSS({ id: vss.uuid, data: values }).unwrap()
       toast({
         title: "Success",
-        description: "IME-VSS updated successfully",
+        description: "VSS updated successfully",
       })
       refetch() // Refresh the data
       setIsEditMode(false)
@@ -149,8 +149,8 @@ export default function ManageImeVssPage() {
   }
 
   const handleDeleteClick = () => {
-    if (!imeVss) return;
-    deleteHandler(imeVss.uuid);
+    if (!vss) return;
+    deleteHandler(vss.uuid);
   }
 
   if (isEditMode) {
@@ -158,8 +158,8 @@ export default function ManageImeVssPage() {
       <div>
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-[#444444]">Edit IME-VSS</h2>
-            <p className="text-[#ababab]">Update the IME-VSS information below</p>
+            <h2 className="text-2xl font-bold text-[#444444]">Edit VSS</h2>
+            <p className="text-[#ababab]">Update the VSS information below</p>
           </div>
           <Button
             variant="outline"
@@ -170,14 +170,14 @@ export default function ManageImeVssPage() {
         </div>
 
         <UserForm
-          title="IME-VSS Information"
-          description="Update the IME-VSS details below"
+          title="VSS Information"
+          description="Update the VSS details below"
           initialValues={initialValues}
           validationSchema={validationSchema}
           fields={fields}
           isLoading={false}
           onSubmit={handleSubmit}
-          submitLabel="Update IME-VSS"
+          submitLabel="Update VSS"
           onCancel={() => setIsEditMode(false)}
         />
       </div>
@@ -188,8 +188,8 @@ export default function ManageImeVssPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-[#444444]">Manage IME-VSS</h2>
-          <p className="text-[#ababab]">View and manage IME-VSS information</p>
+          <h2 className="text-2xl font-bold text-[#444444]">Manage VSS</h2>
+          <p className="text-[#ababab]">View and manage VSS information</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline"
@@ -221,10 +221,10 @@ export default function ManageImeVssPage() {
               </CardTitle>
             </div>
             <Badge
-              variant={imeVss?.status === "active" ? "default" : "destructive"}
-              className={`status ${imeVss?.status === "active" ? "active" : "inactive"} mt-1`}
+              variant={vss?.status === "active" ? "default" : "destructive"}
+              className={`status ${vss?.status === "active" ? "active" : "inactive"} mt-1`}
             >
-              {imeVss?.status}
+              {vss?.status}
             </Badge>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -232,20 +232,20 @@ export default function ManageImeVssPage() {
               <div>
                 <p className="text-sm text-[#ababab]">Full Name</p>
                 <p className="font-medium text-[#444444]">
-                  {imeVss?.first_name} {imeVss?.last_name}
+                  {vss?.first_name} {vss?.last_name}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-[#ababab]">Email</p>
-                <p className="font-medium text-[#444444]">{imeVss?.email}</p>
+                <p className="font-medium text-[#444444]">{vss?.email}</p>
               </div>
               <div>
                 <p className="text-sm text-[#ababab]">Phone</p>
-                <p className="font-medium text-[#444444]">{imeVss?.phone}</p>
+                <p className="font-medium text-[#444444]">{vss?.phone}</p>
               </div>
               <div>
                 <p className="text-sm text-[#ababab]">Created</p>
-                <p className="font-medium text-[#444444]">{imeVss?.created_at}</p>
+                <p className="font-medium text-[#444444]">{vss?.created_at}</p>
               </div>
             </div>
           </CardContent>
@@ -265,14 +265,14 @@ export default function ManageImeVssPage() {
                 <Shield className="h-5 w-5 text-[#ababab]" />
                 <div>
                   <p className="text-sm text-[#ababab]">Role</p>
-                  <p className="font-medium text-[#444444]">{imeVss?.role?.name || "No Role"}</p>
+                  <p className="font-medium text-[#444444]">{vss?.role?.name || "No Role"}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-5 w-5 text-[#ababab]" />
                 <div>
                   <p className="text-sm text-[#ababab]">Market</p>
-                  <p className="font-medium text-[#444444]">{imeVss?.market?.name || "No Market"}</p>
+                  <p className="font-medium text-[#444444]">{vss?.market?.name || "No Market"}</p>
                 </div>
               </div>
             </div>
