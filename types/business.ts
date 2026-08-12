@@ -9,6 +9,8 @@ export interface Business {
   phone?: string | null
   address?: string | null
   user?: User
+  tpe_user?: User
+  stores?: unknown[]
   created_at: string
   updated_at: string
 }

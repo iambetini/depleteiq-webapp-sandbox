@@ -5,7 +5,7 @@ import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { toast } from "@/hooks/use-toast"
 import { userFullNameEmailFormatter } from "@/lib/label-formatters"
 import { catchError } from "@/lib/utils"
-import { useCreateWholesalerMutation } from "@/store/wholesalers"
+import { useCreateBusinessMutation } from "@/store/businesses"
 import { useRouter } from "next/navigation"
 import { useRef } from "react"
 import { SelectWithFetch } from "@/components/ui/select"
@@ -18,7 +18,7 @@ import * as Yup from "yup"
 
 export default function CreateWholesalerPage() {
   const router = useRouter()
-  const [createWholesaler, { isLoading }] = useCreateWholesalerMutation()
+  const [createWholesaler, { isLoading }] = useCreateBusinessMutation()
   const formRef = useRef<any>(null)
 
   const initialValues = {
@@ -63,7 +63,7 @@ export default function CreateWholesalerPage() {
 
   const handleSubmit = async (values: typeof initialValues, helpers: any) => {
     try {
-      await createWholesaler(values).unwrap()
+      await createWholesaler({ ...values, type: "wholesaler" }).unwrap()
       toast({
         title: "Success",
         description: "Wholesaler created successfully",

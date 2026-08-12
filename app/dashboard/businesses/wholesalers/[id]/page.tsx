@@ -21,16 +21,24 @@ export default function ViewWholesalerPage() {
     return null
   }
 
+  const stores = (wholesaler.stores ?? []) as Array<{
+    uuid?: string
+    address?: string
+    type?: string
+    category?: string
+    market?: { name?: string }
+  }>
+
   return (
     <div>
       <ViewPageHeader
-        title={wholesaler.business?.name || "Wholesaler"}
+        title={wholesaler.name || "Wholesaler"}
         description="Wholesaler Details"
         showEditButton={true}
         editHref={`/dashboard/businesses/wholesalers/${wholesaler.uuid}/edit`}
         showDeleteButton={true}
         deleteOptions={{
-          storeName: "wholesalers",
+          storeName: "businesses",
           uuid: wholesaler.uuid,
           redirectPath: "/dashboard/businesses/wholesalers",
         }}
@@ -59,13 +67,13 @@ export default function ViewWholesalerPage() {
                   <Building className="h-5 w-5 text-[#ababab]" />
                   <div>
                     <p className="text-sm text-[#ababab]">Business Name</p>
-                    <p className="font-medium text-[#444444]">{wholesaler.business?.name}</p>
+                    <p className="font-medium text-[#444444]">{wholesaler.name}</p>
                   </div>
                 </div>
                 <div>
                   <p className="text-sm text-[#ababab]">Business Type</p>
                   <Badge variant="secondary" className="mt-1">
-                    {wholesaler.business?.type}
+                    {wholesaler.type}
                   </Badge>
                 </div>
               </div>
@@ -74,7 +82,7 @@ export default function ViewWholesalerPage() {
                   <MapPin className="h-5 w-5 text-[#ababab] mt-1" />
                   <div>
                     <p className="text-sm text-[#ababab]">Address</p>
-                    <p className="font-medium text-[#444444]">{wholesaler.business?.address || "Not provided"}</p>
+                    <p className="font-medium text-[#444444]">{wholesaler.address || "Not provided"}</p>
                   </div>
                 </div>
               </div>
@@ -146,9 +154,9 @@ export default function ViewWholesalerPage() {
               <CardTitle className="text-[#444444]">Attached Stores</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {wholesaler.business?.stores && wholesaler.business.stores.length > 0 ? (
+              {stores.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {wholesaler.business.stores.map((store: any, index: number) => (
+                  {stores.map((store, index) => (
                     <div key={store.uuid || index} className="p-4 border rounded-md bg-gray-50 space-y-2">
                       <h4 className="font-medium text-[#444444]">Store {index + 1}</h4>
                       {store.address && (
