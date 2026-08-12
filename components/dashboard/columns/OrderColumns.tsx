@@ -108,7 +108,7 @@ const ActionsCell = React.memo(
     const canCancelOrder =
       AUTHORIZED_ROLES.includes(userRole as any) &&
       (order.status === "pending" || order.status === "update_requested");
-    const showViewImeVss = !currentPath.includes("/ime-vss/");
+    const showViewImeVss = !currentPath.includes("/ime-vss/") && !currentPath.includes("/dashboard/field-agents/ime/") && !currentPath.includes("/dashboard/field-agents/vss/");
     const showViewDistributor = !currentPath.includes("/distributors/");
 
     const onCancelOrder = async () => {

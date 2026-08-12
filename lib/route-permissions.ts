@@ -172,22 +172,22 @@ export const routePermissions: RoutePermission[] = [
   },
   {
     href: "/dashboard/field-agents/ime/[id]",
-    pattern: /^\/dashboard\/field-agents\/ime\/\d+$/,
+    pattern: /^\/dashboard\/field-agents\/ime\/[\w-]+$/,
     permissions: ["view distributors"],
   },
   {
     href: "/dashboard/field-agents/ime/[id]/manage",
-    pattern: /^\/dashboard\/field-agents\/ime\/\d+\/manage$/,
+    pattern: /^\/dashboard\/field-agents\/ime\/[\w-]+\/manage$/,
     permissions: ["edit distributors"],
   },
   {
     href: "/dashboard/field-agents/ime/[id]/distributors",
-    pattern: /^\/dashboard\/field-agents\/ime\/\d+\/distributors$/,
+    pattern: /^\/dashboard\/field-agents\/ime\/[\w-]+\/distributors$/,
     permissions: ["view distributors"],
   },
   {
     href: "/dashboard/field-agents/ime/[id]/orders",
-    pattern: /^\/dashboard\/field-agents\/ime\/\d+\/orders$/,
+    pattern: /^\/dashboard\/field-agents\/ime\/[\w-]+\/orders$/,
     permissions: ["view orders"],
   },
   {
@@ -202,22 +202,22 @@ export const routePermissions: RoutePermission[] = [
   },
   {
     href: "/dashboard/field-agents/vss/[id]",
-    pattern: /^\/dashboard\/field-agents\/vss\/\d+$/,
+    pattern: /^\/dashboard\/field-agents\/vss\/[\w-]+$/,
     permissions: ["view distributors"],
   },
   {
     href: "/dashboard/field-agents/vss/[id]/manage",
-    pattern: /^\/dashboard\/field-agents\/vss\/\d+\/manage$/,
+    pattern: /^\/dashboard\/field-agents\/vss\/[\w-]+\/manage$/,
     permissions: ["edit distributors"],
   },
   {
     href: "/dashboard/field-agents/vss/[id]/distributors",
-    pattern: /^\/dashboard\/field-agents\/vss\/\d+\/distributors$/,
+    pattern: /^\/dashboard\/field-agents\/vss\/[\w-]+\/distributors$/,
     permissions: ["view distributors"],
   },
   {
     href: "/dashboard/field-agents/vss/[id]/orders",
-    pattern: /^\/dashboard\/field-agents\/vss\/\d+\/orders$/,
+    pattern: /^\/dashboard\/field-agents\/vss\/[\w-]+\/orders$/,
     permissions: ["view orders"],
   },
   {

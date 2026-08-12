@@ -7,7 +7,6 @@ import { toast } from "@/hooks/use-toast"
 import { catchError } from "@/lib/utils"
 import { useCreateUserMutation } from "@/store/users"
 import { useRouter } from "next/navigation"
-import { useDispatch } from "react-redux"
 import * as Yup from "yup"
 
 interface Role {
@@ -19,8 +18,6 @@ export default function CreateVssPage() {
   const { roles, isLoading: isRolesLoading } = useRoles()
   const [createUser, { isLoading }] = useCreateUserMutation()
   const router = useRouter()
-  const dispatch = useDispatch()
-
   const initialValues = {
     first_name: "",
     last_name: "",

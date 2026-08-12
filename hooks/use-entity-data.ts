@@ -138,50 +138,6 @@ export function useImeVssData(enabled: boolean = true) {
   };
 }
 
-// IME-specific hook (separated from IME-VSS)
-export function useImeData(enabled: boolean = true) {
-  const params = useParams();
-  const imeId = params.id as string;
-
-  const {
-    data: ime,
-    isLoading,
-    error,
-    refetch,
-  } = useGetIMEVSSQuery(imeId, { skip: !enabled });
-
-  const { data: performanceData } = useGetReportQuery(
-    {
-      id: imeId,
-      extraPath: `ime_vss_performance/${imeId}`,
-    } as any,
-    { skip: !enabled },
-  );
-
-  const performance = useMemo(() => {
-    if (!performanceData || !ime) return null;
-
-    return {
-      target: performanceData.monthly_target || 0,
-      total_order_count: 0,
-      total_order_value: performanceData.cummulative_performance || 0,
-      total_orders: 0,
-      target_volume: performanceData.monthly_target || 0,
-      cummulative_performance: performanceData.cummulative_performance || 0,
-      daily_target: performanceData.daily_target || 0,
-      monthly_target: performanceData.monthly_target || 0,
-    };
-  }, [performanceData, ime]);
-
-  return {
-    entity: ime || null,
-    isLoading,
-    error: error ? String(error) : null,
-    performance,
-    refetch,
-  };
-}
-
 // VSS-specific hook
 export function useVssData(enabled: boolean = true) {
   const params = useParams();

@@ -22,8 +22,8 @@ function FieldTeamsLayoutContent({ children }: { children: React.ReactNode }) {
 	)
 
 	const getActiveTab = () => {
-		if (pathname.startsWith('/dashboard/field-agents/ime')) return 'ime'
-		if (pathname.startsWith('/dashboard/field-agents/vss')) return 'vss'
+		if (pathname === '/dashboard/field-agents/ime' || pathname.startsWith('/dashboard/field-agents/ime/')) return 'ime'
+		if (pathname === '/dashboard/field-agents/vss' || pathname.startsWith('/dashboard/field-agents/vss/')) return 'vss'
 		if (pathname.startsWith('/dashboard/field-agents/tpe')) return 'tpe'
 		if (pathname.startsWith('/dashboard/field-agents/promoters')) return 'promoters'
 		return tabs[0]?.id ?? 'ime'
