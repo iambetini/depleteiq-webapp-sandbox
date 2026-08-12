@@ -20,7 +20,7 @@ export default function WholesalersPage() {
 
   const deleteHandler = useCallback((uuid: string) => {
     handleDelete({
-      storeName: "wholesalers",
+      storeName: "businesses",
       uuid,
       onSuccess: refreshTable,
     })
@@ -28,52 +28,37 @@ export default function WholesalersPage() {
 
   const columns: ColumnDef<any, any>[] = [
     {
-      accessorKey: "business.name",
+      accessorKey: "name",
       header: "Business",
     },
     {
-      accessorKey: "user.first_name",
-      header: "Contact Person",
-      cell: ({ row }) => (
-        <div>
-          <div className="font-medium">
-            {row.original.user?.first_name} {row.original.user?.last_name}
-          </div>
-          <div className="text-sm text-muted-foreground">{row.original.user?.email}</div>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "business.address",
+      accessorKey: "address",
       header: "Address",
       cell: ({ row }) => (
-        <div className="max-w-[250px] truncate text-sm" title={row.original.business?.address}>
-          {row.original.business?.address || "Not provided"}
+        <div className="max-w-[250px] truncate text-sm" title={row.original.address ?? undefined}>
+          {row.original.address || "Not provided"}
         </div>
       ),
     },
     {
-      accessorKey: "business.stores.length",
-      header: "Stores Count",
+      accessorKey: "type",
+      header: "Type",
       cell: ({ row }) => (
-        <div className="font-medium text-center">
-          {row.original.business?.stores?.length || 0}
-        </div>
+        <span className="text-sm">{row.original.type || "—"}</span>
       ),
     },
     {
-      accessorKey: "tpe_user.first_name",
-      header: "TPE",
+      accessorKey: "email",
+      header: "Email",
       cell: ({ row }) => (
-        <div className="text-sm">
-          {row.original.tpe_user ? (
-              <div className="font-medium">
-                {row.original.tpe_user.first_name} {row.original.tpe_user.last_name}
-              </div>
-          ) : (
-            <span className="text-muted-foreground">Not assigned</span>
-          )}
-        </div>
+        <span className="text-sm">{row.original.email || "—"}</span>
+      ),
+    },
+    {
+      accessorKey: "phone",
+      header: "Phone",
+      cell: ({ row }) => (
+        <span className="text-sm">{row.original.phone || "—"}</span>
       ),
     },
     {
@@ -120,23 +105,12 @@ export default function WholesalersPage() {
 
       <DataTable
         ref={dataTableRef}
-        columns={columns}
-        searchKey="user.email"
-        searchPlaceholder="Search by email, name..."
-        store="wholesalers"
+        columns={columns as ColumnDef<unknown, unknown>[]}
+        searchKey="name"
+        searchPlaceholder="Search by name..."
+        store="businesses"
+        fixedQuery={{ type: "wholesaler" }}
         exportFileName="Wholesalers"
-        filters={[
-          {
-            type: "selectWithFetch",
-            label: "TPE",
-            param: "tpe_user_id",
-            fetchUrl: "/users?roles=tpe",
-            valueKey: "uuid",
-            searchParam: "search",
-            placeholder: "Select TPE",
-            labelFormatter: (item) => `${item.first_name ?? ""} ${item.last_name ?? ""}`.trim() || item.email,
-          },
-        ]}
       />
     </div>
   )

@@ -1,10 +1,11 @@
 "use client"
 
 import { createEntityLayout } from "@/lib/entity-layout-factory"
-import type { Wholesaler } from "@/types/wholesaler"
+import type { Business } from "@/types/business"
 
-const { Layout, useContext } = createEntityLayout<Wholesaler>({
-  storeName: "wholesalers",
+const { Layout, useContext } = createEntityLayout<Business>({
+  storeName: "businesses",
+  entityName: "Wholesaler",
   showErrorToast: false,
 })
 

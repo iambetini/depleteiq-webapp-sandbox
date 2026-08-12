@@ -21,9 +21,9 @@ function BusinessesLayoutContent({ children }: { children: React.ReactNode }) {
 		{ id: 'wholesalers', label: 'Wholesalers', path: `/dashboard/businesses/wholesalers` },
 	]
 
-	const tabs = allTabs.filter((tab) =>
-		hasPermissionForRoute(tab.path, session?.user?.role?.permissions)
-	)
+	// const tabs = allTabs.filter((tab) =>
+	// 	hasPermissionForRoute(tab.path, session?.user?.role?.permissions)
+	// )
 
 	const activeTab = getActiveTab()
 
@@ -31,7 +31,7 @@ function BusinessesLayoutContent({ children }: { children: React.ReactNode }) {
 		<div>
 			<div className="border-b border-gray-200 mb-6">
 				<nav className="-mb-px flex space-x-8" aria-label="Tabs">
-					{tabs.map((tab) => (
+					{allTabs.map((tab) => (
 						<button
 							key={tab.id}
 							onClick={() => router.push(tab.path)}

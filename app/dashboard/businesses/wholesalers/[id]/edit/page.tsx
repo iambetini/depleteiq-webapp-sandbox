@@ -5,9 +5,7 @@ import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { toast } from "@/hooks/use-toast"
 import { userFullNameEmailFormatter } from "@/lib/label-formatters"
 import { catchError } from "@/lib/utils"
-import {
-  useUpdateWholesalerMutation,
-} from "@/store/wholesalers"
+import { useUpdateBusinessMutation } from "@/store/businesses"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { SelectWithFetch } from "@/components/ui/select"
@@ -20,9 +18,9 @@ import * as Yup from "yup"
 import { useContext } from "../layout"
 
 export default function EditWholesalerPage() {
-  const { wholesaler, isLoading, fetchWholesaler } = useContext()
+  const { wholesaler, isLoading, fetchEntity } = useContext()
   const router = useRouter()
-  const [updateWholesaler, { isLoading: isUpdating }] = useUpdateWholesalerMutation()
+  const [updateWholesaler, { isLoading: isUpdating }] = useUpdateBusinessMutation()
   const [initialValues, setInitialValues] = useState({
     first_name: "",
     last_name: "",
@@ -37,21 +35,29 @@ export default function EditWholesalerPage() {
 
   useEffect(() => {
     if (wholesaler) {
+      const stores = (wholesaler.stores ?? []) as Array<{
+        uuid?: string
+        address?: string
+        type?: string
+        category?: string
+        market_id?: string
+        market?: { uuid?: string }
+      }>
       setInitialValues({
         first_name: wholesaler.user?.first_name || "",
         last_name: wholesaler.user?.last_name || "",
         email: wholesaler.user?.email || "",
         phone: wholesaler.user?.phone || "",
-        business_name: wholesaler.business?.name || "",
-        business_address: wholesaler.business?.address || "",
+        business_name: wholesaler.name || "",
+        business_address: wholesaler.address || "",
         tpe_user_id: wholesaler.tpe_user?.uuid || "",
-        stores: wholesaler.business?.stores?.map((store: any) => ({
+        stores: stores.map((store) => ({
           uuid: store.uuid,
           address: store.address || "",
           type: store.type || "",
           category: store.category || "",
           market_id: store.market?.uuid || store.market_id || "",
-        })) || [],
+        })) as any,
       })
     }
   }, [wholesaler])
@@ -82,7 +88,7 @@ export default function EditWholesalerPage() {
         title: "Success",
         description: "Wholesaler updated successfully",
       })
-      fetchWholesaler()
+      fetchEntity()
       router.push("/dashboard/businesses/wholesalers")
     } catch (error: any) {
       catchError(error, helpers.setFieldError)
