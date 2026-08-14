@@ -65,6 +65,7 @@ export default function UserFootprintPage() {
                     user_id: userId,
                     start_date: dateRange.start,
                     end_date: dateRange.end,
+                    per_page: "50"
                 })
                 const finalUrl = `/user-footprint?${params}`
 
