@@ -10,6 +10,11 @@ function FieldTeamsLayoutContent({ children }: { children: React.ReactNode }) {
 	const router = useRouter()
 	const { data: session } = useSession()
 
+	// Hide parent tabs for standalone footprint pages
+	if (pathname?.startsWith('/dashboard/field-agents/user-footprint')) {
+		return <div>{children}</div>
+	}
+
 	const allTabs = [
         { id: 'ime', label: 'IME', path: `/dashboard/field-agents/ime` },
         { id: 'vss', label: 'VSS', path: `/dashboard/field-agents/vss` },
