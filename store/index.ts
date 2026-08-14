@@ -11,6 +11,7 @@ import { promoSlabs } from "@/store/promo-slabs";
 import { qrCodes } from "@/store/qr-codes";
 import { stores } from "@/store/stores";
 import { tpes } from "@/store/tpe";
+import { vss } from "@/store/vss";
 import { wholesalers } from "@/store/wholesalers";
 import { AnyAction, configureStore } from "@reduxjs/toolkit";
 import { auditLogs } from "./audit-logs";
@@ -103,6 +104,7 @@ export const store = configureStore({
     [tpes.reducerPath]: tpes.reducer,
     [users.reducerPath]: users.reducer,
     [vehicles.reducerPath]: vehicles.reducer,
+    [vss.reducerPath]: vss.reducer,
     [warehouses.reducerPath]: warehouses.reducer,
     [webUsers.reducerPath]: webUsers.reducer,
     [wholesalers.reducerPath]: wholesalers.reducer,
@@ -138,6 +140,7 @@ export const store = configureStore({
       tpes.middleware,
       users.middleware,
       vehicles.middleware,
+      vss.middleware,
       warehouses.middleware,
       webUsers.middleware,
       wholesalers.middleware,
@@ -172,6 +175,7 @@ export const storeApis = {
   tpes,
   users,
   vehicles,
+  vss,
   warehouses,
   webUsers,
   wholesalers,

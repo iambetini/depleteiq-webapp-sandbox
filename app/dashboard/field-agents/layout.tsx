@@ -11,7 +11,8 @@ function FieldTeamsLayoutContent({ children }: { children: React.ReactNode }) {
 	const { data: session } = useSession()
 
 	const allTabs = [
-        { id: 'ime-vss', label: 'IME-VSS', path: `/dashboard/field-agents/ime-vss` },
+        { id: 'ime', label: 'IME', path: `/dashboard/field-agents/ime` },
+        { id: 'vss', label: 'VSS', path: `/dashboard/field-agents/vss` },
 		{ id: 'tpe', label: 'TPE', path: `/dashboard/field-agents/tpe` },
 		{ id: 'promoters', label: 'Promoters', path: `/dashboard/field-agents/promoters` },
 	]
@@ -21,10 +22,11 @@ function FieldTeamsLayoutContent({ children }: { children: React.ReactNode }) {
 	)
 
 	const getActiveTab = () => {
-		if (pathname.includes('/ime-vss')) return 'ime-vss'
-		if (pathname.includes('/tpe')) return 'tpe'
-		if (pathname.includes('/promoters')) return 'promoters'
-		return tabs[0]?.id ?? 'ime-vss'
+		if (pathname === '/dashboard/field-agents/ime' || pathname.startsWith('/dashboard/field-agents/ime/')) return 'ime'
+		if (pathname === '/dashboard/field-agents/vss' || pathname.startsWith('/dashboard/field-agents/vss/')) return 'vss'
+		if (pathname.startsWith('/dashboard/field-agents/tpe')) return 'tpe'
+		if (pathname.startsWith('/dashboard/field-agents/promoters')) return 'promoters'
+		return tabs[0]?.id ?? 'ime'
 	}
 
 	const activeTab = getActiveTab()

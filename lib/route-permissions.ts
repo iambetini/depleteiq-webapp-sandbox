@@ -159,35 +159,65 @@ export const routePermissions: RoutePermission[] = [
   },
 
 
-  // Field Teams
+  // Field Teams - IME
   {
-    href: "/dashboard/field-agents/ime-vss",
-    pattern: /^\/dashboard\/field-agents\/ime-vss$/,
+    href: "/dashboard/field-agents/ime",
+    pattern: /^\/dashboard\/field-agents\/ime$/,
     permissions: ["view distributors"],
   },
   {
-    href: "/dashboard/field-agents/ime-vss/create",
-    pattern: /^\/dashboard\/field-agents\/ime-vss\/create$/,
+    href: "/dashboard/field-agents/ime/create",
+    pattern: /^\/dashboard\/field-agents\/ime\/create$/,
     permissions: ["create distributors"],
   },
   {
-    href: "/dashboard/field-agents/ime-vss/[id]",
-    pattern: /^\/dashboard\/field-agents\/ime-vss\/\d+$/,
+    href: "/dashboard/field-agents/ime/[id]",
+    pattern: /^\/dashboard\/field-agents\/ime\/[\w-]+$/,
     permissions: ["view distributors"],
   },
   {
-    href: "/dashboard/field-agents/ime-vss/[id]/manage",
-    pattern: /^\/dashboard\/field-agents\/ime-vss\/\d+\/manage$/,
+    href: "/dashboard/field-agents/ime/[id]/manage",
+    pattern: /^\/dashboard\/field-agents\/ime\/[\w-]+\/manage$/,
     permissions: ["edit distributors"],
   },
   {
-    href: "/dashboard/field-agents/ime-vss/[id]/distributors",
-    pattern: /^\/dashboard\/field-agents\/ime-vss\/\d+\/distributors$/,
+    href: "/dashboard/field-agents/ime/[id]/distributors",
+    pattern: /^\/dashboard\/field-agents\/ime\/[\w-]+\/distributors$/,
     permissions: ["view distributors"],
   },
   {
-    href: "/dashboard/field-agents/ime-vss/[id]/orders",
-    pattern: /^\/dashboard\/field-agents\/ime-vss\/\d+\/orders$/,
+    href: "/dashboard/field-agents/ime/[id]/orders",
+    pattern: /^\/dashboard\/field-agents\/ime\/[\w-]+\/orders$/,
+    permissions: ["view orders"],
+  },
+  {
+    href: "/dashboard/field-agents/vss",
+    pattern: /^\/dashboard\/field-agents\/vss$/,
+    permissions: ["view distributors"],
+  },
+  {
+    href: "/dashboard/field-agents/vss/create",
+    pattern: /^\/dashboard\/field-agents\/vss\/create$/,
+    permissions: ["create distributors"],
+  },
+  {
+    href: "/dashboard/field-agents/vss/[id]",
+    pattern: /^\/dashboard\/field-agents\/vss\/[\w-]+$/,
+    permissions: ["view distributors"],
+  },
+  {
+    href: "/dashboard/field-agents/vss/[id]/manage",
+    pattern: /^\/dashboard\/field-agents\/vss\/[\w-]+\/manage$/,
+    permissions: ["edit distributors"],
+  },
+  {
+    href: "/dashboard/field-agents/vss/[id]/distributors",
+    pattern: /^\/dashboard\/field-agents\/vss\/[\w-]+\/distributors$/,
+    permissions: ["view distributors"],
+  },
+  {
+    href: "/dashboard/field-agents/vss/[id]/orders",
+    pattern: /^\/dashboard\/field-agents\/vss\/[\w-]+\/orders$/,
     permissions: ["view orders"],
   },
   {

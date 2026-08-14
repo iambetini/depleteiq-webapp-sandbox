@@ -29,17 +29,17 @@ function SettingsLayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <div>
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+      <div className="mb-6">
+        <nav className="inline-flex items-center gap-1 rounded-2xl bg-[#eef0f3] p-1.5 border border-gray-200/80" aria-label="Tabs">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => router.push(tab.path)}
               className={cn(
-                "whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200",
+                "whitespace-nowrap px-4 py-2 rounded-xl text-sm transition-all duration-200",
                 activeTab === tab.id
-                  ? "border-orange-500 text-orange-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  ? "bg-white text-gray-900 font-bold shadow-sm border border-gray-200/80"
+                  : "text-gray-500 font-medium hover:text-gray-800"
               )}
               aria-current={activeTab === tab.id ? 'page' : undefined}
             >

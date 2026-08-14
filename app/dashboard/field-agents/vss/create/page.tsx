@@ -7,7 +7,6 @@ import { toast } from "@/hooks/use-toast"
 import { catchError } from "@/lib/utils"
 import { useCreateUserMutation } from "@/store/users"
 import { useRouter } from "next/navigation"
-import { useDispatch } from "react-redux"
 import * as Yup from "yup"
 
 interface Role {
@@ -15,12 +14,10 @@ interface Role {
   name: string
 }
 
-export default function CreateImeVssPage() {
+export default function CreateVssPage() {
   const { roles, isLoading: isRolesLoading } = useRoles()
   const [createUser, { isLoading }] = useCreateUserMutation()
   const router = useRouter()
-  const dispatch = useDispatch()
-
   const initialValues = {
     first_name: "",
     last_name: "",
@@ -48,7 +45,7 @@ export default function CreateImeVssPage() {
       await createUser(values).unwrap()
       toast({
         title: "Success",
-        description: "IME-VSS created successfully",
+        description: "VSS created successfully",
       })
       helpers.resetForm()
     } catch (error: any) {
@@ -101,7 +98,7 @@ export default function CreateImeVssPage() {
       required: true,
       placeholder: "Select role",
       options: roles
-        .filter((role) => ["ime", "vss"].includes(role.name.toLowerCase()))
+        .filter((role) => role.name.toLowerCase() === "vss")
         .map((role) => ({
           label: role.name,
           value: role.uuid,
@@ -125,16 +122,16 @@ export default function CreateImeVssPage() {
 
   return (
     <div>
-      <ViewPageHeader title="Create IME-VSS" description="Add a new IME-VSS to the system" />
+      <ViewPageHeader title="Create VSS" description="Add a new VSS to the system" />
       <UserForm
-        title="IME-VSS Information"
-        description="Enter the details for the new IME-VSS"
+        title="VSS Information"
+        description="Enter the details for the new VSS"
         initialValues={initialValues}
         validationSchema={validationSchema}
         fields={fields}
         isLoading={isLoading || isRolesLoading}
         onSubmit={handleSubmit}
-        submitLabel="Create IME-VSS"
+        submitLabel="Create VSS"
         onCancel={() => router.back()}
       />
     </div>

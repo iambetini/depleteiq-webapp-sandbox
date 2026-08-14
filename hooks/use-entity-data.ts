@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useGetDistributorQuery } from "@/store/distributors";
 import { useGetIMEVSSQuery } from "@/store/ime-vss";
+import { useGetVSSQuery } from "@/store/vss";
 import { useGetReportQuery } from "@/store/reports";
 import { useGetTargetQuery } from "@/store/targets";
 import { useMemo } from "react";
@@ -130,6 +131,50 @@ export function useImeVssData(enabled: boolean = true) {
 
   return {
     entity: imeVss || null,
+    isLoading,
+    error: error ? String(error) : null,
+    performance,
+    refetch,
+  };
+}
+
+// VSS-specific hook
+export function useVssData(enabled: boolean = true) {
+  const params = useParams();
+  const vssId = params.id as string;
+
+  const {
+    data: vss,
+    isLoading,
+    error,
+    refetch,
+  } = useGetVSSQuery(vssId, { skip: !enabled });
+
+  const { data: performanceData } = useGetReportQuery(
+    {
+      id: vssId,
+      extraPath: `ime_vss_performance/${vssId}`,
+    } as any,
+    { skip: !enabled },
+  );
+
+  const performance = useMemo(() => {
+    if (!performanceData || !vss) return null;
+
+    return {
+      target: performanceData.monthly_target || 0,
+      total_order_count: 0,
+      total_order_value: performanceData.cummulative_performance || 0,
+      total_orders: 0,
+      target_volume: performanceData.monthly_target || 0,
+      cummulative_performance: performanceData.cummulative_performance || 0,
+      daily_target: performanceData.daily_target || 0,
+      monthly_target: performanceData.monthly_target || 0,
+    };
+  }, [performanceData, vss]);
+
+  return {
+    entity: vss || null,
     isLoading,
     error: error ? String(error) : null,
     performance,

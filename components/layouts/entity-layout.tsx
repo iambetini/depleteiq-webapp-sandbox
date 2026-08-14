@@ -7,6 +7,7 @@ import { notFound } from "next/navigation"
 import { usePathname, useRouter, useParams } from "next/navigation"
 import { useDistributorData } from "@/hooks/use-entity-data"
 import { useImeVssData } from "@/hooks/use-entity-data"
+import { useVssData } from "@/hooks/use-entity-data"
 import { useTargetData } from "@/hooks/use-entity-data"
 
 export interface TabConfig {
@@ -17,7 +18,7 @@ export interface TabConfig {
 
 interface EntityLayoutProps {
   children: React.ReactNode
-  entityType: 'distributor' | 'ime-vss' | 'target' | 'promoter'
+  entityType: 'distributor' | 'ime' | 'vss' | 'target' | 'promoter'
   tabs: TabConfig[]
 }
 
@@ -28,13 +29,15 @@ function EntityLayoutContent({ children, entityType, tabs }: EntityLayoutProps) 
 
   // Always call all hooks to avoid conditional hook calls
   const distributorData = useDistributorData(entityType === 'distributor')
-  const imeVssData = useImeVssData(entityType === 'ime-vss')
+  const imeVssData = useImeVssData(entityType === 'ime')
+  const vssData = useVssData(entityType === 'vss')
   const targetData = useTargetData(entityType === 'target')
   // Select the appropriate data based on entity type
   const { entity, isLoading, error } =
     entityType === 'distributor' ? distributorData :
-      entityType === 'ime-vss' ? imeVssData :
-        targetData
+      entityType === 'ime' ? imeVssData :
+        entityType === 'vss' ? vssData :
+          targetData
 
   if (isLoading) {
     return <LoadingSkeleton />
@@ -63,11 +66,17 @@ function EntityLayoutContent({ children, entityType, tabs }: EntityLayoutProps) 
         title: distributor.business_name || "Distributor",
         description: distributor.user ? `${distributor.user.first_name} ${distributor.user.last_name}` : ""
       }
-    } else if (entityType === 'ime-vss') {
-      const imeVss = entity as any
+    } else if (entityType === 'ime') {
+      const ime = entity as any
       return {
-        title: `${imeVss.first_name} ${imeVss.last_name}` || "IME-VSS",
-        description: imeVss.email || ""
+        title: `${ime.first_name} ${ime.last_name}` || "IME",
+        description: ime.email || ""
+      }
+    } else if (entityType === 'vss') {
+      const vss = entity as any
+      return {
+        title: `${vss.first_name} ${vss.last_name}` || "VSS",
+        description: vss.email || ""
       }
     } else {
       const target = entity as any
@@ -131,20 +140,39 @@ export function DistributorLayout({ children }: { children: React.ReactNode }) {
   )
 }
 
-// IME-VSS Layout
+// ime Layout
 export function ImeVssLayout({ children }: { children: React.ReactNode }) {
   const params = useParams()
   const imeVssId = params.id as string
 
   const tabs: TabConfig[] = [
-    { id: 'view', label: 'Overview', path: `/dashboard/field-agents/ime-vss/${imeVssId}` },
-    { id: 'orders', label: 'Orders', path: `/dashboard/field-agents/ime-vss/${imeVssId}/orders` },
-    { id: 'distributors', label: 'Distributors', path: `/dashboard/field-agents/ime-vss/${imeVssId}/distributors` },
-    { id: 'manage', label: 'Manage', path: `/dashboard/field-agents/ime-vss/${imeVssId}/manage` },
+    { id: 'view', label: 'Overview', path: `/dashboard/field-agents/ime/${imeVssId}` },
+    { id: 'orders', label: 'Orders', path: `/dashboard/field-agents/ime/${imeVssId}/orders` },
+    { id: 'distributors', label: 'Distributors', path: `/dashboard/field-agents/ime/${imeVssId}/distributors` },
+    { id: 'manage', label: 'Manage', path: `/dashboard/field-agents/ime/${imeVssId}/manage` },
   ]
 
   return (
-    <EntityLayoutContent entityType="ime-vss" tabs={tabs}>
+    <EntityLayoutContent entityType="ime" tabs={tabs}>
+      {children}
+    </EntityLayoutContent>
+  )
+}
+
+// VSS Layout
+export function VssLayout({ children }: { children: React.ReactNode }) {
+  const params = useParams()
+  const vssId = params.id as string
+
+  const tabs: TabConfig[] = [
+    { id: 'view', label: 'Overview', path: `/dashboard/field-agents/vss/${vssId}` },
+    { id: 'orders', label: 'Orders', path: `/dashboard/field-agents/vss/${vssId}/orders` },
+    { id: 'distributors', label: 'Distributors', path: `/dashboard/field-agents/vss/${vssId}/distributors` },
+    { id: 'manage', label: 'Manage', path: `/dashboard/field-agents/vss/${vssId}/manage` },
+  ]
+
+  return (
+    <EntityLayoutContent entityType="vss" tabs={tabs}>
       {children}
     </EntityLayoutContent>
   )

@@ -7,9 +7,9 @@ import { DISTRIBUTOR_FILTERS } from "@/lib/filters/distributors"
 import { useParams } from "next/navigation"
 import React, { useRef } from "react"
 
-export default function ImeVssDistributorsPage() {
+export default function ImeDistributorsPage() {
   const routeParams = useParams()
-  const imeVssId = routeParams?.id as string
+  const imeId = routeParams?.id as string
   const dataTableRef = useRef<{ refresh: () => void }>(null)
 
   const refreshTable = () => {
@@ -18,8 +18,7 @@ export default function ImeVssDistributorsPage() {
 
   const { columns } = useDistributorColumns(refreshTable)
 
-  // Assuming distributors endpoint supports filtering by ime_vss
-  const fixedQuery = React.useMemo(() => ({ ime_vss: imeVssId }), [imeVssId])
+  const fixedQuery = React.useMemo(() => ({ ime_vss: imeId }), [imeId])
 
   return (
     <div>
@@ -30,7 +29,7 @@ export default function ImeVssDistributorsPage() {
         searchPlaceholder="Search distributors..."
         store="distributors"
         fixedQuery={fixedQuery}
-        exportFileName="IME-VSS-Distributors"
+        exportFileName="IME-Distributors"
         filters={DISTRIBUTOR_FILTERS}
       />
     </div>

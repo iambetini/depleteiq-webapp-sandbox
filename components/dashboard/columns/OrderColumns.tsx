@@ -108,7 +108,15 @@ const ActionsCell = React.memo(
     const canCancelOrder =
       AUTHORIZED_ROLES.includes(userRole as any) &&
       (order.status === "pending" || order.status === "update_requested");
-    const showViewImeVss = !currentPath.includes("/ime-vss/");
+    const imeVssRoutes = [
+      "/dashboard/field-agents/ime/",
+      "/dashboard/field-agents/vss/",
+    ];
+    const showViewImeVss = !imeVssRoutes.some(route => currentPath.includes(route));
+    const imeRole = order?.ime_vss?.role?.name?.toLowerCase() === 'vss' ? 'vss' : 'ime';
+    const agentPath = `/dashboard/field-agents/${imeRole}/${order?.ime_vss?.uuid}`;
+    const agentLabel = imeRole === 'vss' ? 'View VSS' : 'View IME';
+
     const showViewDistributor = !currentPath.includes("/distributors/");
 
     const onCancelOrder = async () => {
@@ -161,15 +169,13 @@ const ActionsCell = React.memo(
                 Cancel Order
               </DropdownMenuItem>
             )}
-            {showViewImeVss && order.ime_vss?.uuid && (
+            {showViewImeVss && order?.ime_vss?.uuid && (
               <DropdownMenuItem
                 className="cursor-pointer"
-                onClick={() =>
-                  router.push(`/dashboard/field-agents/ime-vss/${order.ime_vss.uuid}`)
-                }
+                onClick={() => router.push(agentPath)}
               >
                 <Eye className="mr-2 h-4 w-4" />
-                View IME-VSS
+                {agentLabel}
               </DropdownMenuItem>
             )}
             {showViewDistributor && order.distributor_user?.uuid && (

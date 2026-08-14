@@ -13,14 +13,14 @@ import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import React, { useRef, useState, useCallback } from "react"
 
-interface ImeVss extends User { }
+interface Ime extends User { }
 
-const roles = "ime,vss"
+const roles = "ime"
 
 function getColumns(
   router: any,
   handleDelete: (uuid: string) => void
-): ColumnDef<ImeVss>[] {
+): ColumnDef<Ime>[] {
   return [
     {
       accessorKey: "first_name",
@@ -37,11 +37,6 @@ function getColumns(
     {
       accessorKey: "phone",
       header: "Phone",
-    },
-    {
-      accessorKey: "role.name",
-      header: "Role",
-      cell: ({ row }) => <Badge variant="secondary">{row.original.role?.name?.toUpperCase() || "No Role"}</Badge>,
     },
     {
       accessorKey: "market",
@@ -76,11 +71,11 @@ function getColumns(
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => router.push(`/dashboard/field-agents/ime-vss/${row.original.uuid}`)}>
+            <DropdownMenuItem onClick={() => router.push(`/dashboard/field-agents/ime/${row.original.uuid}`)}>
               <Eye className="mr-2 h-4 w-4" />
               View Details
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push(`/dashboard/field-agents/ime-vss/${row.original.uuid}/manage`)}>
+            <DropdownMenuItem onClick={() => router.push(`/dashboard/field-agents/ime/${row.original.uuid}/manage`)}>
               <Edit className="mr-2 h-4 w-4" />
               Manage
             </DropdownMenuItem>
@@ -98,7 +93,7 @@ function getColumns(
   ]
 }
 
-export default function ImeVssPage() {
+export default function ImePage() {
   const router = useRouter()
   const dataTableRef = useRef<{ refresh: () => void }>(null)
 
@@ -110,6 +105,7 @@ export default function ImeVssPage() {
     handleDelete({
       storeName: "imeVss",
       uuid,
+      entityLabel: "IME",
       onSuccess: refreshTable,
     })
   }, [refreshTable])
@@ -124,34 +120,24 @@ export default function ImeVssPage() {
   return (
     <div>
       <ListPageHeader
-        title="IME-VSS"
-        description="Manage IME-VSS(s) and their permissions"
+        title="IME"
+        description="Manage IME(s) and their permissions"
         showAddButton={true}
-        onAdd={() => router.push("/dashboard/field-agents/ime-vss/create")}
-        addLabel="Add IME-VSS"
+        onAdd={() => router.push("/dashboard/field-agents/ime/create")}
+        addLabel="Add IME"
         showBulkAddButton={true}
         onBulkAdd={() => setBulkModalOpen(true)}
-        bulkAddLabel="Add Bulk IME/VSS"
+        bulkAddLabel="Add Bulk IME"
       />
 
       <DataTable
         ref={dataTableRef}
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="first_name"
-        searchPlaceholder="Search IME-VSS(s)..."
+        searchPlaceholder="Search IME(s)..."
         store="imeVss"
         fixedQuery={{ roles }}
         filters={[
-          {
-            type: "select",
-            label: "Role",
-            param: "roles",
-            options: [
-              { label: "All Roles", value: roles },
-              { label: "IME", value: "ime" },
-              { label: "VSS", value: "vss" },
-            ],
-          },
           {
             type: "selectWithFetch",
             label: "Market",
@@ -164,17 +150,17 @@ export default function ImeVssPage() {
             labelFormatter: (item: any) => `${item.full_name}`,
           },
         ]}
-        exportFileName="IME-VSS"
+        exportFileName="IME"
       />
 
       <BulkUploadModal
         open={bulkModalOpen}
         onClose={() => setBulkModalOpen(false)}
-        sampleUrl="/sample-ime-vss.xlsx"
+        sampleUrl="/sample-ime.xlsx"
         apiUrl="/users/bulk-store"
         onSuccess={refreshTable}
-        title="Bulk IME/VSS Upload"
-        label="Upload Bulk IME/VSS (.xlsx)"
+        title="Bulk IME Upload"
+        label="Upload Bulk IME (.xlsx)"
       />
     </div>
   )

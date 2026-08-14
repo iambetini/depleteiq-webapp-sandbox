@@ -102,7 +102,7 @@ export const sidebarItems: SidebarItem[] = [
   {
     title: "Field Agents",
     href: "/dashboard/field-agents",
-    permissions: ["view ime-vss", "view tpe", "view promoters"],
+    permissions: ["view distributors", "view tpe", "view promoters"],
     icon: "Users",
   },
   {
