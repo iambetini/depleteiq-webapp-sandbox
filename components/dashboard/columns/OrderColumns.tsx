@@ -108,7 +108,15 @@ const ActionsCell = React.memo(
     const canCancelOrder =
       AUTHORIZED_ROLES.includes(userRole as any) &&
       (order.status === "pending" || order.status === "update_requested");
-    const showViewImeVss = !currentPath.includes("/ime-vss/") && !currentPath.includes("/dashboard/field-agents/ime/") && !currentPath.includes("/dashboard/field-agents/vss/");
+    const imeVssRoutes = [
+      "/dashboard/field-agents/ime/",
+      "/dashboard/field-agents/vss/",
+    ];
+    const showViewImeVss = !imeVssRoutes.some(route => currentPath.includes(route));
+    const imeRole = order?.ime_vss?.role?.name?.toLowerCase() === 'vss' ? 'vss' : 'ime';
+    const agentPath = `/dashboard/field-agents/${imeRole}/${order?.ime_vss?.uuid}`;
+    const agentLabel = imeRole === 'vss' ? 'View VSS' : 'View IME';
+
     const showViewDistributor = !currentPath.includes("/distributors/");
 
     const onCancelOrder = async () => {
@@ -161,22 +169,15 @@ const ActionsCell = React.memo(
                 Cancel Order
               </DropdownMenuItem>
             )}
-            {showViewImeVss && order.ime_vss?.uuid && (() => {
-              const roleName = order.ime_vss?.role?.name?.toLowerCase()
-              const agentPath = roleName === 'vss'
-                ? `/dashboard/field-agents/vss/${order.ime_vss.uuid}`
-                : `/dashboard/field-agents/ime/${order.ime_vss.uuid}`
-              const agentLabel = roleName === 'vss' ? 'View VSS' : 'View IME'
-              return (
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onClick={() => router.push(agentPath)}
-                >
-                  <Eye className="mr-2 h-4 w-4" />
-                  {agentLabel}
-                </DropdownMenuItem>
-              )
-            })()}
+            {showViewImeVss && order?.ime_vss?.uuid && (
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => router.push(agentPath)}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                {agentLabel}
+              </DropdownMenuItem>
+            )}
             {showViewDistributor && order.distributor_user?.uuid && (
               <DropdownMenuItem
                 className="cursor-pointer"
