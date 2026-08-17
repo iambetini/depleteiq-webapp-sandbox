@@ -109,19 +109,19 @@ export function BrandForm({
         >
           {({ values, handleChange, setFieldValue, isSubmitting, resetForm }) => (
             <Card className="shadow-2xl border-0 bg-white/90 backdrop-blur-sm">
-              <CardHeader className="bg-gradient-to-r from-[#ff6600] to-[#ff6b00] text-white rounded-t-lg">
+              <CardHeader className="bg-gray-100 text-gray-900 rounded-t-lg">
                 {/* <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-6 lg:space-y-0">
-                <div className="text-center lg:text-left">
-                  <CardTitle className="text-2xl font-bold text-white mb-2">
-                    {mode === "create" ? "Create New Brand" : "Edit Brand"}
-                  </CardTitle>
-                  <CardDescription className="text-orange-100 text-base">
-                    {mode === "create"
-                      ? "Enter the details for the new brand and configure packages"
-                      : "Update the brand information and package details"}
-                  </CardDescription>
-                </div>
-              </div> */}
+  <div className="text-center lg:text-left">
+    <CardTitle className="text-2xl font-bold text-gray-900 mb-2">
+      {mode === "create" ? "Create New Brand" : "Edit Brand"}
+    </CardTitle>
+    <CardDescription className="text-gray-600 text-base">
+      {mode === "create"
+        ? "Enter the details for the new brand and configure packages"
+        : "Update the brand information and package details"}
+    </CardDescription>
+  </div>
+</div> */}
 
                 <div className="flex flex-col items-center space-y-4 mt-8">
                   <div className="relative group cursor-pointer">
@@ -143,8 +143,8 @@ export function BrandForm({
 
                     <label htmlFor="image" className="flex items-center justify-center relative group">
                       {isSubmitting && hasImageChanged ? (
-                        <div className="h-56 w-56 flex items-center justify-center rounded-2xl border-2 border-dashed border-white/30 bg-white/10 backdrop-blur-sm">
-                          <Loader2 className="h-10 w-10 animate-spin text-white" />
+                        <div className="h-56 w-56 flex items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-white shadow-sm">
+                          <Loader2 className="h-10 w-10 animate-spin text-gray-600" />
                         </div>
                       ) : previewUrl ? (
                         <>
@@ -153,7 +153,7 @@ export function BrandForm({
                             alt="Brand Image"
                             width={224}
                             height={224}
-                            className="h-56 w-56 rounded-2xl object-cover border-4 border-white shadow-2xl"
+                            className="h-56 w-56 rounded-2xl object-cover border-4 border-white shadow-lg"
                           />
                           <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-all duration-300 rounded-2xl">
                             <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg">
@@ -162,27 +162,30 @@ export function BrandForm({
                           </div>
                         </>
                       ) : (
-                        <div className="h-56 w-56 flex items-center justify-center rounded-2xl border-2 border-dashed border-white/30 bg-white/10 backdrop-blur-sm text-white hover:border-white/50 hover:bg-white/20 transition-all duration-300">
+                        <div className="h-56 w-56 flex items-center justify-center rounded-2xl border-2 border-dashed border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-50 transition-all duration-300 shadow-sm">
                           <div className="text-center px-6">
-                            <Upload className="h-12 w-12 mx-auto mb-3 text-white" />
-                            <span className="text-white font-medium">Add Brand Image</span>
+                            <Upload className="h-12 w-12 mx-auto mb-3 text-gray-500" />
+                            <span className="text-gray-700 font-medium">Add Brand Image</span>
                           </div>
                         </div>
                       )}
                     </label>
                   </div>
+
                   {previewUrl && !isSubmitting && (
-                    <div className="text-sm text-orange-100 text-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
+                    <div className="text-sm text-gray-600 text-center bg-white border border-gray-200 px-4 py-2 rounded-lg shadow-sm">
                       {hasImageChanged ? "Image selected - will upload on form submission" : "Click the image above to change"}
                     </div>
                   )}
+
                   {isSubmitting && hasImageChanged && (
-                    <div className="text-sm text-orange-100 text-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
+                    <div className="text-sm text-gray-600 text-center bg-white border border-gray-200 px-4 py-2 rounded-lg shadow-sm">
                       Uploading image...
                     </div>
                   )}
+
                   {!previewUrl && !isSubmitting && (
-                    <div className="text-sm text-orange-100 text-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
+                    <div className="text-sm text-gray-600 text-center bg-white border border-gray-200 px-4 py-2 rounded-lg shadow-sm">
                       Upload a brand image (JPG, PNG, GIF - Max 5MB)
                     </div>
                   )}
