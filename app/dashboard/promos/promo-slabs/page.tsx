@@ -38,7 +38,7 @@ export default function PromoSlabsPage() {
     {
       accessorKey: 'promo.type',
       header: 'Promo',
-      cell: ({ row }: any) => row.original.promo?.type || '-',
+      cell: ({ row }: any) => row.original.promo?.title || '-',
     },
     {
       accessorKey: 'title',
