@@ -2,6 +2,7 @@ import { User } from "@/types/user";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { apiClient } from "./api-client";
+import { isWeakPassword } from "./weak-passwords";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -66,6 +67,7 @@ export const authOptions: NextAuthOptions = {
                 }
               : undefined,
             accessToken: token,
+            mustChangePassword: isWeakPassword(credentials.password),
           } as User & { accessToken: string };
         } catch (error: any) {
           throw new Error(error?.message || "Authentication failed");
@@ -74,10 +76,13 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         const { accessToken, ...userWithoutToken } = user as any;
         Object.assign(token, { user: userWithoutToken, accessToken });
+      }
+      if (trigger === "update" && (session as any)?.mustChangePassword === false) {
+        token.user = { ...token.user, mustChangePassword: false };
       }
       return token;
     },

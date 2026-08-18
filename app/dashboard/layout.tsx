@@ -8,7 +8,7 @@ import Logo from "@/images/orbit-logo.png"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import type React from "react"
 import { useEffect } from "react"
 
@@ -20,12 +20,23 @@ export default function DashboardLayout({
 }) {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/login")
     }
   }, [status, router])
+
+  useEffect(() => {
+    if (
+      status === "authenticated" &&
+      session?.user?.mustChangePassword &&
+      pathname !== "/dashboard/change-password"
+    ) {
+      router.push("/dashboard/change-password")
+    }
+  }, [status, session, pathname, router])
 
   if (status === "loading") {
     return (
