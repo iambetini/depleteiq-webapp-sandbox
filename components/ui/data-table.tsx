@@ -365,9 +365,14 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
       } else {
         // Regular column
         if (columnDef.showByDefault === false) {
-          const columnId = columnDef.id || columnDef.accessorKey;
-          if (columnId && columnVisibilityState[columnId] !== false) {
-            visibilityUpdates[columnId] = false;
+          const tableCol = allTableColumns.find(
+            (col: any) =>
+              (columnDef.accessorKey &&
+                col.columnDef.accessorKey === columnDef.accessorKey) ||
+              (columnDef.id && col.columnDef.id === columnDef.id),
+          );
+          if (tableCol && columnVisibilityState[tableCol.id] !== false) {
+            visibilityUpdates[tableCol.id] = false;
             hasUpdates = true;
           }
         }
@@ -636,6 +641,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                           setPendingFilterState({});
                           setFilterState({});
                           setActiveFilters({});
+                          setPageIndex(0);
                           setFilterDropdownOpen(false);
                         }}
                         data-testid="filter-reset"
@@ -646,6 +652,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                         size="sm"
                         onClick={() => {
                           setFilterState(pendingFilterState);
+                          setPageIndex(0);
                           setFilterDropdownOpen(false);
                         }}
                         data-testid="filter-apply"
