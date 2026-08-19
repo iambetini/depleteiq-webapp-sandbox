@@ -7,6 +7,7 @@ import { PasswordField } from "@/components/ui/password-field"
 import { toast } from "@/hooks/use-toast"
 import { apiClient } from "@/lib/api-client"
 import { catchError } from "@/lib/utils"
+import { isWeakPassword } from "@/lib/weak-passwords"
 import { Form, Formik } from "formik"
 import { Key, ShieldAlert } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
@@ -22,7 +23,14 @@ const INITIAL_VALUES = {
 
 const VALIDATION_SCHEMA = Yup.object({
   current_password: Yup.string().required("Current password is required"),
-  new_password: Yup.string().min(8, "Password must be at least 8 characters").required("New password is required"),
+  new_password: Yup.string()
+    .min(8, "Password must be at least 8 characters")
+    .test(
+      "not-weak",
+      "Password is too weak. Please choose a stronger password.",
+      (value) => !isWeakPassword(value ?? "")
+    )
+    .required("New password is required"),
   confirm: Yup.string()
     .oneOf([Yup.ref("new_password")], "Passwords must match")
     .required("Confirm your new password"),
@@ -46,7 +54,7 @@ export default function ChangePasswordPage() {
         new_password: values.new_password,
         new_password_confirmation: values.confirm,
       })
-      await update({ mustChangePassword: false })
+      await update({ mustChangePassword: isWeakPassword(values.new_password) })
       toast({ title: "Success", description: "Password updated successfully!" })
       router.push("/dashboard")
     } catch (err: any) {

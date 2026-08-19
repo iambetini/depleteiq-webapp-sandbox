@@ -38,7 +38,12 @@ export default function DashboardLayout({
     }
   }, [status, session, pathname, router])
 
-  if (status === "loading") {
+  if (
+    status === "loading" ||
+    (status === "authenticated" &&
+      session?.user?.mustChangePassword &&
+      pathname !== "/dashboard/change-password")
+  ) {
     return (
       <div className="min-h-screen bg-[#f8f8f8] flex items-center justify-center">
         <div className="text-center flex flex-col items-center">
