@@ -46,6 +46,7 @@ export default function ParticipantsPage() {
     {
       accessorKey: "customer.phone_network",
       header: "Network",
+      showByDefault: false,
       cell: ({ row }) => (
         <Badge variant="secondary" className="capitalize">
           {row.original.customer?.phone_network || "Unknown"}
@@ -142,6 +143,30 @@ export default function ParticipantsPage() {
         store="participants"
         exportFileName="Sign ups"
         filters={[
+          {
+            type: "selectWithFetch",
+            label: "Promo",
+            param: "promo_id",
+            fetchUrl: "/promos",
+            valueKey: "uuid",
+            labelKey: "title",
+            searchParam: "search",
+            placeholder: "Select Promo",
+          },
+          {
+            type: "selectWithFetch",
+            label: "Promoter",
+            param: "promoter_id",
+            fetchUrl: "/promoters",
+            valueKey: "uuid",
+            labelFormatter: (item: any) =>
+              item.user?.full_name ||
+              `${item.user?.first_name || ""} ${item.user?.last_name || ""}`.trim() ||
+              item.full_name ||
+              "Unknown Promoter",
+            searchParam: "search",
+            placeholder: "Select Promoter",
+          },
           {
             type: "selectWithFetch",
             label: "Market",
