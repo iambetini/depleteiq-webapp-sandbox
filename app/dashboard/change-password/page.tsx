@@ -54,7 +54,7 @@ export default function ChangePasswordPage() {
         new_password: values.new_password,
         new_password_confirmation: values.confirm,
       })
-      await update({ mustChangePassword: isWeakPassword(values.new_password) })
+      await update({ mustChangePassword: false })
       toast({ title: "Success", description: "Password updated successfully!" })
       router.push("/dashboard")
     } catch (err: any) {

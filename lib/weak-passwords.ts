@@ -55,9 +55,12 @@ export const WEAK_PASSWORDS: string[] = [
   "Password123",
 ]
 
+const WEAK_PASSWORD_SET: Set<string> = new Set(
+  WEAK_PASSWORDS.map((weak) => weak.trim().toLowerCase()).filter(Boolean)
+)
+
 export function isWeakPassword(password: string): boolean {
-  const trimmed = (password || "").trim()
+  const trimmed = (password || "").trim().toLowerCase()
   if (!trimmed) return false
-  const lower = trimmed.toLowerCase()
-  return WEAK_PASSWORDS.some((weak) => weak.toLowerCase() === lower)
+  return WEAK_PASSWORD_SET.has(trimmed)
 }
