@@ -17,4 +17,7 @@ export interface User {
   has_distributor: boolean;
   created_at: string;
   mustChangePassword?: boolean;
+  refresh_token?: string;
+  token_obtained_at?: number;
+  expires_in?: number;
 }
