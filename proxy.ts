@@ -1,9 +1,9 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 import {
-    hasRequiredPermissions,
-    getUserPermissions,
-    getPermissionsForPath,
+  hasRequiredPermissions,
+  getUserPermissions,
+  getPermissionsForPath,
 } from "@/lib/route-permissions";
 
 export default withAuth(
@@ -16,8 +16,21 @@ export default withAuth(
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 
-    // Skip permission checks for no-permissions page to avoid redirect loops
-    if (pathname === "/dashboard/no-permissions") {
+    // Force password change before any other dashboard access
+    if (
+      token?.user?.mustChangePassword &&
+      pathname !== "/dashboard/change-password"
+    ) {
+      return NextResponse.redirect(
+        new URL("/dashboard/change-password", req.url),
+      );
+    }
+
+    // Skip permission checks for routes accessible to all authenticated users
+    if (
+      pathname === "/dashboard/no-permissions" ||
+      pathname === "/dashboard/change-password"
+    ) {
       return NextResponse.next();
     }
 

@@ -131,6 +131,11 @@ export const routePermissions: RoutePermission[] = [
     permissions: [],
   },
   {
+    href: "/dashboard/change-password",
+    pattern: /^\/dashboard\/change-password$/,
+    permissions: [],
+  },
+  {
     href: "/dashboard/profile",
     pattern: /^\/dashboard\/profile$/,
     permissions: ["view dashboard"],

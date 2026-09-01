@@ -8,7 +8,7 @@ import Logo from "@/images/orbit-logo.png"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import type React from "react"
 import { useEffect } from "react"
 
@@ -20,6 +20,7 @@ export default function DashboardLayout({
 }) {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const pathname = usePathname()
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -27,7 +28,22 @@ export default function DashboardLayout({
     }
   }, [status, router])
 
-  if (status === "loading") {
+  useEffect(() => {
+    if (
+      status === "authenticated" &&
+      session?.user?.mustChangePassword &&
+      pathname !== "/dashboard/change-password"
+    ) {
+      router.push("/dashboard/change-password")
+    }
+  }, [status, session, pathname, router])
+
+  if (
+    status === "loading" ||
+    (status === "authenticated" &&
+      session?.user?.mustChangePassword &&
+      pathname !== "/dashboard/change-password")
+  ) {
     return (
       <div className="min-h-screen bg-[#f8f8f8] flex items-center justify-center">
         <div className="text-center flex flex-col items-center">

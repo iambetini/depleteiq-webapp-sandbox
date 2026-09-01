@@ -16,4 +16,5 @@ export interface User {
   is_active: boolean;
   has_distributor: boolean;
   created_at: string;
+  mustChangePassword?: boolean;
 }
