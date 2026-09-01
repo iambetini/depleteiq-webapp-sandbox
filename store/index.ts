@@ -23,7 +23,6 @@ import dashboardFiltersReducer from "./dashboard-filters";
 import { deliveries } from "./deliveries";
 import { distributorOrders } from "./distributor-orders";
 import { distributorTargets } from "./distributor-targets";
-import { coverageAreas } from "./coverage-areas";
 import { locations } from "./locations";
 import { lgas } from "./lgas";
 import { regions } from "./regions";
@@ -103,7 +102,6 @@ export const store = configureStore({
     [promoParticipations.reducerPath]: promoParticipations.reducer,
     [promos.reducerPath]: promos.reducer,
     [promoSlabs.reducerPath]: promoSlabs.reducer,
-    [coverageAreas.reducerPath]: coverageAreas.reducer,
     [qrCodes.reducerPath]: qrCodes.reducer,
     [reports.reducerPath]: reports.reducer,
     [regions.reducerPath]: regions.reducer,
@@ -145,7 +143,6 @@ export const store = configureStore({
       promoParticipations.middleware,
       promos.middleware,
       promoSlabs.middleware,
-      coverageAreas.middleware,
       qrCodes.middleware,
       reports.middleware,
       regions.middleware,
