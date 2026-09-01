@@ -36,6 +36,7 @@ interface FieldConfig {
   labelKey?: string
   labelFormatter?: (item: any) => string
   initialSearch?: string
+  selectedLabel?: string
   options?: FieldOption[]
   min?: string
   max?: string
@@ -128,6 +129,7 @@ export const BusinessForm = forwardRef<BusinessFormRef, BusinessFormProps>(
                               labelKey={field.labelKey}
                               labelFormatter={field.labelFormatter}
                               initialSearch={field.initialSearch}
+                              selectedLabel={field.selectedLabel}
                               placeholder={field.placeholder}
                               disabled={field.disabled}
                             />
