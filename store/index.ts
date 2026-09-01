@@ -16,12 +16,16 @@ import { wholesalers } from "@/store/wholesalers";
 import { AnyAction, configureStore } from "@reduxjs/toolkit";
 import { auditLogs } from "./audit-logs";
 import { branches } from "./branches";
+import { coverageAreas } from "./coverage-areas";
 import { dashboardApi } from "./dashboard-api";
 import dashboardFiltersReducer from "./dashboard-filters";
 import { deliveries } from "./deliveries";
 import { distributorOrders } from "./distributor-orders";
 import { distributorTargets } from "./distributor-targets";
 import { locations } from "./locations";
+import { lgas } from "./lgas";
+import { regions } from "./regions";
+import { states } from "./states";
 import { markets } from "./markets";
 import { reports } from "./reports";
 import { roles } from "./roles";
@@ -81,12 +85,14 @@ export const store = configureStore({
     [businesses.reducerPath]: businesses.reducer,
     [dashboardApi.reducerPath]: dashboardApi.reducer,
     dashboardFilters: dashboardFiltersReducer,
+    [coverageAreas.reducerPath]: coverageAreas.reducer,
     [deliveries.reducerPath]: deliveries.reducer,
     [distributorOrders.reducerPath]: distributorOrders.reducer,
     [distributorTargets.reducerPath]: distributorTargets.reducer,
     [distributors.reducerPath]: distributors.reducer,
     [imeVss.reducerPath]: imeVss.reducer,
     [locations.reducerPath]: locations.reducer,
+    [lgas.reducerPath]: lgas.reducer,
     [markets.reducerPath]: markets.reducer,
     [orders.reducerPath]: orders.reducer,
     [participants.reducerPath]: participants.reducer,
@@ -96,9 +102,11 @@ export const store = configureStore({
     [promoSlabs.reducerPath]: promoSlabs.reducer,
     [qrCodes.reducerPath]: qrCodes.reducer,
     [reports.reducerPath]: reports.reducer,
+    [regions.reducerPath]: regions.reducer,
     [roles.reducerPath]: roles.reducer,
     [notifications.reducerPath]: notifications.reducer,
     [settings.reducerPath]: settings.reducer,
+    [states.reducerPath]: states.reducer,
     [stores.reducerPath]: stores.reducer,
     [targets.reducerPath]: targets.reducer,
     [tpes.reducerPath]: tpes.reducer,
@@ -117,12 +125,14 @@ export const store = configureStore({
       branches.middleware,
       businesses.middleware,
       dashboardApi.middleware,
+      coverageAreas.middleware,
       deliveries.middleware,
       distributorOrders.middleware,
       distributorTargets.middleware,
       distributors.middleware,
       imeVss.middleware,
       locations.middleware,
+      lgas.middleware,
       markets.middleware,
       orders.middleware,
       participants.middleware,
@@ -132,9 +142,11 @@ export const store = configureStore({
       promoSlabs.middleware,
       qrCodes.middleware,
       reports.middleware,
+      regions.middleware,
       roles.middleware,
       notifications.middleware,
       settings.middleware,
+      states.middleware,
       stores.middleware,
       targets.middleware,
       tpes.middleware,
@@ -152,12 +164,14 @@ export const storeApis = {
   brands,
   branches,
   businesses,
+  coverageAreas,
   deliveries,
   distributorOrders,
   distributorTargets,
   distributors,
   imeVss,
   locations,
+  lgas,
   markets,
   orders,
   participants,
@@ -167,9 +181,11 @@ export const storeApis = {
   promoSlabs,
   qrCodes,
   reports,
+  regions,
   roles,
   notifications,
   settings,
+  states,
   stores,
   targets,
   tpes,
