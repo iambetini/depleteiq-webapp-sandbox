@@ -132,7 +132,7 @@ export default function CoverageAreaDetailPage() {
                   <p className="font-medium text-[#444444]">{coverageArea.geofence.type}</p>
                 </div>
               </div>
-              {coverageArea.geofence.center_latitude && (
+              {coverageArea.geofence.center_latitude != null && coverageArea.geofence.center_longitude != null && (
                 <div className="flex items-center space-x-3">
                   <MapPin className="h-5 w-5 text-[#ababab]" />
                   <div>
@@ -143,7 +143,7 @@ export default function CoverageAreaDetailPage() {
                   </div>
                 </div>
               )}
-              {coverageArea.geofence.radius && (
+              {coverageArea.geofence.radius != null && (
                 <div className="flex items-center space-x-3">
                   <MapPin className="h-5 w-5 text-[#ababab]" />
                   <div>

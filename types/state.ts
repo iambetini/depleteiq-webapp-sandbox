@@ -8,7 +8,7 @@ export interface StateRegion {
 export interface State {
   uuid: string;
   name: string;
-  region: StateRegion;
+  region: StateRegion | null;
   created_at: string;
   updated_at: string;
 }

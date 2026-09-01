@@ -22,7 +22,7 @@ export default function CreateCoverageAreaPage() {
   const validationSchema = Yup.object({
     name: Yup.string().required("Name is required"),
     lga_id: Yup.string().required("LGA is required"),
-    geofence_id: Yup.string().nullable(),
+    geofence_id: Yup.string().nullable().when("enable_geofence", { is: true, then: (s) => s.required("Geofence is required"), otherwise: (s) => s.nullable() }),
     enable_geofence: Yup.boolean(),
   })
 

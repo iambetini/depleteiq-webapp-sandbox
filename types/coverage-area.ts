@@ -23,7 +23,7 @@ export interface CoverageArea {
   uuid: string;
   name: string;
   enable_geofence: boolean;
-  lga: CoverageAreaLga;
+  lga: CoverageAreaLga | null;
   geofence: CoverageAreaGeofence | null;
   created_at: string;
   updated_at: string;

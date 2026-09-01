@@ -8,7 +8,7 @@ export interface LgaState {
 export interface Lga {
   uuid: string;
   name: string;
-  state: LgaState;
+  state: LgaState | null;
   created_at: string;
   updated_at: string;
 }
