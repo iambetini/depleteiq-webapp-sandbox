@@ -106,6 +106,12 @@ export const sidebarItems: SidebarItem[] = [
     icon: "Users",
   },
   {
+    title: "Assignments",
+    href: "/dashboard/assignments",
+    permissions: ["view distributors", "view tpe", "view promoters"],
+    icon: "UserCheck",
+  },
+  {
     title: "Promos",
     href: "/dashboard/promos",
     permissions: ["view promos"],

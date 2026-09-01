@@ -14,6 +14,7 @@ import { tpes } from "@/store/tpe";
 import { vss } from "@/store/vss";
 import { wholesalers } from "@/store/wholesalers";
 import { AnyAction, configureStore } from "@reduxjs/toolkit";
+import { assignments } from "./assignments";
 import { auditLogs } from "./audit-logs";
 import { branches } from "./branches";
 import { dashboardApi } from "./dashboard-api";
@@ -21,6 +22,7 @@ import dashboardFiltersReducer from "./dashboard-filters";
 import { deliveries } from "./deliveries";
 import { distributorOrders } from "./distributor-orders";
 import { distributorTargets } from "./distributor-targets";
+import { coverageAreas } from "./coverage-areas";
 import { locations } from "./locations";
 import { markets } from "./markets";
 import { reports } from "./reports";
@@ -75,6 +77,7 @@ const autoResetMiddleware =
 
 export const store = configureStore({
   reducer: {
+    [assignments.reducerPath]: assignments.reducer,
     [auditLogs.reducerPath]: auditLogs.reducer,
     [brands.reducerPath]: brands.reducer,
     [branches.reducerPath]: branches.reducer,
@@ -94,6 +97,7 @@ export const store = configureStore({
     [promoParticipations.reducerPath]: promoParticipations.reducer,
     [promos.reducerPath]: promos.reducer,
     [promoSlabs.reducerPath]: promoSlabs.reducer,
+    [coverageAreas.reducerPath]: coverageAreas.reducer,
     [qrCodes.reducerPath]: qrCodes.reducer,
     [reports.reducerPath]: reports.reducer,
     [roles.reducerPath]: roles.reducer,
@@ -112,6 +116,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     (getDefaultMiddleware() as any).concat([
       autoResetMiddleware,
+      assignments.middleware,
       auditLogs.middleware,
       brands.middleware,
       branches.middleware,
@@ -130,6 +135,7 @@ export const store = configureStore({
       promoParticipations.middleware,
       promos.middleware,
       promoSlabs.middleware,
+      coverageAreas.middleware,
       qrCodes.middleware,
       reports.middleware,
       roles.middleware,
@@ -148,10 +154,12 @@ export const store = configureStore({
 });
 
 export const storeApis = {
+  assignments,
   auditLogs,
   brands,
   branches,
   businesses,
+  coverageAreas,
   deliveries,
   distributorOrders,
   distributorTargets,

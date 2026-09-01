@@ -49,6 +49,7 @@ function EntityLayoutContent({ children, entityType, tabs }: EntityLayoutProps) 
 
   // Determine the active tab based on the current path
   const getActiveTab = () => {
+    if (pathname.endsWith('/assignment')) return 'assignment'
     if (pathname.endsWith('/manage')) return 'manage'
     if (pathname.endsWith('/orders')) return 'orders'
     if (pathname.endsWith('/distributors')) return 'distributors'
@@ -166,6 +167,7 @@ export function VssLayout({ children }: { children: React.ReactNode }) {
 
   const tabs: TabConfig[] = [
     { id: 'view', label: 'Overview', path: `/dashboard/field-agents/vss/${vssId}` },
+    { id: 'assignment', label: 'Assignment', path: `/dashboard/field-agents/vss/${vssId}/assignment` },
     { id: 'orders', label: 'Orders', path: `/dashboard/field-agents/vss/${vssId}/orders` },
     { id: 'distributors', label: 'Distributors', path: `/dashboard/field-agents/vss/${vssId}/distributors` },
     { id: 'manage', label: 'Manage', path: `/dashboard/field-agents/vss/${vssId}/manage` },

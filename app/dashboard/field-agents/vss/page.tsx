@@ -9,7 +9,7 @@ import type { ColumnDef } from "@/components/ui/data-table-types"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { handleDelete } from "@/lib/handleDelete"
 import { User } from "@/types/user"
-import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react"
+import { Calendar, Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import React, { useRef, useState, useCallback } from "react"
 
@@ -74,6 +74,14 @@ function getColumns(
             <DropdownMenuItem onClick={() => router.push(`/dashboard/field-agents/vss/${row.original.uuid}`)}>
               <Eye className="mr-2 h-4 w-4" />
               View Details
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() =>
+                router.push(`/dashboard/field-agents/vss/${row.original.uuid}/assignment`)
+              }
+            >
+              <Calendar className="mr-2 h-4 w-4" />
+              Assignment
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push(`/dashboard/field-agents/user-footprint/${row.original.uuid}`)}>
               <Eye className="mr-2 h-4 w-4" />

@@ -226,6 +226,16 @@ export const routePermissions: RoutePermission[] = [
     permissions: ["view orders"],
   },
   {
+    href: "/dashboard/field-agents/vss/[id]/assignment",
+    pattern: /^\/dashboard\/field-agents\/vss\/[\w-]+\/assignment$/,
+    permissions: ["view distributors"],
+  },
+  {
+    href: "/dashboard/assignments",
+    pattern: /^\/dashboard\/assignments$/,
+    permissions: ["view distributors"],
+  },
+  {
     href: "/dashboard/field-agents/tpe",
     pattern: /^\/dashboard\/field-agents\/tpe$/,
     permissions: ["view tpe"],
