@@ -326,14 +326,15 @@ export default function AssignmentPage() {
       }
       closeDialog();
     } catch (error: any) {
+      const action = editingAssignment ? "update" : "create";
       const backendMessage =
         error?.error ||
         error?.data?.[0]?.message ||
         error?.data?.message ||
-        "Failed to create assignment";
+        `Failed to ${action} assignment`;
 
       toast({
-        title: "Failed to create assignment",
+        title: `Failed to ${action} assignment`,
         description: backendMessage,
         variant: "destructive",
       });
@@ -454,7 +455,7 @@ export default function AssignmentPage() {
                         </Button>
                       );
                     }
-                  } catch {}
+                  } catch { }
                   return null;
                 })()}
             </div>
@@ -626,9 +627,9 @@ function AssignmentTable({
                                       className={cn(
                                         "inline-flex items-center justify-center rounded-full border mr-1",
                                         item.status === "active" &&
-                                          "bg-green-500 border-black",
+                                        "bg-green-500 border-black",
                                         item.status === "completed" &&
-                                          "bg-red-500 border-black"
+                                        "bg-red-500 border-black"
                                       )}
                                     >
                                       <CheckCircle2 className="w-3 h-3 text-white" />
