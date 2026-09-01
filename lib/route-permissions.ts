@@ -288,6 +288,28 @@ export const routePermissions: RoutePermission[] = [
     permissions: ["edit locations"],
   },
 
+  // Geofences
+  {
+    href: "/dashboard/geofences",
+    pattern: /^\/dashboard\/geofences$/,
+    permissions: ["view geofences"],
+  },
+  {
+    href: "/dashboard/geofences/create",
+    pattern: /^\/dashboard\/geofences\/create$/,
+    permissions: ["create geofences"],
+  },
+  {
+    href: "/dashboard/geofences/[id]",
+    pattern: /^\/dashboard\/geofences\/[^/]+$/,
+    permissions: ["view geofences"],
+  },
+  {
+    href: "/dashboard/geofences/[id]/edit",
+    pattern: /^\/dashboard\/geofences\/[^/]+\/edit$/,
+    permissions: ["edit geofences"],
+  },
+
   // Markets
   {
     href: "/dashboard/markets",

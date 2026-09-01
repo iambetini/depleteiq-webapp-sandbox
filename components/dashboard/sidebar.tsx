@@ -8,6 +8,7 @@ import {
   History,
   Home,
   LogOut,
+  Map as MapIcon,
   MapPin,
   Megaphone,
   Package,
@@ -24,7 +25,7 @@ import {
   UserPlus,
   Users,
   Warehouse,
-  Flag
+  Flag,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
@@ -51,6 +52,7 @@ const iconMap: Record<string, IconType> = {
   Package,
   Building2,
   MapPin,
+  Map: MapIcon,
   PackageCheck,
   Truck,
   Warehouse,
@@ -140,6 +142,12 @@ export const sidebarItems: SidebarItem[] = [
     href: "/dashboard/locations",
     permissions: ["view locations"],
     icon: "MapPin",
+  },
+  {
+    title: "Geofences",
+    href: "/dashboard/geofences",
+    permissions: ["view geofences"],
+    icon: "Map",
   },
   {
     title: "Deliveries",

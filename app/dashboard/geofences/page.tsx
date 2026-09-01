@@ -195,14 +195,6 @@ function getColumns(
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() =>
-                router.push(`/dashboard/field-agents/teams/${row.original.uuid}/assignment`)
-              }
-            >
-              <Calendar className="mr-2 h-4 w-4" />
-              Assignment
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
                 router.push(`/dashboard/geofences/${row.original.uuid}/edit`)
               }
             >
