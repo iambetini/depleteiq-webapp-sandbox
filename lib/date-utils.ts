@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 
 export type DateFilterOption =
   | "Today"
@@ -162,3 +162,41 @@ export const DATE_FILTER_OPTIONS: DateFilterOption[] = [
   "All time",
   "Custom",
 ];
+
+/**
+ * Check if assignment date is today or in the future (can be edited)
+ */
+export function canEditAssignment(dateString: string): boolean {
+  if (!dateString) return false;
+
+  try {
+    const assignmentDate = new Date(dateString);
+    const today = new Date();
+
+    assignmentDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    return assignmentDate >= today;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if assignment date is strictly in the future (can be deleted)
+ */
+export function canDeleteAssignment(dateString: string): boolean {
+  if (!dateString) return false;
+
+  try {
+    const assignmentDate = new Date(dateString);
+    const today = new Date();
+
+    assignmentDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+
+    return assignmentDate > today;
+  } catch {
+    return false;
+  }
+}
