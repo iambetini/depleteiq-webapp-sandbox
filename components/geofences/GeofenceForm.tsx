@@ -88,11 +88,20 @@ const validationSchema = Yup.object({
     then: (schema) =>
       schema
         .required("Polygon coordinates are required")
-        .test("valid-json", "Polygon must be valid JSON", (value) => {
+        .test("valid-json", "Polygon must be valid JSON with at least 3 valid coordinate pairs", (value) => {
           if (!value) return false;
           try {
             const parsed = JSON.parse(value);
-            return Array.isArray(parsed) && parsed.length >= 3;
+            if (!Array.isArray(parsed) || parsed.length < 3) return false;
+            // validate each pair and coerce numeric strings
+            let validCount = 0;
+            for (const item of parsed) {
+              if (!Array.isArray(item) || item.length !== 2) continue;
+              const lat = Number((item as any)[0]);
+              const lng = Number((item as any)[1]);
+              if (Number.isFinite(lat) && Number.isFinite(lng)) validCount++;
+            }
+            return validCount >= 3;
           } catch (error) {
             return false;
           }
@@ -102,11 +111,24 @@ const validationSchema = Yup.object({
   description: Yup.string().optional(),
 });
 
+function normalizePolygon(raw: unknown): number[][] {
+  if (!Array.isArray(raw)) return [];
+  const out: number[][] = [];
+  for (const item of raw) {
+    if (!Array.isArray(item) || item.length !== 2) continue;
+    const lat = Number((item as any)[0]);
+    const lng = Number((item as any)[1]);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+    out.push([lat, lng]);
+  }
+  return out;
+}
+
 function getPolygonPointCount(json: string | undefined): number {
   if (!json) return 0;
   try {
     const parsed = JSON.parse(json);
-    return Array.isArray(parsed) ? parsed.length : 0;
+    return normalizePolygon(parsed).length;
   } catch {
     return 0;
   }
@@ -116,7 +138,8 @@ function parsePolygon(json: string | undefined): number[][] | null {
   if (!json) return null;
   try {
     const parsed = JSON.parse(json);
-    return Array.isArray(parsed) ? parsed : null;
+    const normalized = normalizePolygon(parsed);
+    return normalized.length >= 3 ? normalized : null;
   } catch {
     return null;
   }

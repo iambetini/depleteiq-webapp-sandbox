@@ -132,15 +132,26 @@ function getColumns(
       cell: ({ row }) => {
         const poly = row.original.polygon;
         if (!poly) return 0;
+        let arr: unknown;
         if (typeof poly === "string") {
           try {
-            const parsed = JSON.parse(poly);
-            return Array.isArray(parsed) ? parsed.length : 0;
+            arr = JSON.parse(poly);
           } catch {
             return 0;
           }
+        } else {
+          arr = poly;
         }
-        return Array.isArray(poly) ? poly.length : 0;
+        if (!Array.isArray(arr)) return 0;
+        // count only valid [lat,lng] pairs (coerce numeric strings)
+        let count = 0;
+        for (const item of arr as unknown[]) {
+          if (!Array.isArray(item) || item.length !== 2) continue;
+          const lat = Number((item as any)[0]);
+          const lng = Number((item as any)[1]);
+          if (Number.isFinite(lat) && Number.isFinite(lng)) count++;
+        }
+        return count;
       },
       showByDefault: true,
     },

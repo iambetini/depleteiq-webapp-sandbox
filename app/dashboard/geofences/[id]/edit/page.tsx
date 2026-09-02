@@ -28,21 +28,40 @@ function ensureClosedPolygon(points: any): any {
   return [...points, firstCopy];
 }
 
-/** Normalize API polygon (string or array) to form string for polygon_input */
+function normalizePolygonForInput(raw: unknown): number[][] {
+  if (!Array.isArray(raw)) return [];
+  const out: number[][] = [];
+  for (const item of raw) {
+    if (!Array.isArray(item) || item.length !== 2) continue;
+    const lat = Number((item as any)[0]);
+    const lng = Number((item as any)[1]);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+    out.push([lat, lng]);
+  }
+  return out;
+}
+
+/** Normalize API polygon (string or array) to form string for polygon_input
+ *  Coerces numeric strings and filters malformed pairs before stringifying.
+ */
 function polygonToInput(
   polygon: string | number[][] | null | undefined,
 ): string {
   if (polygon == null) return "";
+  let arr: unknown;
   if (typeof polygon === "string") {
     try {
-      const parsed = JSON.parse(polygon);
-      return Array.isArray(parsed) ? JSON.stringify(parsed) : "";
+      arr = JSON.parse(polygon);
     } catch {
       return "";
     }
+  } else if (Array.isArray(polygon)) {
+    arr = polygon;
+  } else {
+    return "";
   }
-  if (Array.isArray(polygon)) return JSON.stringify(polygon);
-  return "";
+  const normalized = normalizePolygonForInput(arr);
+  return normalized.length ? JSON.stringify(normalized) : "";
 }
 
 export default function EditGeofencePage() {

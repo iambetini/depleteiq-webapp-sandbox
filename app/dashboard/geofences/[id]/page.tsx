@@ -6,18 +6,40 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import GeofenceMapPicker from "@/components/geofences/GeofenceMapPicker";
 import { useContext } from "./layout";
 
-/** Normalize API polygon (string or array) to number[][] for map/display */
+/** Normalize API polygon (string or array) to number[][] for map/display
+ *  Validates each coordinate pair and coerces numeric strings to numbers.
+ *  Invalid/malformed pairs are filtered out to prevent map crashes on destructuring.
+ */
+function normalizePolygon(raw: unknown): number[][] {
+  if (!Array.isArray(raw)) return [];
+  const out: number[][] = [];
+  for (const item of raw) {
+    if (!Array.isArray(item) || item.length !== 2) continue;
+    const lat = Number((item as any)[0]);
+    const lng = Number((item as any)[1]);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
+    out.push([lat, lng]);
+  }
+  return out;
+}
+
 function polygonToPoints(
-  polygon: string | number[][] | null | undefined
+  polygon: string | number[][] | string | null | undefined
 ): number[][] {
   if (polygon == null) return [];
-  if (Array.isArray(polygon)) return polygon;
-  try {
-    const parsed = JSON.parse(polygon || "[]");
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
+  let arr: unknown;
+  if (Array.isArray(polygon)) {
+    arr = polygon;
+  } else if (typeof polygon === "string") {
+    try {
+      arr = JSON.parse(polygon || "[]");
+    } catch {
+      return [];
+    }
+  } else {
     return [];
   }
+  return normalizePolygon(arr);
 }
 
 export default function GeofenceDetailPage() {
