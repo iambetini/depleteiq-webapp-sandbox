@@ -34,6 +34,7 @@ import { settings } from "./settings";
 import { targets } from "./targets";
 import { users } from "./users";
 import { vehicles } from "./vehicles";
+import { vssOrders } from "./vss-orders";
 import { warehouses } from "./warehouses";
 import { webUsers } from "./web-users";
 import { notifications } from "./notifications";
@@ -117,6 +118,7 @@ export const store = configureStore({
     [users.reducerPath]: users.reducer,
     [vehicles.reducerPath]: vehicles.reducer,
     [vss.reducerPath]: vss.reducer,
+    [vssOrders.reducerPath]: vssOrders.reducer,
     [warehouses.reducerPath]: warehouses.reducer,
     [webUsers.reducerPath]: webUsers.reducer,
     [wholesalers.reducerPath]: wholesalers.reducer,
@@ -159,6 +161,7 @@ export const store = configureStore({
       users.middleware,
       vehicles.middleware,
       vss.middleware,
+      vssOrders.middleware,
       warehouses.middleware,
       webUsers.middleware,
       wholesalers.middleware,
@@ -200,6 +203,7 @@ export const storeApis = {
   users,
   vehicles,
   vss,
+  vssOrders,
   warehouses,
   webUsers,
   wholesalers,
