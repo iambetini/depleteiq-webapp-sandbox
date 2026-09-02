@@ -14,6 +14,7 @@ import { tpes } from "@/store/tpe";
 import { vss } from "@/store/vss";
 import { wholesalers } from "@/store/wholesalers";
 import { AnyAction, configureStore } from "@reduxjs/toolkit";
+import { assignments } from "./assignments";
 import { auditLogs } from "./audit-logs";
 import { branches } from "./branches";
 import { coverageAreas } from "./coverage-areas";
@@ -79,6 +80,7 @@ const autoResetMiddleware =
 
 export const store = configureStore({
   reducer: {
+    [assignments.reducerPath]: assignments.reducer,
     [auditLogs.reducerPath]: auditLogs.reducer,
     [brands.reducerPath]: brands.reducer,
     [branches.reducerPath]: branches.reducer,
@@ -120,6 +122,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     (getDefaultMiddleware() as any).concat([
       autoResetMiddleware,
+      assignments.middleware,
       auditLogs.middleware,
       brands.middleware,
       branches.middleware,
@@ -160,6 +163,7 @@ export const store = configureStore({
 });
 
 export const storeApis = {
+  assignments,
   auditLogs,
   brands,
   branches,
