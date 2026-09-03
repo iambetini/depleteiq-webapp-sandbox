@@ -27,12 +27,12 @@ import {
   Warehouse,
   Flag,
 } from "lucide-react";
-import { signOut, useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
 
-import { getUserPermissions, hasRequiredPermissions } from "@/lib/route-permissions";
+import { usePermissions } from "@/lib/permission-context";
 
 type IconType = React.ComponentType<{ className?: string }>;
 
@@ -194,10 +194,11 @@ export const sidebarItems: SidebarItem[] = [
 ];
 
 // Helper function to filter sidebar items based on user permissions
-function filterSidebarItems(items: SidebarItem[], userPermissions: string[]): SidebarItem[] {
-  return items.filter(item =>
-    hasRequiredPermissions(userPermissions, item.permissions)
-  );
+function filterSidebarItems(
+  items: SidebarItem[],
+  hasAnyPermission: (permissions: string[]) => boolean,
+): SidebarItem[] {
+  return items.filter((item) => hasAnyPermission(item.permissions));
 }
 
 // Helper function to find the active sidebar item for a given pathname
@@ -259,12 +260,11 @@ function SidebarMenu({
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const { data: session } = useSession();
-  const userPermissions = React.useMemo(() => getUserPermissions(session?.user), [session?.user]);
+  const { hasAnyPermission } = usePermissions();
 
   const visibleMenuItems = React.useMemo(
-    () => filterSidebarItems(sidebarItems, userPermissions),
-    [userPermissions]
+    () => filterSidebarItems(sidebarItems, hasAnyPermission),
+    [hasAnyPermission]
   );
 
   const activeItem = React.useMemo(

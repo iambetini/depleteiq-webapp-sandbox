@@ -2,13 +2,12 @@
 
 import { cn } from "@/lib/utils"
 import { usePathname, useRouter } from "next/navigation"
-import { useSession } from "next-auth/react"
-import { hasPermissionForRoute } from "@/lib/route-permissions"
+import { usePermissions } from "@/lib/permission-context"
 
 function FieldTeamsLayoutContent({ children }: { children: React.ReactNode }) {
 	const pathname = usePathname()
 	const router = useRouter()
-	const { data: session } = useSession()
+	const { hasRoutePermission } = usePermissions()
 
 	// Hide parent tabs for standalone footprint pages
 	if (pathname?.startsWith('/dashboard/field-agents/user-footprint')) {
@@ -22,9 +21,7 @@ function FieldTeamsLayoutContent({ children }: { children: React.ReactNode }) {
 		{ id: 'promoters', label: 'Promoters', path: `/dashboard/field-agents/promoters` },
 	]
 
-	const tabs = allTabs.filter((tab) =>
-		hasPermissionForRoute(tab.path, session?.user?.role?.permissions)
-	)
+	const tabs = allTabs.filter((tab) => hasRoutePermission(tab.path))
 
 	const getActiveTab = () => {
 		if (pathname === '/dashboard/field-agents/ime' || pathname.startsWith('/dashboard/field-agents/ime/')) return 'ime'
