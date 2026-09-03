@@ -38,6 +38,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Assignment } from "@/types/assignment";
 import type { CoverageArea } from "@/types/coverage-area";
 import { cn } from "@/lib/utils";
+import { canDeleteAssignment, canEditAssignment } from "@/lib/date-utils";
 import {
   useCreateAssignmentMutation,
   useGetAssignmentsQuery,
@@ -249,27 +250,11 @@ export default function AssignmentPage() {
   const handleDeleteAssignment = async () => {
     if (!editingAssignment) return;
 
-    try {
-      const assignmentDate = new Date(editingAssignment.assignment_date);
-      const todayDate = startOfToday();
-
-      assignmentDate.setHours(0, 0, 0, 0);
-      todayDate.setHours(0, 0, 0, 0);
-
-      if (assignmentDate <= todayDate) {
-        toast({
-          title: "Cannot delete assignment",
-          description:
-            "You can only delete assignments scheduled for future dates.",
-          variant: "destructive",
-        });
-        return;
-      }
-    } catch {
+    if (!canDeleteAssignment(editingAssignment.assignment_date)) {
       toast({
         title: "Cannot delete assignment",
         description:
-          "Invalid assignment date. Please contact an administrator.",
+          "You can only delete assignments scheduled for future dates.",
         variant: "destructive",
       });
       return;
@@ -296,6 +281,19 @@ export default function AssignmentPage() {
       toast({
         title: "Missing details",
         description: "Select a coverage area before saving the assignment.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (
+      editingAssignment &&
+      !canEditAssignment(editingAssignment.assignment_date)
+    ) {
+      toast({
+        title: "Cannot edit assignment",
+        description:
+          "You can only edit assignments scheduled for today or future dates.",
         variant: "destructive",
       });
       return;
@@ -328,9 +326,10 @@ export default function AssignmentPage() {
     } catch (error: any) {
       const action = editingAssignment ? "update" : "create";
       const backendMessage =
-        error?.error ||
         error?.data?.[0]?.message ||
+        error?.errors?.[0]?.message ||
         error?.data?.message ||
+        error?.error ||
         `Failed to ${action} assignment`;
 
       toast({
@@ -435,48 +434,40 @@ export default function AssignmentPage() {
           <DialogFooter className="mt-4 pt-4 flex justify-between gap-3 sm:border-t">
             <div className="flex gap-3">
               {editingAssignment &&
-                (() => {
-                  try {
-                    const assignmentDate = new Date(
-                      editingAssignment.assignment_date
-                    );
-                    const todayDate = startOfToday();
-                    assignmentDate.setHours(0, 0, 0, 0);
-                    todayDate.setHours(0, 0, 0, 0);
-                    if (assignmentDate > todayDate) {
-                      return (
-                        <Button
-                          variant="destructive"
-                          onClick={handleDeleteAssignment}
-                          disabled={isDeleting || isCreating || isUpdating}
-                          type="button"
-                        >
-                          {isDeleting ? "Deleting..." : "Delete Assignment"}
-                        </Button>
-                      );
-                    }
-                  } catch { }
-                  return null;
-                })()}
+                canDeleteAssignment(editingAssignment.assignment_date) && (
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteAssignment}
+                    disabled={isDeleting || isCreating || isUpdating}
+                    type="button"
+                  >
+                    {isDeleting ? "Deleting..." : "Delete Assignment"}
+                  </Button>
+                )}
             </div>
             <div className="flex gap-3 ml-auto">
               <Button variant="outline" onClick={closeDialog} type="button">
                 Cancel
               </Button>
-              <Button
-                className="bg-[#f97316] hover:bg-[#ea580c] text-white"
-                onClick={handleSubmitAssignment}
-                disabled={isCreating || isUpdating || isDeleting || !selectedCoverageArea}
-                type="button"
-              >
-                {isCreating || isUpdating
-                  ? editingAssignment
-                    ? "Updating..."
-                    : "Scheduling..."
-                  : editingAssignment
-                    ? "Update Assignment"
-                    : "Schedule Assignment"}
-              </Button>
+              {(!editingAssignment ||
+                canEditAssignment(editingAssignment.assignment_date)) && (
+                <Button
+                  className="bg-[#f97316] hover:bg-[#ea580c] text-white"
+                  onClick={handleSubmitAssignment}
+                  disabled={
+                    isCreating || isUpdating || isDeleting || !selectedCoverageArea
+                  }
+                  type="button"
+                >
+                  {isCreating || isUpdating
+                    ? editingAssignment
+                      ? "Updating..."
+                      : "Scheduling..."
+                    : editingAssignment
+                      ? "Update Assignment"
+                      : "Schedule Assignment"}
+                </Button>
+              )}
             </div>
           </DialogFooter>
         </DialogContent>

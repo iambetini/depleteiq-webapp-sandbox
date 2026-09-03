@@ -167,7 +167,7 @@ export function VssLayout({ children }: { children: React.ReactNode }) {
 
   const tabs: TabConfig[] = [
     { id: 'view', label: 'Overview', path: `/dashboard/field-agents/vss/${vssId}` },
-    { id: 'assignment', label: 'Assignment', path: `/dashboard/field-agents/vss/${vssId}/assignment` },
+    { id: 'assignment', label: 'Assignments', path: `/dashboard/field-agents/vss/${vssId}/assignment` },
     { id: 'orders', label: 'Orders', path: `/dashboard/field-agents/vss/${vssId}/orders` },
     { id: 'distributors', label: 'Distributors', path: `/dashboard/field-agents/vss/${vssId}/distributors` },
     { id: 'manage', label: 'Manage', path: `/dashboard/field-agents/vss/${vssId}/manage` },

@@ -13,7 +13,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { handleDelete } from "@/lib/handleDelete"
 import { useToast } from "@/hooks/use-toast"
 import { useCreateAssignmentMutation, useUpdateAssignmentMutation } from "@/store/assignments"
-import { Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import { canDeleteAssignment, canEditAssignment } from "@/lib/date-utils"
+import { Calendar, Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import React, { useRef, useCallback, useState } from "react"
 import { format, startOfToday } from "date-fns"
@@ -134,10 +135,9 @@ function getColumns(
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
-        const assignmentDateStr = row.original.assignment_date?.slice(0, 10) || ""
-        const todayStr = format(startOfToday(), "yyyy-MM-dd")
-        // Only allow deleting future assignments (strictly after today)
-        const isDeletable = assignmentDateStr > todayStr
+        const assignment = row.original
+        const canEdit = canEditAssignment(assignment.assignment_date)
+        const canDelete = canDeleteAssignment(assignment.assignment_date)
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -146,24 +146,34 @@ function getColumns(
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              onClick={() => {
-                const vssId = row.original.vss_user?.uuid
-                if (vssId) {
-                  router.push(`/dashboard/field-agents/vss/${vssId}/assignment`)
+              <DropdownMenuItem
+                onClick={() =>
+                  router.push(`/dashboard/assignments/${assignment.uuid}`)
                 }
-              }}
-            >
-              <Eye className="mr-2 h-4 w-4" />
-              View VSS Assignments
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleEdit(row.original)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
-            </DropdownMenuItem>
-              {isDeletable && (
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                View Details
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  const vssId = assignment.vss_user?.uuid
+                  if (vssId) {
+                    router.push(`/dashboard/field-agents/vss/${vssId}/assignment`)
+                  }
+                }}
+              >
+                <Calendar className="mr-2 h-4 w-4" />
+                View VSS Calendar
+              </DropdownMenuItem>
+              {canEdit && (
+                <DropdownMenuItem onClick={() => handleEdit(assignment)}>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Edit
+                </DropdownMenuItem>
+              )}
+              {canDelete && (
                 <DropdownMenuItem
-                  onClick={() => handleDelete(row.original.uuid)}
+                  onClick={() => handleDelete(assignment.uuid)}
                   className="text-red-600"
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
@@ -265,9 +275,10 @@ export default function AssignmentsPage() {
       refreshTable()
     } catch (error: any) {
       const backendMessage =
-        error?.error ||
         error?.data?.[0]?.message ||
+        error?.errors?.[0]?.message ||
         error?.data?.message ||
+        error?.error ||
         "Failed to create assignment"
       toast({
         title: "Failed to create assignment",
@@ -282,6 +293,16 @@ export default function AssignmentsPage() {
       toast({
         title: "Missing details",
         description: "Select VSS user, coverage area and date before saving.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!canEditAssignment(editingAssignment.assignment_date)) {
+      toast({
+        title: "Cannot edit assignment",
+        description:
+          "You can only edit assignments scheduled for today or future dates.",
         variant: "destructive",
       })
       return
@@ -303,9 +324,10 @@ export default function AssignmentsPage() {
       refreshTable()
     } catch (error: any) {
       const backendMessage =
-        error?.error ||
         error?.data?.[0]?.message ||
+        error?.errors?.[0]?.message ||
         error?.data?.message ||
+        error?.error ||
         "Failed to update assignment"
       toast({
         title: "Failed to update assignment",

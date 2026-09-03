@@ -81,11 +81,11 @@ function getColumns(
               }
             >
               <Calendar className="mr-2 h-4 w-4" />
-              Assignment
+              Assignments
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push(`/dashboard/field-agents/user-footprint/${row.original.uuid}`)}>
               <Eye className="mr-2 h-4 w-4" />
-              View Footprint
+              View Footprints
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => router.push(`/dashboard/field-agents/vss/${row.original.uuid}/manage`)}>
               <Edit className="mr-2 h-4 w-4" />

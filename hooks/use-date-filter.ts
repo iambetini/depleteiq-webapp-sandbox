@@ -10,7 +10,7 @@ import {
   setDateRange,
   setSelectedFilter,
 } from "@/store/dashboard-filters";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 export function useDateFilter() {
@@ -21,6 +21,16 @@ export function useDateFilter() {
   const customDateRange = useSelector(
     (state: RootState) => state.dashboardFilters.customDateRange,
   );
+  const dateRange = useSelector(
+    (state: RootState) => state.dashboardFilters.dateRange,
+  );
+
+  // Hydrate date range on first use so consumers (e.g. footprint) match the UI default
+  useEffect(() => {
+    if (dateRange.start_date && dateRange.end_date) return;
+    if (selectedFilter === "Custom") return;
+    dispatch(setDateRange(calculateDateRange(selectedFilter)));
+  }, [dateRange.start_date, dateRange.end_date, selectedFilter, dispatch]);
 
   const handleFilterChange = useCallback(
     (filter: DateFilterOption) => {
@@ -29,8 +39,8 @@ export function useDateFilter() {
       if (filter !== "Custom") {
         // Clear custom date range for non-custom filters
         dispatch(setCustomDateRange({}));
-        const dateRange = calculateDateRange(filter);
-        dispatch(setDateRange(dateRange));
+        const nextRange = calculateDateRange(filter);
+        dispatch(setDateRange(nextRange));
       }
     },
     [dispatch],
@@ -46,8 +56,8 @@ export function useDateFilter() {
       dispatch(setCustomDateRange(customRange));
 
       if (range.from && range.to) {
-        const dateRange = calculateDateRange("Custom", range);
-        dispatch(setDateRange(dateRange));
+        const nextRange = calculateDateRange("Custom", range);
+        dispatch(setDateRange(nextRange));
       }
     },
     [dispatch],
@@ -74,6 +84,7 @@ export function useDateFilter() {
   return {
     selectedFilter,
     customDateRange,
+    dateRange,
     handleFilterChange,
     handleCustomDateChange,
     getDisplayText,

@@ -11,6 +11,8 @@ interface LocationItem {
 interface MultiMapProps {
     locations: LocationItem[]
     className?: string
+    /** When true, draw a polyline connecting points in order (original coords). */
+    showPath?: boolean
 }
 
 function escapeHtml(str: string) {
@@ -20,6 +22,34 @@ function escapeHtml(str: string) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#39;")
+}
+
+/** Spread coincident points in a small spiral so every marker is visible/clickable. */
+function withOverlapOffsets(
+    pts: { lat: number; lng: number; title?: string }[]
+): { lat: number; lng: number; title?: string; originalLat: number; originalLng: number }[] {
+    const seen = new Map<string, number>()
+    const OFFSET_DEG = 0.00004 // ~4–5 meters
+
+    return pts.map((p) => {
+        const key = `${p.lat.toFixed(6)},${p.lng.toFixed(6)}`
+        const count = seen.get(key) || 0
+        seen.set(key, count + 1)
+
+        if (count === 0) {
+            return { ...p, originalLat: p.lat, originalLng: p.lng }
+        }
+
+        const angle = count * 0.9
+        const radius = OFFSET_DEG * Math.ceil(count / 6)
+        return {
+            ...p,
+            lat: p.lat + Math.cos(angle) * radius,
+            lng: p.lng + Math.sin(angle) * radius,
+            originalLat: p.lat,
+            originalLng: p.lng,
+        }
+    })
 }
 
 function loadGoogleMapsScript(): Promise<void> {
@@ -53,11 +83,21 @@ function loadGoogleMapsScript(): Promise<void> {
     })
 }
 
-export function MultiMap({ locations = [], className = "" }: MultiMapProps) {
+export function MultiMap({
+    locations = [],
+    className = "",
+    showPath = false,
+}: MultiMapProps) {
     const mapRef = useRef<HTMLDivElement | null>(null)
     const mapInstance = useRef<any>(null)
     const markersRef = useRef<any[]>([])
+    const polylineRef = useRef<any>(null)
     const readyRef = useRef(false)
+    const showPathRef = useRef(showPath)
+    const locationsRef = useRef(locations)
+
+    showPathRef.current = showPath
+    locationsRef.current = locations
 
     // Create the map instance once
     useEffect(() => {
@@ -82,7 +122,6 @@ export function MultiMap({ locations = [], className = "" }: MultiMapProps) {
                 zoomControl: true,
             })
             readyRef.current = true
-            // trigger marker sync now that the map exists
             syncMarkers()
         }
 
@@ -95,6 +134,10 @@ export function MultiMap({ locations = [], className = "" }: MultiMapProps) {
                 m.setMap(null)
             })
             markersRef.current = []
+            if (polylineRef.current) {
+                polylineRef.current.setMap(null)
+                polylineRef.current = null
+            }
             mapInstance.current = null
             readyRef.current = false
             if (mapRef.current) mapRef.current.innerHTML = ""
@@ -102,42 +145,88 @@ export function MultiMap({ locations = [], className = "" }: MultiMapProps) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    // Sync markers whenever locations change (without rebuilding the map)
+    const clearPolyline = () => {
+        if (polylineRef.current) {
+            polylineRef.current.setMap(null)
+            polylineRef.current = null
+        }
+    }
+
+    const syncPath = () => {
+        if (!readyRef.current || !mapInstance.current) return
+        const google = (window as any).google
+
+        clearPolyline()
+
+        if (!showPathRef.current) return
+
+        const pathPts = locationsRef.current
+            .map((l) => ({
+                lat: Number(l.latitude),
+                lng: Number(l.longitude),
+            }))
+            .filter((p) => !Number.isNaN(p.lat) && !Number.isNaN(p.lng))
+
+        if (pathPts.length < 2) return
+
+        polylineRef.current = new google.maps.Polyline({
+            path: pathPts,
+            geodesic: true,
+            strokeColor: "#f97316",
+            strokeOpacity: 0.85,
+            strokeWeight: 3,
+            map: mapInstance.current,
+        })
+    }
+
     const syncMarkers = () => {
         if (!readyRef.current || !mapInstance.current) return
 
         const google = (window as any).google
+        const currentLocations = locationsRef.current
 
-        const pts = locations
-            .map((l) => ({
-                lat: Number(l.latitude),
-                lng: Number(l.longitude),
-                title: l.title,
-            }))
-            .filter((p) => !Number.isNaN(p.lat) && !Number.isNaN(p.lng))
+        const pts = withOverlapOffsets(
+            currentLocations
+                .map((l) => ({
+                    lat: Number(l.latitude),
+                    lng: Number(l.longitude),
+                    title: l.title,
+                }))
+                .filter((p) => !Number.isNaN(p.lat) && !Number.isNaN(p.lng))
+        )
 
-        // clear existing markers
         markersRef.current.forEach((m) => {
             google.maps.event.clearInstanceListeners(m)
             m.setMap(null)
         })
         markersRef.current = []
+        clearPolyline()
 
         if (pts.length === 0) return
 
         const bounds = new google.maps.LatLngBounds()
 
-        pts.forEach((p) => {
+        pts.forEach((p, index) => {
             const marker = new google.maps.Marker({
                 position: { lat: p.lat, lng: p.lng },
                 map: mapInstance.current,
                 title: p.title || "",
+                label:
+                    pts.length <= 40
+                        ? {
+                              text: String(index + 1),
+                              color: "#ffffff",
+                              fontSize: "11px",
+                              fontWeight: "700",
+                          }
+                        : undefined,
+                zIndex: pts.length - index,
             })
 
             const infoWindow = new google.maps.InfoWindow({
                 content: `<div style="padding:8px"><div style="font-weight:600">${escapeHtml(
                     p.title || "Location"
-                )}</div><div style="font-size:12px">${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}</div></div>`,
+                )}</div><div style="font-size:12px">${p.originalLat.toFixed(6)}, ${p.originalLng.toFixed(6)}</div></div>`,
             })
 
             marker.addListener("click", () => {
@@ -147,6 +236,8 @@ export function MultiMap({ locations = [], className = "" }: MultiMapProps) {
             markersRef.current.push(marker)
             bounds.extend({ lat: p.lat, lng: p.lng })
         })
+
+        syncPath()
 
         if (pts.length === 1) {
             mapInstance.current.setCenter(bounds.getCenter())
@@ -160,6 +251,11 @@ export function MultiMap({ locations = [], className = "" }: MultiMapProps) {
         syncMarkers()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [locations])
+
+    useEffect(() => {
+        syncPath()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showPath])
 
     if (!locations || locations.length === 0) {
         return (
