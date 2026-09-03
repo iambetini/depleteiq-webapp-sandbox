@@ -11,6 +11,8 @@ interface LocationItem {
 interface MultiMapProps {
     locations: LocationItem[]
     className?: string
+    /** When true, draw a polyline connecting points in order (original coords). */
+    showPath?: boolean
 }
 
 function escapeHtml(str: string) {
@@ -81,11 +83,21 @@ function loadGoogleMapsScript(): Promise<void> {
     })
 }
 
-export function MultiMap({ locations = [], className = "" }: MultiMapProps) {
+export function MultiMap({
+    locations = [],
+    className = "",
+    showPath = false,
+}: MultiMapProps) {
     const mapRef = useRef<HTMLDivElement | null>(null)
     const mapInstance = useRef<any>(null)
     const markersRef = useRef<any[]>([])
+    const polylineRef = useRef<any>(null)
     const readyRef = useRef(false)
+    const showPathRef = useRef(showPath)
+    const locationsRef = useRef(locations)
+
+    showPathRef.current = showPath
+    locationsRef.current = locations
 
     // Create the map instance once
     useEffect(() => {
@@ -110,7 +122,6 @@ export function MultiMap({ locations = [], className = "" }: MultiMapProps) {
                 zoomControl: true,
             })
             readyRef.current = true
-            // trigger marker sync now that the map exists
             syncMarkers()
         }
 
@@ -123,6 +134,10 @@ export function MultiMap({ locations = [], className = "" }: MultiMapProps) {
                 m.setMap(null)
             })
             markersRef.current = []
+            if (polylineRef.current) {
+                polylineRef.current.setMap(null)
+                polylineRef.current = null
+            }
             mapInstance.current = null
             readyRef.current = false
             if (mapRef.current) mapRef.current.innerHTML = ""
@@ -130,14 +145,48 @@ export function MultiMap({ locations = [], className = "" }: MultiMapProps) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    // Sync markers whenever locations change (without rebuilding the map)
+    const clearPolyline = () => {
+        if (polylineRef.current) {
+            polylineRef.current.setMap(null)
+            polylineRef.current = null
+        }
+    }
+
+    const syncPath = () => {
+        if (!readyRef.current || !mapInstance.current) return
+        const google = (window as any).google
+
+        clearPolyline()
+
+        if (!showPathRef.current) return
+
+        const pathPts = locationsRef.current
+            .map((l) => ({
+                lat: Number(l.latitude),
+                lng: Number(l.longitude),
+            }))
+            .filter((p) => !Number.isNaN(p.lat) && !Number.isNaN(p.lng))
+
+        if (pathPts.length < 2) return
+
+        polylineRef.current = new google.maps.Polyline({
+            path: pathPts,
+            geodesic: true,
+            strokeColor: "#f97316",
+            strokeOpacity: 0.85,
+            strokeWeight: 3,
+            map: mapInstance.current,
+        })
+    }
+
     const syncMarkers = () => {
         if (!readyRef.current || !mapInstance.current) return
 
         const google = (window as any).google
+        const currentLocations = locationsRef.current
 
         const pts = withOverlapOffsets(
-            locations
+            currentLocations
                 .map((l) => ({
                     lat: Number(l.latitude),
                     lng: Number(l.longitude),
@@ -146,12 +195,12 @@ export function MultiMap({ locations = [], className = "" }: MultiMapProps) {
                 .filter((p) => !Number.isNaN(p.lat) && !Number.isNaN(p.lng))
         )
 
-        // clear existing markers
         markersRef.current.forEach((m) => {
             google.maps.event.clearInstanceListeners(m)
             m.setMap(null)
         })
         markersRef.current = []
+        clearPolyline()
 
         if (pts.length === 0) return
 
@@ -188,6 +237,8 @@ export function MultiMap({ locations = [], className = "" }: MultiMapProps) {
             bounds.extend({ lat: p.lat, lng: p.lng })
         })
 
+        syncPath()
+
         if (pts.length === 1) {
             mapInstance.current.setCenter(bounds.getCenter())
             mapInstance.current.setZoom(15)
@@ -200,6 +251,11 @@ export function MultiMap({ locations = [], className = "" }: MultiMapProps) {
         syncMarkers()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [locations])
+
+    useEffect(() => {
+        syncPath()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showPath])
 
     if (!locations || locations.length === 0) {
         return (

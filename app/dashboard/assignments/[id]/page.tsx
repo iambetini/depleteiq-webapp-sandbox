@@ -156,9 +156,10 @@ export default function AssignmentDetailPage() {
       router.refresh();
     } catch (error: any) {
       const backendMessage =
-        error?.error ||
         error?.data?.[0]?.message ||
+        error?.errors?.[0]?.message ||
         error?.data?.message ||
+        error?.error ||
         "Failed to update assignment";
       toast({
         title: "Failed to update assignment",

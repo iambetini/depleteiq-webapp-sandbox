@@ -326,9 +326,10 @@ export default function AssignmentPage() {
     } catch (error: any) {
       const action = editingAssignment ? "update" : "create";
       const backendMessage =
-        error?.error ||
         error?.data?.[0]?.message ||
+        error?.errors?.[0]?.message ||
         error?.data?.message ||
+        error?.error ||
         `Failed to ${action} assignment`;
 
       toast({
