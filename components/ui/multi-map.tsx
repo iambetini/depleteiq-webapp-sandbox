@@ -22,6 +22,34 @@ function escapeHtml(str: string) {
         .replace(/'/g, "&#39;")
 }
 
+/** Spread coincident points in a small spiral so every marker is visible/clickable. */
+function withOverlapOffsets(
+    pts: { lat: number; lng: number; title?: string }[]
+): { lat: number; lng: number; title?: string; originalLat: number; originalLng: number }[] {
+    const seen = new Map<string, number>()
+    const OFFSET_DEG = 0.00004 // ~4–5 meters
+
+    return pts.map((p) => {
+        const key = `${p.lat.toFixed(6)},${p.lng.toFixed(6)}`
+        const count = seen.get(key) || 0
+        seen.set(key, count + 1)
+
+        if (count === 0) {
+            return { ...p, originalLat: p.lat, originalLng: p.lng }
+        }
+
+        const angle = count * 0.9
+        const radius = OFFSET_DEG * Math.ceil(count / 6)
+        return {
+            ...p,
+            lat: p.lat + Math.cos(angle) * radius,
+            lng: p.lng + Math.sin(angle) * radius,
+            originalLat: p.lat,
+            originalLng: p.lng,
+        }
+    })
+}
+
 function loadGoogleMapsScript(): Promise<void> {
     if (typeof window === "undefined") return Promise.resolve()
     if ((window as any).google?.maps) return Promise.resolve()
@@ -108,13 +136,15 @@ export function MultiMap({ locations = [], className = "" }: MultiMapProps) {
 
         const google = (window as any).google
 
-        const pts = locations
-            .map((l) => ({
-                lat: Number(l.latitude),
-                lng: Number(l.longitude),
-                title: l.title,
-            }))
-            .filter((p) => !Number.isNaN(p.lat) && !Number.isNaN(p.lng))
+        const pts = withOverlapOffsets(
+            locations
+                .map((l) => ({
+                    lat: Number(l.latitude),
+                    lng: Number(l.longitude),
+                    title: l.title,
+                }))
+                .filter((p) => !Number.isNaN(p.lat) && !Number.isNaN(p.lng))
+        )
 
         // clear existing markers
         markersRef.current.forEach((m) => {
@@ -127,17 +157,27 @@ export function MultiMap({ locations = [], className = "" }: MultiMapProps) {
 
         const bounds = new google.maps.LatLngBounds()
 
-        pts.forEach((p) => {
+        pts.forEach((p, index) => {
             const marker = new google.maps.Marker({
                 position: { lat: p.lat, lng: p.lng },
                 map: mapInstance.current,
                 title: p.title || "",
+                label:
+                    pts.length <= 40
+                        ? {
+                              text: String(index + 1),
+                              color: "#ffffff",
+                              fontSize: "11px",
+                              fontWeight: "700",
+                          }
+                        : undefined,
+                zIndex: pts.length - index,
             })
 
             const infoWindow = new google.maps.InfoWindow({
                 content: `<div style="padding:8px"><div style="font-weight:600">${escapeHtml(
                     p.title || "Location"
-                )}</div><div style="font-size:12px">${p.lat.toFixed(6)}, ${p.lng.toFixed(6)}</div></div>`,
+                )}</div><div style="font-size:12px">${p.originalLat.toFixed(6)}, ${p.originalLng.toFixed(6)}</div></div>`,
             })
 
             marker.addListener("click", () => {
