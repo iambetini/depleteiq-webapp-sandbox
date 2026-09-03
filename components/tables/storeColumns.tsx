@@ -76,7 +76,12 @@ export function useStoreColumns(
     {
       accessorKey: "category",
       header: "Category",
-      cell: ({ row }) => row.original.category || "-",
+      cell: ({ row }) => {
+        const cat = row.original.category
+        if (!cat) return "-"
+        if (Array.isArray(cat)) return cat.length > 0 ? cat.join(", ") : "-"
+        return String(cat)
+      },
     },
     {
       accessorKey: "market.name",

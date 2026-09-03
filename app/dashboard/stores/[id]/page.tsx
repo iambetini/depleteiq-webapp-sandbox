@@ -6,15 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useSession } from "next-auth/react"
 import { useContext } from "./layout"
 
-const CATEGORY_LABELS: Record<string, string> = {
-  pc: "Personal Care",
-  pharma: "Pharmaceutical",
-  "food and bev": "Food & Beverage",
-}
-
-const formatCategory = (category?: string | null) => {
-  if (!category) return null
-  return CATEGORY_LABELS[category.toLowerCase()] || category
+const getCategories = (category?: unknown): string[] => {
+  if (!category) return []
+  if (Array.isArray(category)) return category.filter((c): c is string => typeof c === "string")
+  if (typeof category === "string") return [category]
+  return []
 }
 
 export default function StoreDetailPage() {
@@ -28,7 +24,7 @@ export default function StoreDetailPage() {
 
   const userRole = user?.role?.name?.toLowerCase() || ""
   const storeUser = store.business?.user
-  const categoryLabel = formatCategory(store.category)
+  const categories = getCategories(store.category)
 
   return (
     <div>
@@ -61,12 +57,16 @@ export default function StoreDetailPage() {
               </p>
             </div>
 
-            {categoryLabel && (
-              <div>
-                <p className="text-sm text-muted-foreground">Category</p>
-                <Badge variant="secondary" className="mt-1">
-                  {categoryLabel}
-                </Badge>
+            {categories.length > 0 && (
+              <div className="md:col-span-2">
+                <p className="text-sm text-muted-foreground mb-1">Categories</p>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((cat) => (
+                    <Badge key={cat} variant="secondary">
+                      {cat}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             )}
 
