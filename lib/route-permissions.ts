@@ -358,6 +358,17 @@ export const routePermissions: RoutePermission[] = [
     pattern: /^\/dashboard\/orders\/\d+$/,
     permissions: ["view orders"],
   },
+  // Supplies
+  {
+    href: "/dashboard/supplies",
+    pattern: /^\/dashboard\/supplies$/,
+    permissions: ["view orders"],
+  },
+  {
+    href: "/dashboard/supplies/[id]",
+    pattern: /^\/dashboard\/supplies\/[\w-]+$/,
+    permissions: ["view orders"],
+  },
 
   // Participants
   {

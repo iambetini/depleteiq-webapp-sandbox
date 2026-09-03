@@ -84,6 +84,12 @@ export const sidebarItems: SidebarItem[] = [
     icon: "ShoppingCart",
   },
   {
+    title: "Supplies",
+    href: "/dashboard/supplies",
+    permissions: ["view orders"],
+    icon: "PackageCheck",
+  },
+  {
     title: "Targets",
     href: "/dashboard/targets",
     permissions: ["view targets"],
