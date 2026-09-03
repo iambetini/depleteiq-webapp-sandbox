@@ -5,6 +5,7 @@ import { DashboardSidebar } from "@/components/dashboard/sidebar"
 import SessionTimeout from "@/components/SessionTimeout"
 import { RolesProvider } from "@/components/dashboard/RolesContext"
 import Logo from "@/images/orbit-logo.png"
+import { PermissionProvider } from "@/lib/permission-context"
 import { useSession } from "next-auth/react"
 import Image from "next/image"
 import Link from "next/link"
@@ -62,7 +63,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <>
+    <PermissionProvider>
       <SessionTimeout />
       <RolesProvider>
         <div className="dashboard min-h-screen bg-[#f8f8f8]">
@@ -73,6 +74,6 @@ export default function DashboardLayout({
           </div>
         </div>
       </RolesProvider>
-    </>
+    </PermissionProvider>
   )
 }

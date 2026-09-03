@@ -2,13 +2,12 @@
 
 import { cn } from "@/lib/utils"
 import { usePathname, useRouter } from "next/navigation"
-import { useSession } from "next-auth/react"
-import { hasPermissionForRoute } from "@/lib/route-permissions"
+import { usePermissions } from "@/lib/permission-context"
 
 function ControlCentreLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const { data: session } = useSession()
+  const { hasRoutePermission } = usePermissions()
 
   const getActiveTab = () => {
     if (pathname.includes('/roles')) return 'roles'
@@ -25,9 +24,7 @@ function ControlCentreLayoutContent({ children }: { children: React.ReactNode })
     { id: 'settings', label: 'Settings', path: `/dashboard/general-settings/settings` },
   ]
 
-  const tabs = allTabs.filter((tab) =>
-    hasPermissionForRoute(tab.path, session?.user?.role?.permissions)
-  )
+  const tabs = allTabs.filter((tab) => hasRoutePermission(tab.path))
 
   const activeTab = getActiveTab()
 

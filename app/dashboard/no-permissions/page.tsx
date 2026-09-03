@@ -1,27 +1,16 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, User, Mail, LogOut } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { getUserPermissions } from "@/lib/route-permissions";
+import { usePermissions } from "@/lib/permission-context";
 
 export default function NoPermissionsPage() {
   const { data: session } = useSession();
-  const router = useRouter();
-  const userPermissions = getUserPermissions(session?.user);
+  const { loading } = usePermissions();
 
-  // Redirect to dashboard if user has any permissions
-  useEffect(() => {
-    if (userPermissions.length > 0) {
-      router.push("/dashboard");
-    }
-  }, [userPermissions, router]);
-
-  // Show loading while checking permissions and redirecting
-  if (userPermissions.length > 0) {
+  // Show loading while fetching permissions
+  if (loading) {
     return (
       <div className="min-h-screen bg-[#f8f8f8] flex items-center justify-center">
         <div className="text-center flex flex-col items-center">
@@ -37,8 +26,8 @@ export default function NoPermissionsPage() {
   };
 
   const handleContactAdmin = () => {
-    // You can implement this to open email client or redirect to contact page
-    window.location.href = `mailto:admin@yourcompany.com?subject=Permission Request&body=Hello, I need permissions assigned to my account. My details: ${session?.user?.email}`;
+    const adminEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL || "admin@yourcompany.com";
+    window.location.href = `mailto:${adminEmail}?subject=Permission Request&body=Hello, I need permissions assigned to my account. My details: ${session?.user?.email}`;
   };
 
   return (
@@ -56,7 +45,7 @@ export default function NoPermissionsPage() {
           <CardContent className="space-y-6">
             <div className="text-center">
               <p className="text-[#ababab] mb-4">
-                Your account doesn&apos;t have the necessary permissions to access this area. 
+                Your account doesn&apos;t have the necessary permissions to access this area.
                 Please contact your administrator to request the appropriate access.
               </p>
             </div>
@@ -64,7 +53,7 @@ export default function NoPermissionsPage() {
             {/* User Information */}
             <div className="bg-[#f8f8f8] rounded-lg p-4 space-y-3">
               <h3 className="font-medium text-[#444444] mb-3">Account Details</h3>
-              
+
               <div className="flex items-center space-x-3">
                 <User className="w-4 h-4 text-[#ababab]" />
                 <div>
@@ -98,14 +87,14 @@ export default function NoPermissionsPage() {
 
             {/* Action Buttons */}
             <div className="space-y-3">
-              <Button 
+              <Button
                 onClick={handleContactAdmin}
                 className="w-full btn-primary"
               >
                 Contact Administrator
               </Button>
-              
-              <Button 
+
+              <Button
                 onClick={handleLogout}
                 variant="outline"
                 className="w-full"
@@ -118,7 +107,7 @@ export default function NoPermissionsPage() {
             {/* Help Text */}
             <div className="text-center">
               <p className="text-xs text-[#ababab]">
-                If you believe this is an error, please contact your system administrator 
+                If you believe this is an error, please contact your system administrator
                 with the information above.
               </p>
             </div>

@@ -47,6 +47,8 @@ export const authOptions: NextAuthOptions = {
             throw new Error("Failed to retrieve user details");
           }
 
+          // Strip permissions from the JWT/session cookie — they are fetched
+          // client-side via PermissionProvider from /auth/me instead.
           return {
             uuid: fullUser.uuid,
             first_name: fullUser.first_name,
@@ -59,12 +61,7 @@ export const authOptions: NextAuthOptions = {
             status: fullUser.status,
             is_active: fullUser.is_active,
             role: fullUser.role
-              ? {
-                  ...fullUser.role,
-                  permissions: fullUser.role.permissions?.map(
-                    (permission: any) => permission.name,
-                  ),
-                }
+              ? { ...fullUser.role, permissions: [] as any[] }
               : undefined,
             accessToken: token,
             mustChangePassword: isWeakPassword(credentials.password),

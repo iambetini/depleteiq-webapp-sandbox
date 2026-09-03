@@ -1,14 +1,11 @@
 "use client"
 
-import { hasPermissionForRoute } from "@/lib/route-permissions"
 import { cn } from "@/lib/utils"
 import { usePathname, useRouter } from "next/navigation"
-import { useSession } from "next-auth/react"
 
 function BusinessesLayoutContent({ children }: { children: React.ReactNode }) {
 	const pathname = usePathname()
 	const router = useRouter()
-	const { data: session } = useSession()
 
 	const getActiveTab = () => {
 		if (pathname.includes('/distributors')) return 'distributors'
@@ -20,10 +17,6 @@ function BusinessesLayoutContent({ children }: { children: React.ReactNode }) {
 		{ id: 'distributors', label: 'Distributors', path: `/dashboard/businesses/distributors` },
 		{ id: 'wholesalers', label: 'Wholesalers', path: `/dashboard/businesses/wholesalers` },
 	]
-
-	// const tabs = allTabs.filter((tab) =>
-	// 	hasPermissionForRoute(tab.path, session?.user?.role?.permissions)
-	// )
 
 	const activeTab = getActiveTab()
 
