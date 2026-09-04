@@ -5,6 +5,7 @@ import {
   type DateFilterOption,
 } from "@/lib/date-utils";
 import type { RootState } from "@/store";
+import { store } from "@/store";
 import {
   setCustomDateRange,
   setDateRange,
@@ -25,11 +26,14 @@ export function useDateFilter() {
     (state: RootState) => state.dashboardFilters.dateRange,
   );
 
-  // Hydrate date range on first use so consumers (e.g. footprint) match the UI default
+  // Hydrate date range on first use so consumers (e.g. footprint) match the UI default.
+  // Read fresh store state inside the effect to avoid stale closures overwriting a
+  // page that already set Today (or another preset) during layout.
   useEffect(() => {
-    if (dateRange.start_date && dateRange.end_date) return;
-    if (selectedFilter === "Custom") return;
-    dispatch(setDateRange(calculateDateRange(selectedFilter)));
+    const current = store.getState().dashboardFilters;
+    if (current.dateRange.start_date && current.dateRange.end_date) return;
+    if (current.selectedFilter === "Custom") return;
+    dispatch(setDateRange(calculateDateRange(current.selectedFilter)));
   }, [dateRange.start_date, dateRange.end_date, selectedFilter, dispatch]);
 
   const handleFilterChange = useCallback(
