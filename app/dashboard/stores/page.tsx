@@ -3,6 +3,7 @@
 import ListPageHeader from "@/components/dashboard/ListPageHeader";
 import { DataTable } from "@/components/ui/data-table";
 import type { ColumnDef } from "@/components/ui/data-table-types";
+import { STORE_CATEGORIES } from "@/types/store";
 import { useRef } from "react";
 import { useStoreColumns } from "@/components/tables/storeColumns";
 import { useRouter } from "next/navigation";
@@ -34,11 +35,10 @@ export default function StoresPage() {
             type: "select",
             label: "Category",
             param: "category",
-            options: [
-              { label: "Personal Care", value: "PC" },
-              { label: "Pharmaceutical", value: "Pharma" },
-              { label: "Food & Beverage", value: "FnB" },
-            ],
+            options: STORE_CATEGORIES.map((category) => ({
+              label: category,
+              value: category,
+            })),
           },
           {
             type: "selectWithFetch",

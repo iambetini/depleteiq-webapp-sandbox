@@ -3,15 +3,9 @@
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { normalizeStoreCategories } from "@/types/store"
 import { useSession } from "next-auth/react"
 import { useContext } from "./layout"
-
-const getCategories = (category?: unknown): string[] => {
-  if (!category) return []
-  if (Array.isArray(category)) return category.filter((c): c is string => typeof c === "string")
-  if (typeof category === "string") return [category]
-  return []
-}
 
 export default function StoreDetailPage() {
   const { data: session } = useSession()
@@ -24,7 +18,7 @@ export default function StoreDetailPage() {
 
   const userRole = user?.role?.name?.toLowerCase() || ""
   const storeUser = store.business?.user
-  const categories = getCategories(store.category)
+  const categories = normalizeStoreCategories(store.category)
 
   return (
     <div>
@@ -92,12 +86,12 @@ export default function StoreDetailPage() {
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground">In Market</p>
+              <p className="text-sm text-muted-foreground">Market Status</p>
               <Badge
                 variant={store.in_market ? "default" : "secondary"}
                 className="mt-1"
               >
-                {store.in_market ? "Yes" : "No"}
+                {store.in_market ? "In-market" : "Outmarket"}
               </Badge>
             </div>
 

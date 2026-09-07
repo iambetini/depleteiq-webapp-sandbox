@@ -14,29 +14,42 @@ export default function CreatePromoterPage() {
   const [createPromoter, { isLoading }] = useCreatePromoterMutation()
   const formRef = useRef<any>(null)
 
-
   const initialValues = {
     market_id: "",
     first_name: "",
     last_name: "",
     email: "",
-    tpe_user_id: "",
     password: "",
+    phone: "",
   }
-
 
   const validationSchema = Yup.object({
     market_id: Yup.string().required("Market is required"),
-    first_name: Yup.string().required("First name is required"),
-    last_name: Yup.string().required("Last name is required"),
+    first_name: Yup.string()
+      .max(255, "First name must be at most 255 characters")
+      .required("First name is required"),
+    last_name: Yup.string()
+      .max(255, "Last name must be at most 255 characters")
+      .required("Last name is required"),
     email: Yup.string().email("Invalid email").required("Email is required"),
-    tpe_user_id: Yup.string().nullable(),
-    password: Yup.string().min(6, "Password must be at least 6 characters").required("Password is required"),
+    password: Yup.string()
+      .min(6, "Password must be at least 6 characters")
+      .required("Password is required"),
+    phone: Yup.string().nullable(),
   })
 
   const handleSubmit = async (values: typeof initialValues, helpers: any) => {
     try {
-      await createPromoter(values).unwrap()
+      const payload = {
+        market_id: values.market_id,
+        first_name: values.first_name.trim(),
+        last_name: values.last_name.trim(),
+        email: values.email.trim(),
+        password: values.password,
+        ...(values.phone?.trim() ? { phone: values.phone.trim() } : {}),
+      }
+
+      await createPromoter(payload).unwrap()
       toast({
         title: "Success",
         description: "Promoter created successfully",
@@ -62,6 +75,13 @@ export default function CreatePromoterPage() {
       placeholder: "Select market",
     },
     {
+      name: "email",
+      label: "Email",
+      type: "email" as const,
+      required: true,
+      placeholder: "Enter email address",
+    },
+    {
       name: "first_name",
       label: "First Name",
       type: "text" as const,
@@ -76,29 +96,18 @@ export default function CreatePromoterPage() {
       placeholder: "Enter last name",
     },
     {
-      name: "email",
-      label: "Email",
-      type: "email" as const,
-      required: true,
-      placeholder: "Enter email address",
+      name: "phone",
+      label: "Phone",
+      type: "text" as const,
+      required: false,
+      placeholder: "Enter phone number (optional)",
     },
     {
       name: "password",
       label: "Password",
       type: "password" as const,
       required: true,
-      placeholder: "Enter password",
-    },
-    {
-      name: "tpe_user_id",
-      label: "TPE Supervisor",
-      type: "selectWithFetch" as const,
-      required: false,
-      fetchUrl: "/tpes",
-      valueKey: "uuid",
-      labelKey: "uuid",
-      labelFormatter: (user: any) => `${user.first_name} ${user.last_name} (${user.email})`,
-      placeholder: "Select TPE supervisor (optional)",
+      placeholder: "Enter password (min 6 characters)",
     },
   ]
 

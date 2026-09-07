@@ -6,6 +6,10 @@ import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { toast } from "@/hooks/use-toast"
 import { catchError } from "@/lib/utils"
 import { useUpdateStoreMutation } from "@/store/stores"
+import {
+  STORE_CATEGORIES,
+  normalizeStoreCategories,
+} from "@/types/store"
 import { useRouter } from "next/navigation"
 import { useMemo } from "react"
 import { useContext } from "../layout"
@@ -26,6 +30,11 @@ const formatAddress = (location: any) => {
     .join(", ")
 }
 
+const categoryOptions = STORE_CATEGORIES.map((category) => ({
+  label: category,
+  value: category,
+}))
+
 export default function EditStorePage() {
   const router = useRouter()
   const { store, fetchEntity } = useContext()
@@ -36,9 +45,9 @@ export default function EditStorePage() {
       market_id: store?.market?.uuid || "",
       address: formatAddress(store?.location) || store?.location?.full_location || "",
       location_id: store?.location?.uuid || "",
-      in_market: Boolean(store?.in_market),
+      in_market: store?.in_market ? "in_market" : "out_market",
       promo_class: store?.promo_class || "",
-      category: store?.category || "",
+      category: normalizeStoreCategories(store?.category),
     }),
     [store]
   )
@@ -51,9 +60,11 @@ export default function EditStorePage() {
     market_id: Yup.string().nullable(),
     address: Yup.string().nullable(),
     location_id: Yup.string().nullable(),
-    in_market: Yup.boolean(),
+    in_market: Yup.string().oneOf(["in_market", "out_market"]).required("Market status is required"),
     promo_class: Yup.string().oneOf(["pareto", "non-pareto", ""]).nullable(),
-    category: Yup.string().oneOf(["pc", "pharma", "food and bev", ""]).nullable(),
+    category: Yup.array()
+      .of(Yup.string().oneOf([...STORE_CATEGORIES]))
+      .nullable(),
   })
 
   const handleSubmit = async (values: any, helpers: any) => {
@@ -61,9 +72,9 @@ export default function EditStorePage() {
       const payload = {
         market_id: emptyToNull(values.market_id),
         location_id: emptyToNull(values.location_id),
-        in_market: Boolean(values.in_market),
+        in_market: values.in_market === "in_market",
         promo_class: emptyToNull(values.promo_class),
-        category: emptyToNull(values.category),
+        category: Array.isArray(values.category) ? values.category : [],
       }
       await updateStore({ id: store.uuid, data: payload }).unwrap()
       toast({
@@ -76,28 +87,6 @@ export default function EditStorePage() {
       catchError(error, helpers.setFieldError)
     } finally {
       helpers.setSubmitting(false)
-    }
-  }
-
-  const handleInMarketToggle = async (checked: boolean) => {
-    try {
-      await updateStore({
-        id: store.uuid,
-        data: { in_market: checked },
-      }).unwrap()
-      toast({
-        title: "Success",
-        description: `Store marked as ${checked ? "in market" : "not in market"}`,
-      })
-      fetchEntity()
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description:
-          error?.data?.message || error?.message || "Failed to update in market status",
-        variant: "destructive",
-      })
-      fetchEntity()
     }
   }
 
@@ -134,22 +123,23 @@ export default function EditStorePage() {
       ],
     },
     {
-      name: "category",
-      label: "Category",
+      name: "in_market",
+      label: "Market Status",
       type: "select" as const,
-      required: false,
-      placeholder: "Select category",
+      required: true,
+      placeholder: "Select market status",
       options: [
-        { label: "Personal Care", value: "pc" },
-        { label: "Pharmaceutical", value: "pharma" },
-        { label: "Food & Beverage", value: "food and bev" },
+        { label: "In-market", value: "in_market" },
+        { label: "Outmarket", value: "out_market" },
       ],
     },
     {
-      name: "in_market",
-      label: "In Market",
-      type: "switch" as const,
-      onCheckedChange: handleInMarketToggle,
+      name: "category",
+      label: "Category",
+      type: "multiSelect" as const,
+      required: false,
+      placeholder: "Select categories",
+      options: categoryOptions,
     },
   ]
 

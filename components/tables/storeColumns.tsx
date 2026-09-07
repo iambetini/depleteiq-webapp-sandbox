@@ -97,8 +97,8 @@ export function useStoreColumns(
     },
     {
       accessorKey: "in_market",
-      header: "In Market",
-      cell: ({ row }) => (row.original.in_market ? "Yes" : "No"),
+      header: "Market Status",
+      cell: ({ row }) => (row.original.in_market ? "In-market" : "Outmarket"),
     },
     {
       accessorKey: "has_qr",
