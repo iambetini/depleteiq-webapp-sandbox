@@ -50,8 +50,21 @@ const PackageCell = React.memo(({ brandPackage }: { brandPackage: VssInventoryTr
 ));
 PackageCell.displayName = "PackageCell";
 
+const formatQuantity = (quantity: number | null | undefined) => {
+  if (quantity == null || Number.isNaN(Number(quantity))) return "-";
+  const value = Number(quantity);
+  if (value < 0) return `(${Math.abs(value)})`;
+  return String(value);
+};
+
+const formatMoney = (amount: number) => {
+  const formatted = Math.abs(amount).toLocaleString();
+  if (amount < 0) return `₦(${formatted})`;
+  return `₦${formatted}`;
+};
+
 const QuantityCell = React.memo(({ quantity }: { quantity: number }) => (
-  <div className="text-sm">{quantity ?? "-"}</div>
+  <div className="text-sm">{formatQuantity(quantity)}</div>
 ));
 QuantityCell.displayName = "QuantityCell";
 
@@ -62,7 +75,7 @@ PriceCell.displayName = "PriceCell";
 
 const TotalCell = React.memo(({ price, quantity }: { price: string; quantity: number }) => {
   const total = parseFloat(price || "0") * (Number(quantity) || 0);
-  return <div className="font-medium">₦{total.toLocaleString()}</div>;
+  return <div className="font-medium">{formatMoney(total)}</div>;
 });
 TotalCell.displayName = "TotalCell";
 
@@ -180,7 +193,7 @@ export function getVssInventoryColumns({ router, variant }: ColumnProps): Column
       header: "Quantity",
       width: 90,
       cell: ({ row }) => <QuantityCell quantity={row.original.quantity} />,
-      exportValue: (item) => String(item.quantity ?? ""),
+      exportValue: (item) => formatQuantity(item.quantity),
     },
     {
       accessorKey: "price",
@@ -194,7 +207,8 @@ export function getVssInventoryColumns({ router, variant }: ColumnProps): Column
       header: "Total",
       width: 120,
       cell: ({ row }) => <TotalCell price={row.original.price} quantity={row.original.quantity} />,
-      exportValue: (item) => String(parseFloat(item.price || "0") * (Number(item.quantity) || 0)),
+      exportValue: (item) =>
+        formatMoney(parseFloat(item.price || "0") * (Number(item.quantity) || 0)),
     },
     {
       accessorKey: "created_at",
