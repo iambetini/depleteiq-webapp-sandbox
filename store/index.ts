@@ -40,6 +40,7 @@ import { webUsers } from "./web-users";
 import { notifications } from "./notifications";
 import { geofences } from "./geofences";
 import { vssSupplies } from "./vss-supplies";
+import { vssInventoryTransactions } from "./vss-inventory-transactions";
 
 const autoResetMiddleware =
   (storeAPI: any) => (next: any) => (action: AnyAction) => {
@@ -121,6 +122,7 @@ export const store = configureStore({
     [vss.reducerPath]: vss.reducer,
     [vssOrders.reducerPath]: vssOrders.reducer,
     [vssSupplies.reducerPath]: vssSupplies.reducer,
+    [vssInventoryTransactions.reducerPath]: vssInventoryTransactions.reducer,
     [warehouses.reducerPath]: warehouses.reducer,
     [webUsers.reducerPath]: webUsers.reducer,
     [wholesalers.reducerPath]: wholesalers.reducer,
@@ -165,6 +167,7 @@ export const store = configureStore({
       vss.middleware,
       vssOrders.middleware,
       vssSupplies.middleware,
+      vssInventoryTransactions.middleware,
       warehouses.middleware,
       webUsers.middleware,
       wholesalers.middleware,
@@ -208,6 +211,7 @@ export const storeApis = {
   vss,
   vssOrders,
   vssSupplies,
+  vssInventoryTransactions,
   warehouses,
   webUsers,
   wholesalers,

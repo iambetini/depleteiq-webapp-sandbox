@@ -39,7 +39,7 @@ export type FilterOption = { label: string; value: string };
 export type FilterConfig =
   | { type: "date"; label: string; param: string }
   | { type: "month-year"; label: string; param: string }
-  | { type: "select"; label: string; param: string; options: FilterOption[] }
+  | { type: "select"; label: string; param: string; options: FilterOption[]; dependsOn?: string }
   | {
     type: "selectWithFetch";
     label: string;
@@ -50,6 +50,7 @@ export type FilterConfig =
     searchParam?: string;
     placeholder?: string;
     labelFormatter?: (item: any) => string;
+    dependsOn?: string;
   }
   | { type: "text"; label: string; param: string }
   | { type: "custom"; render: React.ReactNode }
@@ -222,6 +223,44 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     }
   }, [filterDropdownOpen, filterState]);
 
+  // Auto-clear dependent filters when parent changes (e.g., brand_package_id depends on brand)
+  React.useEffect(() => {
+    const dependentFilters = filters.filter((f: any) => f.dependsOn);
+    let needsClear = false;
+    const nextPending = { ...pendingFilterState };
+    dependentFilters.forEach((f: any) => {
+      const parentVal = pendingFilterState[f.dependsOn];
+      if (!parentVal && pendingFilterState[f.param]) {
+        delete nextPending[f.param];
+        needsClear = true;
+      }
+    });
+    if (needsClear) {
+      setPendingFilterState(nextPending);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingFilterState, filters]);
+
+  // Cache for brands with packages to derive brand_package options without extra fetch
+  const [brandsCache, setBrandsCache] = React.useState<any[]>([]);
+  React.useEffect(() => {
+    const hasBrandFilter = filters.some((f: any) => f.param === "brand" || f.param === "brand_id");
+    const hasPackageFilter = filters.some((f: any) => f.param === "brand_package_id");
+    if (!hasBrandFilter || !hasPackageFilter) return;
+    let cancelled = false;
+    import("@/lib/api-client").then(({ apiClient }) => {
+      apiClient.get<any>("/brands?per_page=1000").then((res) => {
+        if (cancelled) return;
+        const items = res.data?.items ?? res.data ?? [];
+        const arr = Array.isArray(items) ? items : [];
+        setBrandsCache(arr);
+      }).catch(() => {
+        if (!cancelled) setBrandsCache([]);
+      });
+    });
+    return () => { cancelled = true; };
+  }, [filters]);
+
   // Store-based data fetching
   let tableData: TData[] = [];
   let total = 0;
@@ -232,9 +271,14 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   const filterParams = React.useMemo(
     () =>
       Object.entries(filterState)
-        .filter(([_, value]) => value && value !== "all")
+        .filter(([key, value]) => {
+          if (!value || value === "all") return false;
+          // brand / brand_id is a helper filter to scope brand packages, not sent directly to vss-inventory-transactions backend
+          if (store === "vssInventoryTransactions" && (key === "brand" || key === "brand_id")) return false;
+          return true;
+        })
         .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {}),
-    [filterState]
+    [filterState, store]
   );
 
   const storeParams = React.useMemo(() => {
@@ -573,7 +617,47 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                                   />
                                 </div>
                               )}
-                              {filter.type === "select" && "options" in filter && (
+                              {filter.type === "select" && "options" in filter && (() => {
+                                const dependsOn = (filter as any).dependsOn as string | undefined;
+                                const parentVal = dependsOn ? pendingFilterState[dependsOn] : undefined;
+                                const isDisabled = Boolean(dependsOn && !parentVal);
+                                // Brand Package: derive options from selected brand's packages (no extra fetch)
+                                if (filter.param === "brand_package_id" && dependsOn === "brand") {
+                                  const selectedBrand = brandsCache.find((b: any) => b.uuid === parentVal);
+                                  const packages = selectedBrand?.packages ?? [];
+                                  const packageOptions = packages.map((pkg: any) => ({
+                                    label: pkg.type ? `${pkg.type} (${pkg.quantity ?? "-"})` : pkg.uuid,
+                                    value: pkg.uuid,
+                                  }));
+                                  return (
+                                    <select
+                                      className="w-full h-9 px-2 py-1 rounded text-[14px] border bg-gray-50 focus:bg-white focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                                      value={pendingFilterState[filter.param] || "all"}
+                                      onChange={(e) =>
+                                        setPendingFilterState((s) => ({
+                                          ...s,
+                                          [filter.param]: e.target.value,
+                                        }))
+                                      }
+                                      aria-label={filter.label}
+                                      disabled={isDisabled}
+                                    >
+                                      <option value="all">All</option>
+                                      {isDisabled ? (
+                                        <option value="" disabled>Select brand first...</option>
+                                      ) : packageOptions.length === 0 ? (
+                                        <option value="" disabled>No packages for this brand</option>
+                                      ) : (
+                                        packageOptions.map((opt: any) => (
+                                          <option key={opt.value} value={opt.value}>
+                                            {opt.label}
+                                          </option>
+                                        ))
+                                      )}
+                                    </select>
+                                  );
+                                }
+                                return (
                                 <select
                                   className="w-full h-9 px-2 py-1 rounded text-[14px] border bg-gray-50 focus:bg-white focus:border-primary"
                                   value={pendingFilterState[filter.param] || "all"}
@@ -591,7 +675,8 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                                     </option>
                                   ))}
                                 </select>
-                              )}
+                                );
+                              })()}
                               {filter.type === "text" && (
                                 <Input
                                   type="text"
@@ -606,10 +691,18 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                                   placeholder={filter.label}
                                 />
                               )}
-                              {filter.type === "selectWithFetch" && "fetchUrl" in filter && (
+                              {filter.type === "selectWithFetch" && "fetchUrl" in filter && (() => {
+                                const dependsOn = (filter as any).dependsOn as string | undefined;
+                                const parentVal = dependsOn ? pendingFilterState[dependsOn] : undefined;
+                                const isDisabled = Boolean(dependsOn && !parentVal);
+                                // For brand_package_id: fetch packages directly from selected brand (/brands/{uuid} -> packages)
+                                const isBrandPackage = filter.param === "brand_package_id" && dependsOn === "brand";
+                                const effectiveFetchUrl = isBrandPackage && parentVal ? `/brands/${parentVal}` : filter.fetchUrl;
+                                const fetchParams = isBrandPackage ? {} : (dependsOn && parentVal ? { [dependsOn]: parentVal } : {});
+                                return (
                                 <div className="w-full">
                                   <SelectWithFetch className="text-[14px]"
-                                    fetchUrl={filter.fetchUrl}
+                                    fetchUrl={effectiveFetchUrl}
                                     value={pendingFilterState[filter.param] || ""}
                                     onChange={(value) =>
                                       setPendingFilterState((s) => ({
@@ -620,11 +713,14 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                                     valueKey={filter.valueKey}
                                     labelKey={filter.labelKey}
                                     searchParam={filter.searchParam}
-                                    placeholder={filter.placeholder || filter.label}
+                                    placeholder={isDisabled ? `Select ${dependsOn} first...` : (filter.placeholder || filter.label)}
                                     labelFormatter={filter.labelFormatter}
+                                    disabled={isDisabled}
+                                    params={fetchParams}
                                   />
                                 </div>
-                              )}
+                                );
+                              })()}
                             </div>
                           )}
                         </div>
