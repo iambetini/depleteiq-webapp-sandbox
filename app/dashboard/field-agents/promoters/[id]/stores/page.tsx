@@ -7,6 +7,7 @@ import { useContext } from "../layout"
 import { useStoreColumns } from "@/components/tables/storeColumns"
 import AssignStoreModal from "./AssignStoreModal"
 import { assignStoresToPromoter } from "@/lib/promoter-assign"
+import { unassignStoresFromPromoter } from "@/lib/promoter-unassign"
 import { useToast } from "@/hooks/use-toast"
 import { useDispatch } from "react-redux"
 import { storeApis } from "@/store"
@@ -18,20 +19,41 @@ export default function PromoterStoresPage() {
   const fixedQuery = React.useMemo(() => ({ promoter_id: promoterId }), [promoterId])
   const [modalOpen, setModalOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [isSaving, setIsSaving] = useState(false)
   const { toast } = useToast()
   const dispatch = useDispatch()
 
   const columns = useStoreColumns(() => setRefreshKey((k) => k + 1))
 
-  const handleAssign = async (storeUuids: string[]) => {
-    if (!promoterId || storeUuids.length === 0) return
+  const handleSave = async ({
+    toAssign,
+    toUnassign,
+  }: {
+    toAssign: string[]
+    toUnassign: string[]
+  }) => {
+    if (!promoterId || (toAssign.length === 0 && toUnassign.length === 0)) return
+
+    setIsSaving(true)
     try {
-      await assignStoresToPromoter(promoterId, storeUuids)
+      if (toAssign.length > 0) {
+        await assignStoresToPromoter(promoterId, toAssign)
+      }
+      if (toUnassign.length > 0) {
+        await unassignStoresFromPromoter(promoterId, toUnassign)
+      }
+
       setModalOpen(false)
       setRefreshKey((k) => k + 1)
+
+      const parts = [
+        toAssign.length > 0 ? `${toAssign.length} assigned` : null,
+        toUnassign.length > 0 ? `${toUnassign.length} unassigned` : null,
+      ].filter(Boolean)
+
       toast({
         title: "Success",
-        description: "Stores assigned successfully",
+        description: `Stores updated (${parts.join(", ")})`,
       })
       dispatch(storeApis.stores.util.invalidateTags(["Store"] as any))
       dispatch(storeApis.promoters.util.invalidateTags(["Promoter"] as any))
@@ -39,11 +61,13 @@ export default function PromoterStoresPage() {
       toast({
         title: "Error",
         description:
-          e?.response?.data?.message || e?.message || "Failed to assign stores",
+          e?.response?.data?.message || e?.message || "Failed to update store assignments",
         variant: "destructive",
       })
       // eslint-disable-next-line no-console
       console.error(e)
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -67,7 +91,8 @@ export default function PromoterStoresPage() {
       <AssignStoreModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onAssign={handleAssign}
+        onSave={handleSave}
+        isSaving={isSaving}
       />
     </div>
   )

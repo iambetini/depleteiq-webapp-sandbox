@@ -12,6 +12,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { handleDelete } from "@/lib/handleDelete"
+import type { Promoter } from "@/types/promoter"
 import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useCallback, useRef } from "react"
@@ -36,7 +37,7 @@ export default function PromotersPage() {
     [refreshTable]
   )
 
-  const columns: ColumnDef<any, any>[] = [
+  const columns: ColumnDef<Promoter, unknown>[] = [
     {
       accessorKey: "full_name",
       header: "Name",
@@ -45,16 +46,12 @@ export default function PromotersPage() {
         const name =
           promoter.full_name ||
           [promoter.first_name, promoter.last_name].filter(Boolean).join(" ") ||
-          [promoter.user?.first_name, promoter.user?.last_name]
-            .filter(Boolean)
-            .join(" ") ||
           "—"
-        const email = promoter.email || promoter.user?.email
         return (
           <div>
             <div className="font-medium">{name}</div>
-            {email && (
-              <div className="text-sm text-muted-foreground">{email}</div>
+            {promoter.email && (
+              <div className="text-sm text-muted-foreground">{promoter.email}</div>
             )}
           </div>
         )
@@ -65,24 +62,7 @@ export default function PromotersPage() {
       header: "Market",
       cell: ({ row }) => {
         const market = row.original.market_assignment || row.original.market
-        return market?.full_name || market?.name || "-"
-      },
-    },
-    {
-      accessorKey: "tpe_user",
-      header: "TPE Supervisor",
-      cell: ({ row }: any) => {
-        const tpeUser = row.original.tpe_user
-        if (!tpeUser) return <span className="text-muted-foreground">-</span>
-        return <span>{`${tpeUser.first_name} ${tpeUser.last_name}`}</span>
-      },
-    },
-    {
-      accessorKey: "stores",
-      header: "Stores Count",
-      cell: ({ row }: any) => {
-        const stores = row.original.stores
-        return <span>{stores?.length || 0}</span>
+        return market?.full_name || market?.name || "—"
       },
     },
     {
@@ -102,9 +82,14 @@ export default function PromotersPage() {
       },
     },
     {
-      accessorKey: "actions",
+      accessorKey: "created_at",
+      header: "Created At",
+      cell: ({ row }) => row.original.created_at || "—",
+    },
+    {
+      id: "actions",
       header: "Actions",
-      cell: ({ row }: any) => {
+      cell: ({ row }) => {
         const promoter = row.original
         return (
           <DropdownMenu>

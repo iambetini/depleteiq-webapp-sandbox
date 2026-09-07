@@ -3,6 +3,26 @@ import type { Market } from "./market"
 import type { QrCode } from "./qr-code"
 import type { Location } from "./location"
 
+export const STORE_CATEGORIES = [
+  "Alcoholic beverages",
+  "Articles",
+  "Cosmetics",
+  "Food",
+  "Non-alcoholic beverage",
+  "Personal care/Home care",
+  "Pharmaceuticals",
+  "Provisions",
+] as const
+
+export type StoreCategory = (typeof STORE_CATEGORIES)[number]
+
+export const normalizeStoreCategories = (category?: unknown): string[] => {
+  if (!category) return []
+  if (Array.isArray(category)) return category.filter((c): c is string => typeof c === "string")
+  if (typeof category === "string" && category.trim()) return [category]
+  return []
+}
+
 export interface Store {
   uuid: string
   business: Business
@@ -10,7 +30,7 @@ export interface Store {
   market: Market | null
   in_market: boolean
   promo_class: string | null
-  category: string | null
+  category: string[] | string | null
   has_qr: boolean
   qr_code: QrCode | null
   created_at: string

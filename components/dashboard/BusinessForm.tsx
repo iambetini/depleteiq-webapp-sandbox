@@ -13,6 +13,7 @@ import {
   SelectValue,
   SelectWithFetch,
 } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Switch } from "@/components/ui/switch"
 import { ErrorMessage, Form, Formik } from "formik"
 import { Save, Loader2 } from "lucide-react"
@@ -27,7 +28,7 @@ interface FieldOption {
 interface FieldConfig {
   name: string
   label: string
-  type: "text" | "textarea" | "email" | "date" | "select" | "selectWithFetch" | "switch"
+  type: "text" | "textarea" | "email" | "date" | "select" | "selectWithFetch" | "switch" | "multiSelect"
   required?: boolean
   placeholder?: string
   rows?: number
@@ -115,7 +116,14 @@ export const BusinessForm = forwardRef<BusinessFormRef, BusinessFormProps>(
                     {fields
                       .filter((field) => field.type !== "switch")
                       .map((field) => (
-                        <div className="space-y-2" key={field.name}>
+                        <div
+                          className={
+                            field.type === "multiSelect"
+                              ? "space-y-2 md:col-span-2"
+                              : "space-y-2"
+                          }
+                          key={field.name}
+                        >
                           <Label htmlFor={field.name}>
                             {field.label}
                             {field.required && " *"}
@@ -171,6 +179,39 @@ export const BusinessForm = forwardRef<BusinessFormRef, BusinessFormProps>(
                                 errors[field.name] && touched[field.name] ? "border-red-500" : ""
                               }
                             />
+                          ) : field.type === "multiSelect" ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 rounded-md border border-input p-3">
+                              {field.options?.map((option) => {
+                                const selected = Array.isArray(values[field.name])
+                                  ? values[field.name].includes(option.value)
+                                  : false
+                                return (
+                                  <label
+                                    key={option.value}
+                                    className="flex items-center space-x-2 cursor-pointer"
+                                  >
+                                    <Checkbox
+                                      checked={selected}
+                                      onCheckedChange={(checked) => {
+                                        const current = Array.isArray(values[field.name])
+                                          ? values[field.name]
+                                          : []
+                                        if (checked) {
+                                          setFieldValue(field.name, [...current, option.value])
+                                        } else {
+                                          setFieldValue(
+                                            field.name,
+                                            current.filter((value: string) => value !== option.value)
+                                          )
+                                        }
+                                      }}
+                                      disabled={field.disabled}
+                                    />
+                                    <span className="text-sm">{option.label}</span>
+                                  </label>
+                                )
+                              })}
+                            </div>
                           ) : field.type === "textarea" ? (
                             <Textarea
                               id={field.name}

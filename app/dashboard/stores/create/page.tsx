@@ -6,10 +6,16 @@ import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { toast } from "@/hooks/use-toast"
 import { catchError } from "@/lib/utils"
 import { useCreateStoreMutation } from "@/store/stores"
+import { STORE_CATEGORIES } from "@/types/store"
 import { useRouter } from "next/navigation"
 import * as Yup from "yup"
 
 const emptyToNull = (value: string) => (value?.trim() ? value.trim() : null)
+
+const categoryOptions = STORE_CATEGORIES.map((category) => ({
+  label: category,
+  value: category,
+}))
 
 export default function CreateStorePage() {
   const router = useRouter()
@@ -20,9 +26,9 @@ export default function CreateStorePage() {
     market_id: "",
     address: "",
     location_id: "",
-    in_market: false,
+    in_market: "in_market",
     promo_class: "",
-    category: "",
+    category: [] as string[],
   }
 
   const validationSchema = Yup.object({
@@ -30,9 +36,11 @@ export default function CreateStorePage() {
     market_id: Yup.string().nullable(),
     address: Yup.string().nullable(),
     location_id: Yup.string().nullable(),
-    in_market: Yup.boolean(),
+    in_market: Yup.string().oneOf(["in_market", "out_market"]).required("Market status is required"),
     promo_class: Yup.string().oneOf(["pareto", "non-pareto", ""]).nullable(),
-    category: Yup.string().oneOf(["pc", "pharma", "food and bev", ""]).nullable(),
+    category: Yup.array()
+      .of(Yup.string().oneOf([...STORE_CATEGORIES]))
+      .nullable(),
   })
 
   const handleSubmit = async (values: typeof initialValues, helpers: any) => {
@@ -41,9 +49,9 @@ export default function CreateStorePage() {
         business_id: values.business_id,
         market_id: emptyToNull(values.market_id),
         location_id: emptyToNull(values.location_id),
-        in_market: Boolean(values.in_market),
+        in_market: values.in_market === "in_market",
         promo_class: emptyToNull(values.promo_class),
-        category: emptyToNull(values.category),
+        category: Array.isArray(values.category) ? values.category : [],
       }
       await createStore(payload).unwrap()
       toast({
@@ -101,21 +109,23 @@ export default function CreateStorePage() {
       ],
     },
     {
-      name: "category",
-      label: "Category",
+      name: "in_market",
+      label: "Market Status",
       type: "select" as const,
-      required: false,
-      placeholder: "Select category",
+      required: true,
+      placeholder: "Select market status",
       options: [
-        { label: "Personal Care", value: "pc" },
-        { label: "Pharmaceutical", value: "pharma" },
-        { label: "Food & Beverage", value: "food and bev" },
+        { label: "In-market", value: "in_market" },
+        { label: "Outmarket", value: "out_market" },
       ],
     },
     {
-      name: "in_market",
-      label: "In Market",
-      type: "switch" as const,
+      name: "category",
+      label: "Category",
+      type: "multiSelect" as const,
+      required: false,
+      placeholder: "Select categories",
+      options: categoryOptions,
     },
   ]
 
