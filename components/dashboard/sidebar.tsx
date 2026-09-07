@@ -90,6 +90,12 @@ export const sidebarItems: SidebarItem[] = [
     icon: "PackageCheck",
   },
   {
+    title: "Inventory",
+    href: "/dashboard/inventory",
+    permissions: ["view orders"],
+    icon: "Warehouse",
+  },
+  {
     title: "Targets",
     href: "/dashboard/targets",
     permissions: ["view targets"],
@@ -279,7 +285,7 @@ export function DashboardSidebar() {
   );
 
   return (
-    <aside className="w-64 bg-white border-r border-[#eeeeee] min-h-screen">
+    <aside className="w-64 bg-white border-r border-[#eeeeee] h-full overflow-y-auto flex-shrink-0">
       <div className="p-4">
         <nav className="space-y-1">
           <SidebarMenu items={visibleMenuItems} activeHref={activeItem?.href} />
