@@ -66,11 +66,13 @@ export default function DashboardLayout({
     <PermissionProvider>
       <SessionTimeout />
       <RolesProvider>
-        <div className="dashboard min-h-screen bg-[#f8f8f8]">
-          <DashboardHeader />
-          <div className="flex">
+        <div className="dashboard h-screen flex flex-col bg-[#f8f8f8] overflow-hidden">
+          <div className="flex-shrink-0">
+            <DashboardHeader />
+          </div>
+          <div className="flex flex-1 overflow-hidden">
             <DashboardSidebar />
-            <main className="flex-1 p-6 overflow-auto">{children}</main>
+            <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden">{children}</main>
           </div>
         </div>
       </RolesProvider>
