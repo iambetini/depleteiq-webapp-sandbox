@@ -26,6 +26,7 @@ import {
   Users,
   Warehouse,
   Flag,
+  Footprints,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
@@ -62,6 +63,7 @@ const iconMap: Record<string, IconType> = {
   History,
   Settings,
   Flag,
+  Footprints,
   ShoppingBag,
   Store,
   Megaphone,
@@ -118,6 +120,12 @@ export const sidebarItems: SidebarItem[] = [
     href: "/dashboard/field-agents",
     permissions: ["view distributors", "view tpe", "view promoters"],
     icon: "Users",
+  },
+  {
+    title: "Footprints",
+    href: "/dashboard/footprints",
+    permissions: ["view user footprint"],
+    icon: "Footprints",
   },
   {
     title: "Assignments",

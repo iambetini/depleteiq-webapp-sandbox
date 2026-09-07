@@ -298,6 +298,13 @@ export const routePermissions: RoutePermission[] = [
     permissions: ["edit locations"],
   },
 
+  // Footprints
+  {
+    href: "/dashboard/footprints",
+    pattern: /^\/dashboard\/footprints$/,
+    permissions: ["view user footprint"],
+  },
+
   // Geofences
   {
     href: "/dashboard/geofences",
