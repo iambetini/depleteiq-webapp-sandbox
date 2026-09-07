@@ -8,23 +8,22 @@ import { useVssInventoryColumns } from "@/hooks/useVssInventoryColumns";
 import { useMemo } from "react";
 
 export default function InventoryPage() {
-  const { columns } = useVssInventoryColumns("order");
+  const { columns } = useVssInventoryColumns();
   const filters = useMemo(() => VSS_INVENTORY_FILTERS, []);
 
   return (
     <div>
       <ListPageHeader
-        title="Vss Orders"
-        description="Track all inventory order transactions"
+        title="Inventory"
+        description="Track all inventory transactions"
       />
       <DataTable
         columns={columns as unknown as ColumnDef<unknown, unknown>[]}
         searchKey="brand_package.brand.name"
         searchPlaceholder="Search inventory..."
         store="vssInventoryTransactions"
-        exportFileName="Inventory_Orders"
+        exportFileName="Inventory"
         filters={filters}
-        fixedQuery={{ type: "order" }}
       />
     </div>
   );

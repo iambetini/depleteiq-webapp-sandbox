@@ -219,6 +219,11 @@ function SelectWithFetch<T = any>({
   // Store-based query (recommended approach)
   const storeQuery = store ? storeApis[store]?.useGetAllQuery(queryParams) : undefined
 
+  // Serialize params to a stable string so new object references with the same
+  // contents don't trigger a redundant refetch (e.g. every time a filter is selected).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const serializedParams = React.useMemo(() => JSON.stringify(params), [JSON.stringify(params)])
+
   useEffect(() => {
     if (!fetchUrl || store) return
 
@@ -233,6 +238,13 @@ function SelectWithFetch<T = any>({
         url.searchParams.set('per_page', '1000')
       }
 
+      // Append params (for dependent filters like brand_id -> brand-packages)
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && String(value).trim() !== "") {
+          url.searchParams.set(key, String(value))
+        }
+      })
+
       if (debouncedSearch.trim()) {
         url.searchParams.set(searchParam, debouncedSearch)
       }
@@ -242,14 +254,25 @@ function SelectWithFetch<T = any>({
       apiClient
         .get<{ items: T[] }>(finalUrl)
         .then(({ data }) => {
-          const items = data.items || data || []
+          const res: any = data as any
+          // Handle brand detail response where packages are nested (e.g., /brands/{id} returns brand with packages)
+          let items: any = res.items ?? res.data?.items ?? res.data?.item?.packages ?? res.item?.packages ?? res.data ?? []
+          // If items is a single brand object with packages, extract packages
+          if (!Array.isArray(items) && items && typeof items === "object" && Array.isArray((items as any).packages)) {
+            items = (items as any).packages
+          }
+          // Handle case where response is { data: { item: Brand } } with packages
+          if (!Array.isArray(items) && res.data?.item && Array.isArray(res.data.item.packages)) {
+            items = res.data.item.packages
+          }
           const processedItems = Array.isArray(items) ? items : []
           setOptions(processedItems)
         })
         .catch((error) => { setOptions([]) })
         .finally(() => setLoading(false))
     })
-  }, [fetchUrl, debouncedSearch, searchParam, store])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchUrl, debouncedSearch, searchParam, store, serializedParams])
 
   // Determine final options and loading state
   const finalOptions = React.useMemo(() => {
@@ -412,6 +435,11 @@ function CommandWithFetch<T = any>({
   // Store-based query (recommended approach)
   const storeQuery = store ? storeApis[store]?.useGetAllQuery(queryParams) : undefined
 
+  // Serialize params to a stable string so new object references with the same
+  // contents don't trigger a redundant refetch.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const serializedParams = React.useMemo(() => JSON.stringify(params), [JSON.stringify(params)])
+
   useEffect(() => {
     if (!fetchUrl || store) return
 
@@ -426,6 +454,13 @@ function CommandWithFetch<T = any>({
         url.searchParams.set('per_page', '1000')
       }
 
+      // Append params (for dependent filters like brand_id -> brand-packages)
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && String(value).trim() !== "") {
+          url.searchParams.set(key, String(value))
+        }
+      })
+
       if (debouncedSearch.trim()) {
         url.searchParams.set(searchParam, debouncedSearch)
       }
@@ -435,14 +470,25 @@ function CommandWithFetch<T = any>({
       apiClient
         .get<{ items: T[] }>(finalUrl)
         .then(({ data }) => {
-          const items = data.items || data || []
+          const res: any = data as any
+          // Handle brand detail response where packages are nested (e.g., /brands/{id} returns brand with packages)
+          let items: any = res.items ?? res.data?.items ?? res.data?.item?.packages ?? res.item?.packages ?? res.data ?? []
+          // If items is a single brand object with packages, extract packages
+          if (!Array.isArray(items) && items && typeof items === "object" && Array.isArray((items as any).packages)) {
+            items = (items as any).packages
+          }
+          // Handle case where response is { data: { item: Brand } } with packages
+          if (!Array.isArray(items) && res.data?.item && Array.isArray(res.data.item.packages)) {
+            items = res.data.item.packages
+          }
           const processedItems = Array.isArray(items) ? items : []
           setOptions(processedItems)
         })
         .catch((error) => { setOptions([]) })
         .finally(() => setLoading(false))
     })
-  }, [fetchUrl, debouncedSearch, searchParam, store])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchUrl, debouncedSearch, searchParam, store, serializedParams])
 
   // Determine final options and loading state
   const finalOptions = React.useMemo(() => {

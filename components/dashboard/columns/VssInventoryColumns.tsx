@@ -6,9 +6,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { StatusBadge } from "@/components/ui/status-badge";
 import type { VssInventoryTransaction } from "@/types/vss-inventory-transaction";
 import { Eye, MoreHorizontal } from "lucide-react";
 import React from "react";
+
+const TypeCell = React.memo(({ type }: { type: string }) => (
+  <StatusBadge status={type as any} />
+));
+TypeCell.displayName = "TypeCell";
 
 const VssCell = React.memo(({ item }: { item: VssInventoryTransaction }) => {
   const name = (item as any).vss_user_name || (item as any).vss_user?.full_name || "-";
@@ -100,11 +106,25 @@ interface ColumnProps {
 export function getVssInventoryColumns({ router, variant }: ColumnProps): ColumnDef<VssInventoryTransaction>[] {
   const isOrder = variant === "order";
   const isSupply = variant === "supply";
+  const isMerged = !variant;
 
-  const partyHeader = isSupply ? "Business" : isOrder ? "Distributor" : "Distributor / Business";
-  const partyAccessorKey = isSupply ? "business_name" : isOrder ? "distributor_name" : "distributor_name";
+  // Merged view: show Type + VSS + Business + Distributor handling
+  // Order variant: VSS + Distributor
+  // Supply variant: VSS + Business
 
-  return [
+  const baseColumns: ColumnDef<VssInventoryTransaction>[] = [];
+
+  if (isMerged) {
+    baseColumns.push({
+      accessorKey: "type",
+      header: "Type",
+      width: 110,
+      cell: ({ row }) => <TypeCell type={row.original.type} />,
+      exportValue: (item) => item.type || "",
+    });
+  }
+
+  baseColumns.push(
     {
       accessorKey: "vss_user_name",
       header: "VSS",
@@ -112,24 +132,35 @@ export function getVssInventoryColumns({ router, variant }: ColumnProps): Column
       cell: ({ row }) => <VssCell item={row.original} />,
       exportValue: (item) => (item as any).vss_user_name || (item as any).vss_user?.full_name || "",
     },
-    {
-      accessorKey: partyAccessorKey,
-      header: partyHeader,
-      width: 190,
-      cell: ({ row }) => {
-        if (isSupply) return <BusinessCell item={row.original} />;
-        if (isOrder) return <DistributorCell item={row.original} />;
-        const isRowSupply = row.original.type === "supply";
-        return isRowSupply ? <BusinessCell item={row.original} /> : <DistributorCell item={row.original} />;
-      },
-      exportValue: (item) => {
-        if (isSupply) return (item as any).business_name || (item as any).business?.name || "";
-        if (isOrder) return (item as any).distributor_name || (item as any).distributor_user?.full_name || "";
-        return item.type === "supply"
-          ? (item as any).business_name || (item as any).business?.name || ""
-          : (item as any).distributor_name || (item as any).distributor_user?.full_name || "";
-      },
-    },
+    // Business column - visible on merged and supply variant
+    ...((isMerged || isSupply
+      ? [
+          {
+            accessorKey: "business_name",
+            header: "Business",
+            width: 190,
+            cell: ({ row }: { row: { original: VssInventoryTransaction } }) => <BusinessCell item={row.original} />,
+            exportValue: (item: VssInventoryTransaction) => (item as any).business_name || (item as any).business?.name || "",
+          } as ColumnDef<VssInventoryTransaction>,
+        ]
+      : []) as ColumnDef<VssInventoryTransaction>[]),
+    // Distributor column - visible on merged and order variant (for backward compat, keep party logic for merged)
+    ...((isMerged || isOrder
+      ? [
+          {
+            accessorKey: "distributor_name",
+            header: isMerged ? "Distributor" : "Distributor",
+            width: 190,
+            cell: ({ row }: { row: { original: VssInventoryTransaction } }) => <DistributorCell item={row.original} />,
+            exportValue: (item: VssInventoryTransaction) =>
+              (item as any).distributor_name || (item as any).distributor_user?.full_name || "",
+          } as ColumnDef<VssInventoryTransaction>,
+        ]
+      : []) as ColumnDef<VssInventoryTransaction>[])
+  );
+
+  return [
+    ...baseColumns,
     {
       accessorKey: "brand_package.brand.name",
       header: "Brand",

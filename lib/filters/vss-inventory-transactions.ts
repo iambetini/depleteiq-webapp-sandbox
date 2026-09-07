@@ -10,6 +10,12 @@ export const INVENTORY_TYPE_OPTIONS = [
 
 export const VSS_INVENTORY_FILTERS: FilterConfig[] = [
   {
+    type: "select",
+    label: "Type",
+    param: "type",
+    options: INVENTORY_TYPE_OPTIONS,
+  },
+  {
     type: "selectWithFetch",
     label: "VSS",
     param: "vss_user_id",
@@ -22,8 +28,8 @@ export const VSS_INVENTORY_FILTERS: FilterConfig[] = [
   },
   {
     type: "selectWithFetch",
-    label: "Brand Package",
-    param: "brand_package_id",
+    label: "Brands",
+    param: "brand",
     fetchUrl: "/brands",
     valueKey: "uuid",
     labelKey: "name",
@@ -32,13 +38,10 @@ export const VSS_INVENTORY_FILTERS: FilterConfig[] = [
     labelFormatter: (item: any) => item.name,
   },
   {
-    type: "text",
-    label: "VSS Order Brand ID",
-    param: "vss_order_brand_id",
-  },
-  {
-    type: "text",
-    label: "VSS Supply Brand ID",
-    param: "vss_supply_brand_id",
+    type: "select",
+    label: "Brand Package",
+    param: "brand_package_id",
+    options: [],
+    dependsOn: "brand",
   },
 ];

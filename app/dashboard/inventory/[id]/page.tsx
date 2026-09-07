@@ -105,7 +105,7 @@ export default function InventoryTransactionDetailPage() {
                   <p className="font-sm text-sm text-[#666666]">{pkg.quantity}</p>
                 </div>
                 <div>
-                  <p className="text-medium font-semibold text-[#333333] mb-1">OG Price</p>
+                  <p className="text-medium font-semibold text-[#333333] mb-1">Original Price</p>
                   <p className="font-sm text-sm text-[#666666]">₦{Number(pkg.og_price).toLocaleString()}</p>
                 </div>
               </div>
