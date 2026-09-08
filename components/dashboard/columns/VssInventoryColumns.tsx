@@ -53,13 +53,13 @@ PackageCell.displayName = "PackageCell";
 const formatQuantity = (quantity: number | null | undefined) => {
   if (quantity == null || Number.isNaN(Number(quantity))) return "-";
   const value = Number(quantity);
-  if (value < 0) return `(${Math.abs(value)})`;
+  if (value < 0) return `${Math.abs(value)}`;
   return String(value);
 };
 
 const formatMoney = (amount: number) => {
   const formatted = Math.abs(amount).toLocaleString();
-  if (amount < 0) return `₦(${formatted})`;
+  if (amount < 0) return `₦${formatted}`;
   return `₦${formatted}`;
 };
 

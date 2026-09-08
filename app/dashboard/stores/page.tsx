@@ -50,6 +50,15 @@ export default function StoresPage() {
             searchParam: "search",
             placeholder: "Select market",
           },
+          {
+            type: "select",
+            label: "Market Status",
+            param: "in_market",
+            options: [
+              { label: "In Market", value: "true" },
+              { label: "Out Market", value: "false" },
+            ],
+          },
         ]}
       />
     </div>
