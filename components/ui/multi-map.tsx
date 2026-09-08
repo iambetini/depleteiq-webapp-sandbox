@@ -11,7 +11,7 @@ interface LocationItem {
 interface MultiMapProps {
     locations: LocationItem[]
     className?: string
-    /** When true, draw a polyline connecting points in order (original coords). */
+    /** When true, draw a dashed polyline with direction arrows connecting points in order. */
     showPath?: boolean
 }
 
@@ -134,10 +134,7 @@ export function MultiMap({
                 m.setMap(null)
             })
             markersRef.current = []
-            if (polylineRef.current) {
-                polylineRef.current.setMap(null)
-                polylineRef.current = null
-            }
+            clearPolyline()
             mapInstance.current = null
             readyRef.current = false
             if (mapRef.current) mapRef.current.innerHTML = ""
@@ -147,7 +144,11 @@ export function MultiMap({
 
     const clearPolyline = () => {
         if (polylineRef.current) {
-            polylineRef.current.setMap(null)
+            if (Array.isArray(polylineRef.current)) {
+                polylineRef.current.forEach((overlay: any) => overlay.setMap(null))
+            } else {
+                polylineRef.current.setMap(null)
+            }
             polylineRef.current = null
         }
     }
@@ -169,14 +170,49 @@ export function MultiMap({
 
         if (pathPts.length < 2) return
 
-        polylineRef.current = new google.maps.Polyline({
+        // Dashed segment symbol (broken line)
+        const dashedSymbol = {
+            path: "M 0,-1 0,1",
+            strokeOpacity: 1,
+            strokeColor: "#f97316",
+            scale: 6,
+        }
+
+        // Forward arrow symbol to indicate direction of travel
+        const arrowSymbol = {
+            path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+            scale: 5,
+            strokeColor: "#ffffff",
+            strokeWeight: 1.5,
+            fillColor: "#f97316",
+            fillOpacity: 1,
+        }
+
+        // Transparent base line with dashes + directional arrows as icon overlays
+        const polyline = new google.maps.Polyline({
             path: pathPts,
             geodesic: true,
             strokeColor: "#f97316",
-            strokeOpacity: 0.85,
+            strokeOpacity: 0,   // hidden – dashes below provide the visible stroke
             strokeWeight: 3,
+            icons: [
+                // Dashes repeated every 22px → longer trace, wider gap
+                {
+                    icon: dashedSymbol,
+                    offset: "0",
+                    repeat: "22px",
+                },
+                // Directional arrows every 80px so the flow is always clear
+                {
+                    icon: arrowSymbol,
+                    offset: "40px",
+                    repeat: "80px",
+                },
+            ],
             map: mapInstance.current,
         })
+
+        polylineRef.current = polyline
     }
 
     const syncMarkers = () => {
@@ -207,12 +243,41 @@ export function MultiMap({
         const bounds = new google.maps.LatLngBounds()
 
         pts.forEach((p, index) => {
+            const isFirst = index === 0
+            const isLast = index === pts.length - 1
+            const multiPoint = pts.length > 1
+
+            // Green circle for start, red for end, default pin for intermediate
+            let icon: any = undefined
+            if (multiPoint) {
+                if (isFirst) {
+                    icon = {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 10,
+                        fillColor: "#22c55e",
+                        fillOpacity: 1,
+                        strokeColor: "#ffffff",
+                        strokeWeight: 2.5,
+                    }
+                } else if (isLast) {
+                    icon = {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 10,
+                        fillColor: "#ef4444",
+                        fillOpacity: 1,
+                        strokeColor: "#ffffff",
+                        strokeWeight: 2.5,
+                    }
+                }
+            }
+
             const marker = new google.maps.Marker({
                 position: { lat: p.lat, lng: p.lng },
                 map: mapInstance.current,
                 title: p.title || "",
+                icon: icon,
                 label:
-                    pts.length <= 40
+                    !icon && pts.length <= 40
                         ? {
                               text: String(index + 1),
                               color: "#ffffff",
@@ -223,11 +288,40 @@ export function MultiMap({
                 zIndex: pts.length - index,
             })
 
-            const infoWindow = new google.maps.InfoWindow({
-                content: `<div style="padding:8px"><div style="font-weight:600">${escapeHtml(
-                    p.title || "Location"
-                )}</div><div style="font-size:12px">${p.originalLat.toFixed(6)}, ${p.originalLng.toFixed(6)}</div></div>`,
-            })
+            // "S" / "E" text overlaid on the custom start/end circle icons
+            if (icon && pts.length <= 40) {
+                const labelMarker = new google.maps.Marker({
+                    position: { lat: p.lat, lng: p.lng },
+                    map: mapInstance.current,
+                    label: {
+                        text: isFirst ? "S" : "E",
+                        color: "#ffffff",
+                        fontSize: "10px",
+                        fontWeight: "700",
+                    },
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 0,
+                    },
+                    zIndex: pts.length - index + 1,
+                    clickable: false,
+                })
+                markersRef.current.push(labelMarker)
+            }
+
+            const badgeColor = isFirst ? "#22c55e" : isLast ? "#ef4444" : "#f97316"
+            const badgeLabel = isFirst ? "Start" : isLast ? "End" : `#${index + 1}`
+
+            const infoContent = `
+                <div style="padding:8px;min-width:160px">
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+                        <span style="padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;color:#fff;background:${badgeColor}">${badgeLabel}</span>
+                        <span style="font-weight:600;font-size:13px">${escapeHtml(p.title || "Location")}</span>
+                    </div>
+                    <div style="font-size:11px;color:#888">${p.originalLat.toFixed(6)}, ${p.originalLng.toFixed(6)}</div>
+                </div>`
+
+            const infoWindow = new google.maps.InfoWindow({ content: infoContent })
 
             marker.addListener("click", () => {
                 infoWindow.open(mapInstance.current, marker)

@@ -67,7 +67,7 @@ export default function InventoryTransactionDetailPage() {
             </div>
             <div>
               <p className="text-medium font-semibold text-[#333333] mb-1">Quantity</p>
-              <p className="font-sm text-sm text-[#666666]">{tx.quantity}</p>
+              <p className="font-sm text-sm text-[#666666]">{Math.abs(qty)}</p>
             </div>
             <div>
               <p className="text-medium font-semibold text-[#333333] mb-1">Price</p>
@@ -75,7 +75,7 @@ export default function InventoryTransactionDetailPage() {
             </div>
             <div>
               <p className="text-medium font-semibold text-[#333333] mb-1">Total</p>
-              <p className="font-sm text-sm text-[#666666]">₦{total.toLocaleString()}</p>
+              <p className="font-sm text-sm text-[#666666]">₦{Math.abs(total).toLocaleString()}</p>
             </div>
             <div>
               <p className="text-medium font-semibold text-[#333333] mb-1">Created At</p>
