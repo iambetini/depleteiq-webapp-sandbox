@@ -10,6 +10,7 @@ import { useDispatch } from "react-redux";
 import { storeApis } from "@/store";
 import { unassignStoresFromPromoter } from "@/lib/promoter-unassign";
 import type { Store } from "@/types/store";
+import { formatDateTime } from "@/lib/date-utils";
 
 export function useStoreColumns(
   refreshTable?: () => void
@@ -120,10 +121,11 @@ export function useStoreColumns(
     {
       accessorKey: "created_at",
       header: "Created At",
-      cell: ({ row }) =>
-        row.original.created_at
-          ? new Date(row.original.created_at).toLocaleString()
-          : "-",
+      cell: ({ row }) => (
+        <div className="text-sm whitespace-nowrap">
+          {formatDateTime(row.original.created_at)}
+        </div>
+      ),
     },
     {
       id: "actions",

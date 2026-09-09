@@ -42,7 +42,7 @@ const PerformanceCell = React.memo(({ performance }: { performance?: Distributor
   if (!performance) return <span className="text-muted-foreground">No data</span>
   return (
     <div className="text-sm">
-      <div className="font-medium">₦{performance.total_value.toLocaleString()}</div>
+      <div className="font-medium">₦{performance.total_value?.toLocaleString()}</div>
       <div className="text-muted-foreground">{performance.total_orders} orders</div>
       <div className="flex items-center text-green-600">
         <TrendingUp className="h-3 w-3 mr-1" />
