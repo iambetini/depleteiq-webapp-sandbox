@@ -11,7 +11,7 @@ interface LocationItem {
 interface MultiMapProps {
     locations: LocationItem[]
     className?: string
-    /** When true, draw a dashed polyline with direction arrows connecting points in order. */
+    /** When true, draw an orange path (soft underlay + dashes + sparse direction arrows). */
     showPath?: boolean
 }
 
@@ -170,49 +170,59 @@ export function MultiMap({
 
         if (pathPts.length < 2) return
 
-        // Dashed segment symbol (broken line)
+        // Soft solid underlay — same orange weight/texture as the continuous path
+        const underlay = new google.maps.Polyline({
+            path: pathPts,
+            geodesic: true,
+            strokeColor: "#f97316",
+            strokeOpacity: 0.45,
+            strokeWeight: 3,
+            map: mapInstance.current,
+            zIndex: 1,
+        })
+
+        // Dashed segment symbol over the underlay
         const dashedSymbol = {
             path: "M 0,-1 0,1",
             strokeOpacity: 1,
             strokeColor: "#f97316",
-            scale: 6,
+            scale: 4,
         }
 
-        // Forward arrow symbol to indicate direction of travel
+        // Forward arrow — sparse so direction stays clear without clutter
         const arrowSymbol = {
             path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-            scale: 5,
+            scale: 3,
             strokeColor: "#ffffff",
-            strokeWeight: 1.5,
-            fillColor: "#f97316",
+            strokeWeight: 1,
+            fillColor: "#ea580c",
             fillOpacity: 1,
         }
 
-        // Transparent base line with dashes + directional arrows as icon overlays
-        const polyline = new google.maps.Polyline({
+        // Transparent stroke carrying dashes + directional arrows
+        const dashedPath = new google.maps.Polyline({
             path: pathPts,
             geodesic: true,
             strokeColor: "#f97316",
-            strokeOpacity: 0,   // hidden – dashes below provide the visible stroke
+            strokeOpacity: 0,
             strokeWeight: 3,
             icons: [
-                // Dashes repeated every 22px → longer trace, wider gap
                 {
                     icon: dashedSymbol,
                     offset: "0",
-                    repeat: "22px",
+                    repeat: "18px",
                 },
-                // Directional arrows every 80px so the flow is always clear
                 {
                     icon: arrowSymbol,
-                    offset: "40px",
-                    repeat: "80px",
+                    offset: "50%",
+                    repeat: "160px",
                 },
             ],
             map: mapInstance.current,
+            zIndex: 2,
         })
 
-        polylineRef.current = polyline
+        polylineRef.current = [underlay, dashedPath]
     }
 
     const syncMarkers = () => {
@@ -245,39 +255,13 @@ export function MultiMap({
         pts.forEach((p, index) => {
             const isFirst = index === 0
             const isLast = index === pts.length - 1
-            const multiPoint = pts.length > 1
-
-            // Green circle for start, red for end, default pin for intermediate
-            let icon: any = undefined
-            if (multiPoint) {
-                if (isFirst) {
-                    icon = {
-                        path: google.maps.SymbolPath.CIRCLE,
-                        scale: 10,
-                        fillColor: "#22c55e",
-                        fillOpacity: 1,
-                        strokeColor: "#ffffff",
-                        strokeWeight: 2.5,
-                    }
-                } else if (isLast) {
-                    icon = {
-                        path: google.maps.SymbolPath.CIRCLE,
-                        scale: 10,
-                        fillColor: "#ef4444",
-                        fillOpacity: 1,
-                        strokeColor: "#ffffff",
-                        strokeWeight: 2.5,
-                    }
-                }
-            }
 
             const marker = new google.maps.Marker({
                 position: { lat: p.lat, lng: p.lng },
                 map: mapInstance.current,
                 title: p.title || "",
-                icon: icon,
                 label:
-                    !icon && pts.length <= 40
+                    pts.length <= 40
                         ? {
                               text: String(index + 1),
                               color: "#ffffff",
@@ -288,29 +272,8 @@ export function MultiMap({
                 zIndex: pts.length - index,
             })
 
-            // "S" / "E" text overlaid on the custom start/end circle icons
-            if (icon && pts.length <= 40) {
-                const labelMarker = new google.maps.Marker({
-                    position: { lat: p.lat, lng: p.lng },
-                    map: mapInstance.current,
-                    label: {
-                        text: isFirst ? "S" : "E",
-                        color: "#ffffff",
-                        fontSize: "10px",
-                        fontWeight: "700",
-                    },
-                    icon: {
-                        path: google.maps.SymbolPath.CIRCLE,
-                        scale: 0,
-                    },
-                    zIndex: pts.length - index + 1,
-                    clickable: false,
-                })
-                markersRef.current.push(labelMarker)
-            }
-
             const badgeColor = isFirst ? "#22c55e" : isLast ? "#ef4444" : "#f97316"
-            const badgeLabel = isFirst ? "Start" : isLast ? "End" : `#${index + 1}`
+            const badgeLabel = `#${index + 1}`
 
             const infoContent = `
                 <div style="padding:8px;min-width:160px">

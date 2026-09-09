@@ -55,6 +55,7 @@ export default function StoresPage() {
             label: "Market Status",
             param: "in_market",
             options: [
+              { label: "All", value: "all" },
               { label: "In Market", value: "true" },
               { label: "Out Market", value: "false" },
             ],

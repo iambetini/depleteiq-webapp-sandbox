@@ -152,6 +152,26 @@ export function parseCalendarDate(value: string): Date {
 }
 
 /**
+ * Format API datetime strings for table display.
+ * Handles ISO UTC (e.g. `2026-09-08T15:48:51.000000Z`) as wall-clock 12-hour time:
+ * `2026-09-08 3:48 PM`
+ */
+export function formatDateTime(value?: string | null, fallback = "-"): string {
+  if (!value) return fallback;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  const wall = new Date(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+    date.getUTCHours(),
+    date.getUTCMinutes(),
+    date.getUTCSeconds(),
+  );
+  return format(wall, "yyyy-MM-dd h:mm a");
+}
+
+/**
  * Get all available filter options
  */
 export const DATE_FILTER_OPTIONS: DateFilterOption[] = [
