@@ -100,11 +100,12 @@ export default function ManageVssPage() {
       required: true,
       placeholder: "Select role",
       options: roles
-        .filter((role) => role.name.toLowerCase() === "vss")
+        .filter((role) => role.name?.toLowerCase() === "vss")
         .map((role) => ({
           label: role.name,
-          value: role.uuid,
-        })),
+          value: role.uuid || role.id,
+        }))
+        .filter((option) => option.value),
     },
     {
       name: "market_id",

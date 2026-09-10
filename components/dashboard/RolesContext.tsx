@@ -21,7 +21,7 @@ export const RolesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const fetchRoles = async () => {
     setIsLoading(true);
     try {
-      const { data } = await apiClient.get<{ items: Role[] }>("/roles", { showToast: false });
+      const { data } = await apiClient.get<{ items: Role[] }>("/roles?per_page=1000", { showToast: false });
       setRoles(data.items || []);
     } catch {
       setRoles([]);
