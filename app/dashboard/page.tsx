@@ -302,6 +302,7 @@ export default function DashboardPage() {
                 columns={columns as unknown as ColumnDef<unknown, unknown>[]}
                 store="orders"
                 per_page={5}
+                syncPaginationWithUrl={false}
                 exportFileName="Recent-Orders"
               />
             </div>
