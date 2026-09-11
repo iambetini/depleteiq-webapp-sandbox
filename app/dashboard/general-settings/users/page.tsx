@@ -1,5 +1,6 @@
 "use client";
 import BulkUploadModal from "@/components/dashboard/BulkUploadModal";
+import { useRoles } from "@/components/dashboard/RolesContext";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import ListPageHeader from "@/components/dashboard/ListPageHeader";
@@ -10,9 +11,16 @@ import { handleDelete } from "@/lib/handleDelete";
 import { User } from "@/types/user";
 import { Edit, Eye, MoreHorizontal, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useCallback, useMemo } from "react";
 
-const roles = "super-admin,sales-admin,manager,operations,treasury"
+const EXCLUDED_ROLES = new Set([
+  "wholesaler",
+  "distributor",
+  "ime",
+  "vss",
+  "tpe",
+  "promoter",
+])
 
 function getColumns(
   router: any,
@@ -93,6 +101,20 @@ function getColumns(
 export default function UsersPage() {
   const router = useRouter()
   const dataTableRef = useRef<{ refresh: () => void }>(null)
+  const { roles, isLoading: isRolesLoading } = useRoles()
+
+  const allowedRoles = useMemo(
+    () =>
+      roles
+        .map((role) => role.name)
+        .filter(
+          (name) =>
+            Boolean(name) && !EXCLUDED_ROLES.has(name.toLowerCase().trim()),
+        ),
+    [roles],
+  )
+
+  const rolesQuery = allowedRoles.join(",")
 
   const refreshTable = useCallback(() => {
     dataTableRef.current?.refresh()
@@ -126,29 +148,31 @@ export default function UsersPage() {
         bulkAddLabel="Add Bulk Users"
       />
 
-      <DataTable
-        ref={dataTableRef}
-        columns={columns as unknown as ColumnDef<unknown, unknown>[]}
-        searchKey="first_name"
-        searchPlaceholder="Search users..."
-        store="webUsers"
-        exportFileName="Users"
-        filters={[
-          {
-            type: "select",
-            label: "Role",
-            param: "roles",
-            options: [
-              { label: "All Roles", value: roles },
-              { label: "Manager", value: "manager" },
-              { label: "Operations", value: "operations" },
-              { label: "Sales Admin", value: "sales-admin" },
-              { label: "Super Admin", value: "super-admin" },
-              { label: "Treasury", value: "treasury" },
-            ],
-          },
-        ]}
-      />
+      {!isRolesLoading && rolesQuery && (
+        <DataTable
+          ref={dataTableRef}
+          columns={columns as unknown as ColumnDef<unknown, unknown>[]}
+          searchKey="first_name"
+          searchPlaceholder="Search users..."
+          store="webUsers"
+          fixedQuery={{ roles: rolesQuery }}
+          exportFileName="Users"
+          filters={[
+            {
+              type: "select",
+              label: "Role",
+              param: "roles",
+              options: [
+                { label: "All Roles", value: rolesQuery },
+                ...allowedRoles.map((name) => ({
+                  label: name,
+                  value: name,
+                })),
+              ],
+            },
+          ]}
+        />
+      )}
 
       <BulkUploadModal
         open={bulkModalOpen}
