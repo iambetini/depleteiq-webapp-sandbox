@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useRoles } from "@/components/dashboard/RolesContext"
-import UserForm from "@/components/dashboard/UserForm"
-import { handleDelete } from "@/lib/handleDelete"
-import { toast } from "@/hooks/use-toast"
-import { catchError } from "@/lib/utils"
-import { useUpdateVSSMutation } from "@/store/vss"
-import { useRouter } from "next/navigation"
-import { useEffect, useState, useCallback, useMemo } from "react"
-import * as Yup from "yup"
-import { useVssData } from "@/hooks/use-entity-data"
-import { Edit, MapPin, Shield, Trash2, User } from "lucide-react"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRoles } from "@/components/dashboard/RolesContext";
+import UserForm from "@/components/dashboard/UserForm";
+import { handleDelete } from "@/lib/handleDelete";
+import { toast } from "@/hooks/use-toast";
+import { catchError } from "@/lib/utils";
+import { useUpdateVSSMutation } from "@/store/vss";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import * as Yup from "yup";
+import { useVssData } from "@/hooks/use-entity-data";
+import { Edit, MapPin, Shield, Trash2, User } from "lucide-react";
 
 export default function ManageVssPage() {
   const [initialValues, setInitialValues] = useState({
@@ -24,21 +24,24 @@ export default function ManageVssPage() {
     market_id: "",
     role_id: "",
     status: "active",
-  })
-  const [isEditMode, setIsEditMode] = useState(false)
-  const { roles, isLoading: isRolesLoading } = useRoles()
-  const { entity: vss, refetch } = useVssData()
-  const router = useRouter()
-  const [updateVSS] = useUpdateVSSMutation()
+  });
+  const [isEditMode, setIsEditMode] = useState(false);
+  const { roles, isLoading: isRolesLoading } = useRoles();
+  const { entity: vss, refetch } = useVssData();
+  const router = useRouter();
+  const [updateVSS] = useUpdateVSSMutation();
 
-  const deleteHandler = useCallback((uuid: string) => {
-    handleDelete({
-      storeName: "vss",
-      uuid,
-      entityLabel: "VSS",
-      onSuccess: () => router.push("/dashboard/field-agents/vss"),
-    })
-  }, [router])
+  const deleteHandler = useCallback(
+    (uuid: string) => {
+      handleDelete({
+        storeName: "vss",
+        uuid,
+        entityLabel: "VSS",
+        onSuccess: () => router.push("/dashboard/field-agents/vss"),
+      });
+    },
+    [router],
+  );
 
   useEffect(() => {
     if (vss && roles.length > 0) {
@@ -50,108 +53,119 @@ export default function ManageVssPage() {
         market_id: vss.market?.uuid || "",
         role_id: vss.role?.uuid || "",
         status: vss.status,
-      })
+      });
     }
-  }, [vss, roles])
+  }, [vss, roles]);
 
   const validationSchema = Yup.object({
     first_name: Yup.string().required("First name is required"),
     last_name: Yup.string().required("Last name is required"),
-    email: Yup.string().email("Please enter a valid email").required("Email is required"),
+    email: Yup.string()
+      .email("Please enter a valid email")
+      .required("Email is required"),
     phone: Yup.string().required("Phone number is required"),
     market_id: Yup.string(),
     role_id: Yup.string().required("Role is required"),
     status: Yup.string().oneOf(["active", "inactive"]).required(),
-  })
+  });
 
-  const fields = useMemo(() => [
-    {
-      name: "first_name",
-      label: "First Name",
-      type: "text" as const,
-      required: true,
-      placeholder: "Enter first name",
-    },
-    {
-      name: "last_name",
-      label: "Last Name",
-      type: "text" as const,
-      required: true,
-      placeholder: "Enter last name",
-    },
-    {
-      name: "email",
-      label: "Email Address",
-      type: "email" as const,
-      required: true,
-      placeholder: "Enter email address",
-    },
-    {
-      name: "phone",
-      label: "Phone Number",
-      type: "text" as const,
-      required: true,
-      placeholder: "Enter phone number",
-    },
-    {
-      name: "role_id",
-      label: "Role",
-      type: "select" as const,
-      required: true,
-      placeholder: "Select role",
-      options: roles
-        .filter((role) => role.name.toLowerCase() === "vss")
-        .map((role) => ({
-          label: role.name,
-          value: role.uuid,
-        })),
-    },
-    {
-      name: "market_id",
-      label: "Market",
-      type: "selectWithFetch" as const,
-      required: false,
-      placeholder: "Select market",
-      store: "markets",
-      valueKey: "uuid",
-      labelKey: "name",
-      initialSearch: vss?.market?.name || "",
-    },
-    {
-      name: "status",
-      label: "Status",
-      type: "select" as const,
-      required: true,
-      placeholder: "Select status",
-      options: [
-        { label: "Active", value: "active" },
-        { label: "Inactive", value: "inactive" },
-      ],
-    },
-  ], [roles, vss])
+  const fields = useMemo(
+    () => [
+      {
+        name: "first_name",
+        label: "First Name",
+        type: "text" as const,
+        required: true,
+        placeholder: "Enter first name",
+      },
+      {
+        name: "last_name",
+        label: "Last Name",
+        type: "text" as const,
+        required: true,
+        placeholder: "Enter last name",
+      },
+      {
+        name: "email",
+        label: "Email Address",
+        type: "email" as const,
+        required: true,
+        placeholder: "Enter email address",
+      },
+      {
+        name: "phone",
+        label: "Phone Number",
+        type: "text" as const,
+        required: true,
+        placeholder: "Enter phone number",
+      },
+      {
+        name: "role_id",
+        label: "Role",
+        type: "select" as const,
+        required: true,
+        placeholder: "Select role",
+        options: roles
+          .filter((role) => role.name?.toLowerCase() === "vss")
+          .map((role) => ({
+            label: role.name,
+            value: role.uuid || role.id,
+          }))
+          .filter((option) => option.value),
+      },
+      {
+        name: "market_id",
+        label: "Market",
+        type: "selectWithFetch" as const,
+        required: false,
+        placeholder: "Select market",
+        store: "markets",
+        valueKey: "uuid",
+        labelKey: "name",
+        initialSearch: vss?.market?.name || "",
+      },
+      {
+        name: "status",
+        label: "Status",
+        type: "select" as const,
+        required: true,
+        placeholder: "Select status",
+        options: [
+          { label: "Active", value: "active" },
+          { label: "Inactive", value: "inactive" },
+        ],
+      },
+    ],
+    [roles, vss],
+  );
 
-  if (!vss) { return null; }
+  if (!vss) {
+    return null;
+  }
 
-  const handleSubmit = async (values: typeof initialValues, { setSubmitting, setFieldError }: any) => {
+  const handleSubmit = async (
+    values: typeof initialValues,
+    { setSubmitting, setFieldError }: any,
+  ) => {
     try {
-      await updateVSS({ id: vss.uuid, data: values }).unwrap()
+      await updateVSS({ id: vss.uuid, data: values }).unwrap();
       toast({
         title: "Success",
         description: "VSS updated successfully",
-      })
-      refetch() // Refresh the data
-      setIsEditMode(false)
+      });
+      refetch(); // Refresh the data
+      setIsEditMode(false);
     } catch (error: any) {
       catchError(error, setFieldError);
     } finally {
       setSubmitting(false);
     }
-  }
+  };
 
   const handleDeleteClick = () => {
     if (!vss) return;
     deleteHandler(vss.uuid);
-  }
+  };
 
   if (isEditMode) {
     return (
@@ -161,10 +175,7 @@ export default function ManageVssPage() {
             <h2 className="text-2xl font-bold text-[#444444]">Edit VSS</h2>
             <p className="text-[#ababab]">Update the VSS information below</p>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => setIsEditMode(false)}
-          >
+          <Button variant="outline" onClick={() => setIsEditMode(false)}>
             Cancel
           </Button>
         </div>
@@ -181,7 +192,7 @@ export default function ManageVssPage() {
           onCancel={() => setIsEditMode(false)}
         />
       </div>
-    )
+    );
   }
 
   return (
@@ -192,7 +203,8 @@ export default function ManageVssPage() {
           <p className="text-[#ababab]">View and manage VSS information</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline"
+          <Button
+            variant="outline"
             onClick={() => setIsEditMode(true)}
             className="flex items-center gap-2"
           >
@@ -265,21 +277,24 @@ export default function ManageVssPage() {
                 <Shield className="h-5 w-5 text-[#ababab]" />
                 <div>
                   <p className="text-sm text-[#ababab]">Role</p>
-                  <p className="font-medium text-[#444444]">{vss?.role?.name || "No Role"}</p>
+                  <p className="font-medium text-[#444444]">
+                    {vss?.role?.name || "No Role"}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
                 <MapPin className="h-5 w-5 text-[#ababab]" />
                 <div>
                   <p className="text-sm text-[#ababab]">Market</p>
-                  <p className="font-medium text-[#444444]">{vss?.market?.name || "No Market"}</p>
+                  <p className="font-medium text-[#444444]">
+                    {vss?.market?.name || "No Market"}
+                  </p>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
-
     </div>
-  )
+  );
 }

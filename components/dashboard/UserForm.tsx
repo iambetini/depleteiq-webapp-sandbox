@@ -177,14 +177,14 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
                           <div className="space-y-2" key={field.name}>
                             <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>
                             <Select
-                              value={values[field.name]}
+                              value={values[field.name] || undefined}
                               onValueChange={value => setFieldValue(field.name, value)}
                             >
                               <SelectTrigger>
                                 <SelectValue placeholder={field.placeholder} />
                               </SelectTrigger>
                               <SelectContent>
-                                {field.options?.map(option => (
+                                {field.options?.filter(option => option.value).map(option => (
                                   <SelectItem key={option.value} value={option.value}>
                                     {option.label}
                                   </SelectItem>

@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SelectWithFetch } from "@/components/ui/select";
-import { canDeleteAssignment, canEditAssignment } from "@/lib/date-utils";
+import { canDeleteAssignment, canEditAssignment, isAssignmentToday } from "@/lib/date-utils";
 import { useToast } from "@/hooks/use-toast";
 import { useUpdateAssignmentMutation } from "@/store/assignments";
 import { Status } from "@/types/assignment";
@@ -101,6 +101,7 @@ export default function AssignmentDetailPage() {
     assignment.assignment_date?.slice(0, 10) || assignment.assignment_date;
   const canEdit = canEditAssignment(assignment.assignment_date);
   const canDelete = canDeleteAssignment(assignment.assignment_date);
+  const isTodayAssignment = isAssignmentToday(assignment.assignment_date);
   const status = (assignment.status || "").toLowerCase();
 
   const openEditDialog = () => {
@@ -143,9 +144,13 @@ export default function AssignmentDetailPage() {
       await updateAssignment({
         id: assignment.uuid,
         data: {
-          vss_user_id: editSelectedVss,
+          vss_user_id: isTodayAssignment
+            ? assignment.vss_user?.uuid || String(assignment.vss_user_id || "")
+            : editSelectedVss,
           coverage_area_id: editSelectedCoverageArea,
-          assignment_date: editAssignmentDate,
+          assignment_date: isTodayAssignment
+            ? assignment.assignment_date?.slice(0, 10) || editAssignmentDate
+            : editAssignmentDate,
         },
       }).unwrap();
       toast({
@@ -300,6 +305,7 @@ export default function AssignmentDetailPage() {
                 valueKey="uuid"
                 labelKey="full_name"
                 placeholder="Select VSS user"
+                disabled={isTodayAssignment}
                 params={{ roles: "vss", per_page: 1000 }}
                 labelFormatter={(item: any) =>
                   item.full_name ||
@@ -337,6 +343,7 @@ export default function AssignmentDetailPage() {
                 type="date"
                 value={editAssignmentDate}
                 onChange={(e) => setEditAssignmentDate(e.target.value)}
+                disabled={isTodayAssignment}
                 min={format(startOfToday(), "yyyy-MM-dd")}
               />
             </div>

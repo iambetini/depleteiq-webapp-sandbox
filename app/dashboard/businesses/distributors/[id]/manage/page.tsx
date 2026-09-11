@@ -1,47 +1,58 @@
-"use client"
+"use client";
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FormWithLocationModal } from "@/components/dashboard/FormWithLocationModal"
-import UserForm from "@/components/dashboard/UserForm"
-import { createAddressFieldConfig } from "@/lib/field-configs"
-import { handleDelete } from "@/lib/handleDelete"
-import { toast } from "@/hooks/use-toast"
-import { useUpdateDistributorMutation } from "@/store/distributors"
-import { useRouter } from "next/navigation"
-import { useCallback, useMemo, useState } from "react"
-import * as Yup from "yup"
-import { useDistributorData } from "@/hooks/use-entity-data"
-import { catchError } from "@/lib/utils"
-import { Building, CreditCard, Edit, Mail, Phone, Trash2, User } from "lucide-react"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FormWithLocationModal } from "@/components/dashboard/FormWithLocationModal";
+import UserForm from "@/components/dashboard/UserForm";
+import { createAddressFieldConfig } from "@/lib/field-configs";
+import { handleDelete } from "@/lib/handleDelete";
+import { toast } from "@/hooks/use-toast";
+import { useUpdateDistributorMutation } from "@/store/distributors";
+import { useRouter } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
+import * as Yup from "yup";
+import { useDistributorData } from "@/hooks/use-entity-data";
+import { catchError } from "@/lib/utils";
+import {
+  Building,
+  CreditCard,
+  Edit,
+  Mail,
+  Phone,
+  Trash2,
+  User,
+} from "lucide-react";
 
 interface Distributor {
-  first_name: string
-  last_name: string
-  email: string
-  phone: string
-  business_name: string
-  address: string
-  ime_vss_user_id: string
-  send_notification: boolean
-  category: string
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  business_name: string;
+  address: string;
+  ime_vss_user_id: string;
+  send_notification: boolean;
+  category: string;
 }
 
 export default function ManageDistributorPage() {
-  const router = useRouter()
-  const { entity: distributor, refetch } = useDistributorData()
-  const [updateDistributorMutation] = useUpdateDistributorMutation()
-  const [isEditMode, setIsEditMode] = useState(false)
+  const router = useRouter();
+  const { entity: distributor, refetch } = useDistributorData();
+  const [updateDistributorMutation] = useUpdateDistributorMutation();
+  const [isEditMode, setIsEditMode] = useState(false);
 
-  const deleteHandler = useCallback((uuid: string) => {
-    handleDelete({
-      storeName: "distributors",
-      uuid,
-      entityLabel: "distributor",
-      onSuccess: () => router.push("/dashboard/businesses/distributors"),
-    })
-  }, [router])
+  const deleteHandler = useCallback(
+    (uuid: string) => {
+      handleDelete({
+        storeName: "distributors",
+        uuid,
+        entityLabel: "distributor",
+        onSuccess: () => router.push("/dashboard/businesses/distributors"),
+      });
+    },
+    [router],
+  );
 
   const initialValues = useMemo<Distributor>(() => {
     if (!distributor) {
@@ -55,7 +66,7 @@ export default function ManageDistributorPage() {
         address: "",
         ime_vss_user_id: "",
         send_notification: false,
-      }
+      };
     }
 
     return {
@@ -68,41 +79,54 @@ export default function ManageDistributorPage() {
       address: distributor.address || "",
       ime_vss_user_id: distributor.ime_vss?.uuid || "",
       send_notification: false,
-    }
-  }, [distributor])
+    };
+  }, [distributor]);
 
-  const validationSchema = useMemo(() => Yup.object({
-    first_name: Yup.string().required("First name is required"),
-    last_name: Yup.string().required("Last name is required"),
-    category: Yup.string().required("Category is required"),
-    email: Yup.string().email("Invalid email").required("Email is required"),
-    phone: Yup.string(),
-    business_name: Yup.string().required("Business name is required"),
-    address: Yup.string().required("Address is required"),
-    ime_vss_user_id: Yup.string().required("IME VSS User is required"),
-    send_notification: Yup.boolean(),
-  }), [])
+  const validationSchema = useMemo(
+    () =>
+      Yup.object({
+        first_name: Yup.string().required("First name is required"),
+        last_name: Yup.string().required("Last name is required"),
+        category: Yup.string().required("Category is required"),
+        email: Yup.string()
+          .email("Invalid email")
+          .required("Email is required"),
+        phone: Yup.string(),
+        business_name: Yup.string().required("Business name is required"),
+        address: Yup.string().required("Address is required"),
+        ime_vss_user_id: Yup.string().required("IME VSS User is required"),
+        send_notification: Yup.boolean(),
+      }),
+    [],
+  );
 
-  const handleSubmit = useCallback(async (values: Distributor, { setSubmitting, setFieldError }: any) => {
-    try {
-      distributor && await updateDistributorMutation({ id: distributor.uuid, data: values }).unwrap();
-      toast({
-        title: "Success",
-        description: "Distributor updated successfully",
-      });
-      refetch(); // Refresh the data
-      setIsEditMode(false);
-    } catch (error: any) {
-      catchError(error, setFieldError);
-    } finally {
-      setSubmitting(false);
-    }
-  }, [distributor, refetch, updateDistributorMutation])
+  const handleSubmit = useCallback(
+    async (values: Distributor, { setSubmitting, setFieldError }: any) => {
+      try {
+        distributor &&
+          (await updateDistributorMutation({
+            id: distributor.uuid,
+            data: values,
+          }).unwrap());
+        toast({
+          title: "Success",
+          description: "Distributor updated successfully",
+        });
+        refetch(); // Refresh the data
+        setIsEditMode(false);
+      } catch (error: any) {
+        catchError(error, setFieldError);
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [distributor, refetch, updateDistributorMutation],
+  );
 
   const handleDeleteClick = useCallback(() => {
     if (!distributor) return;
     deleteHandler(distributor.uuid);
-  }, [distributor, deleteHandler])
+  }, [distributor, deleteHandler]);
 
   const createFields = (setLocationModalOpen: (open: boolean) => void) => [
     {
@@ -165,10 +189,10 @@ export default function ManageDistributorPage() {
       params: { roles: "ime,vss" },
     },
     createAddressFieldConfig(() => setLocationModalOpen(true), "textarea", 3),
-  ]
+  ];
 
   if (!distributor) {
-    return <div>Loading...</div>
+    return <div>Loading...</div>;
   }
 
   if (isEditMode) {
@@ -176,13 +200,14 @@ export default function ManageDistributorPage() {
       <div>
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-[#444444]">Edit Distributor</h2>
-            <p className="text-[#ababab]">Update the distributor information below</p>
+            <h2 className="text-2xl font-bold text-[#444444]">
+              Edit Distributor
+            </h2>
+            <p className="text-[#ababab]">
+              Update the distributor information below
+            </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => setIsEditMode(false)}
-          >
+          <Button variant="outline" onClick={() => setIsEditMode(false)}>
             Cancel
           </Button>
         </div>
@@ -206,18 +231,23 @@ export default function ManageDistributorPage() {
           )}
         </FormWithLocationModal>
       </div>
-    )
+    );
   }
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-[#444444]">Manage Distributor</h2>
-          <p className="text-[#ababab]">View and manage distributor information</p>
+          <h2 className="text-2xl font-bold text-[#444444]">
+            Manage Distributor
+          </h2>
+          <p className="text-[#ababab]">
+            View and manage distributor information
+          </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline"
+          <Button
+            variant="outline"
             onClick={() => setIsEditMode(true)}
             className="flex items-center gap-2"
           >
@@ -247,7 +277,11 @@ export default function ManageDistributorPage() {
             </div>
             {distributor.user && (
               <Badge
-                variant={distributor.user.status === "active" ? "default" : "destructive"}
+                variant={
+                  distributor.user.status === "active"
+                    ? "default"
+                    : "destructive"
+                }
                 className={`status ${distributor.user.status === "active" ? "active" : "inactive"} mt-1`}
               >
                 {distributor.user.status}
@@ -258,11 +292,15 @@ export default function ManageDistributorPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-[#ababab]">Business Name</p>
-                <p className="font-medium text-[#444444]">{distributor.business_name}</p>
+                <p className="font-medium text-[#444444]">
+                  {distributor.business_name}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-[#ababab]">Category</p>
-                <p className="font-medium text-[#444444]">{distributor.category || "N/A"}</p>
+                <p className="font-medium text-[#444444]">
+                  {distributor.category || "N/A"}
+                </p>
               </div>
               <div>
                 <p className="text-sm text-[#ababab]">Contact Person</p>
@@ -279,7 +317,9 @@ export default function ManageDistributorPage() {
             </div>
             <div>
               <p className="text-sm text-[#ababab]">Address</p>
-              <p className="font-medium text-[#444444]">{distributor.address}</p>
+              <p className="font-medium text-[#444444]">
+                {distributor.address}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -298,14 +338,18 @@ export default function ManageDistributorPage() {
                 <Mail className="h-5 w-5 text-[#ababab]" />
                 <div>
                   <p className="text-sm text-[#ababab]">Email</p>
-                  <p className="font-medium text-[#444444]">{distributor.user?.email}</p>
+                  <p className="font-medium text-[#444444]">
+                    {distributor.user?.email}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone className="h-5 w-5 text-[#ababab]" />
                 <div>
                   <p className="text-sm text-[#ababab]">Phone</p>
-                  <p className="font-medium text-[#444444]">{distributor.user?.phone || "N/A"}</p>
+                  <p className="font-medium text-[#444444]">
+                    {distributor.user?.phone || "N/A"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -313,7 +357,9 @@ export default function ManageDistributorPage() {
         </Card>
 
         {/* Banking Information */}
-        {(distributor.bank_name || distributor.account_number || distributor.account_name) && (
+        {(distributor.bank_name ||
+          distributor.account_number ||
+          distributor.account_name) && (
           <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle className="text-[#444444] flex items-center gap-2">
@@ -326,19 +372,25 @@ export default function ManageDistributorPage() {
                 {distributor.bank_name && (
                   <div>
                     <p className="text-sm text-[#ababab]">Bank Name</p>
-                    <p className="font-medium text-[#444444]">{distributor.bank_name}</p>
+                    <p className="font-medium text-[#444444]">
+                      {distributor.bank_name}
+                    </p>
                   </div>
                 )}
                 {distributor.account_number && (
                   <div>
                     <p className="text-sm text-[#ababab]">Account Number</p>
-                    <p className="font-medium text-[#444444]">{distributor.account_number}</p>
+                    <p className="font-medium text-[#444444]">
+                      {distributor.account_number}
+                    </p>
                   </div>
                 )}
                 {distributor.account_name && (
                   <div>
                     <p className="text-sm text-[#ababab]">Account Name</p>
-                    <p className="font-medium text-[#444444]">{distributor.account_name}</p>
+                    <p className="font-medium text-[#444444]">
+                      {distributor.account_name}
+                    </p>
                   </div>
                 )}
               </div>
@@ -346,7 +398,6 @@ export default function ManageDistributorPage() {
           </Card>
         )}
       </div>
-
     </div>
-  )
+  );
 }

@@ -18,6 +18,8 @@ export interface Distributor {
   uuid: string;
   user: User;
   business: Business;
+  business_name?: string | null;
+  address?: string | null;
   category: string;
   registration_number?: string;
   tax_id?: string;

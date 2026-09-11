@@ -6,18 +6,25 @@ import ViewPageHeader from "@/components/dashboard/ViewPageHeader"
 import { toast } from "@/hooks/use-toast"
 import { catchError } from "@/lib/utils"
 import { useCreateUserMutation } from "@/store/users"
+import { useMemo } from "react"
 import { useRouter } from "next/navigation"
 import * as Yup from "yup"
-
-interface Role {
-  uuid: string
-  name: string
-}
 
 export default function CreateVssPage() {
   const { roles, isLoading: isRolesLoading } = useRoles()
   const [createUser, { isLoading }] = useCreateUserMutation()
   const router = useRouter()
+  const vssRoleOptions = useMemo(
+    () =>
+      roles
+        .filter((role) => role.name?.toLowerCase().trim() === "vss")
+        .map((role) => ({
+          label: role.name,
+          value: role.uuid || role.id,
+        }))
+        .filter((option) => option.value),
+    [roles]
+  )
   const initialValues = {
     first_name: "",
     last_name: "",
@@ -25,7 +32,7 @@ export default function CreateVssPage() {
     phone: "",
     password: "",
     market_id: "",
-    role_id: "",
+    role_id: vssRoleOptions[0]?.value || "",
     send_notification: false,
   }
 
@@ -97,12 +104,7 @@ export default function CreateVssPage() {
       type: "select" as const,
       required: true,
       placeholder: "Select role",
-      options: roles
-        .filter((role) => role.name.toLowerCase() === "vss")
-        .map((role) => ({
-          label: role.name,
-          value: role.uuid,
-        })),
+      options: vssRoleOptions,
     },
     {
       name: "market_id",

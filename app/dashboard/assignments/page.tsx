@@ -13,7 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { handleDelete } from "@/lib/handleDelete"
 import { useToast } from "@/hooks/use-toast"
 import { useCreateAssignmentMutation, useUpdateAssignmentMutation } from "@/store/assignments"
-import { canDeleteAssignment, canEditAssignment } from "@/lib/date-utils"
+import { canDeleteAssignment, canEditAssignment, isAssignmentToday } from "@/lib/date-utils"
 import { Calendar, Eye, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import React, { useRef, useCallback, useState } from "react"
@@ -249,6 +249,10 @@ export default function AssignmentsPage() {
     setEditAssignmentDate(format(startOfToday(), "yyyy-MM-dd"))
   }
 
+  const isEditingTodayAssignment = Boolean(
+    editingAssignment && isAssignmentToday(editingAssignment.assignment_date)
+  )
+
   const handleSubmit = async () => {
     if (!selectedVss || !selectedCoverageArea || !assignmentDate) {
       toast({
@@ -308,10 +312,15 @@ export default function AssignmentsPage() {
       return
     }
 
+    const isTodayAssignment = isAssignmentToday(editingAssignment.assignment_date)
     const payload = {
-      vss_user_id: editSelectedVss,
+      vss_user_id: isTodayAssignment
+        ? editingAssignment.vss_user?.uuid || editSelectedVss
+        : editSelectedVss,
       coverage_area_id: editSelectedCoverageArea,
-      assignment_date: editAssignmentDate,
+      assignment_date: isTodayAssignment
+        ? editingAssignment.assignment_date?.slice(0, 10) || editAssignmentDate
+        : editAssignmentDate,
     }
 
     try {
@@ -498,6 +507,7 @@ export default function AssignmentsPage() {
                 valueKey="uuid"
                 labelKey="full_name"
                 placeholder="Select VSS user"
+                disabled={isEditingTodayAssignment}
                 params={{ roles: "vss", per_page: 1000 }}
                 labelFormatter={(item: any) =>
                   item.full_name ||
@@ -535,6 +545,8 @@ export default function AssignmentsPage() {
                 type="date"
                 value={editAssignmentDate}
                 onChange={(e) => setEditAssignmentDate(e.target.value)}
+                disabled={isEditingTodayAssignment}
+                min={format(startOfToday(), "yyyy-MM-dd")}
               />
             </div>
           </div>

@@ -31,6 +31,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ChevronDown, Download, Filter, RefreshCw, Search } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import * as XLSX from "xlsx-js-style";
 import { type ColumnDef } from "./data-table-types";
@@ -75,6 +76,11 @@ interface DataTableProps<TData, TValue> {
   extraPath?: string; // Extra path for reports store
   customExportFn?: (data: TData[], table: any, exportFileName: string, scope: "current_page" | "all") => void;
   initialSorting?: SortingState; // Initial sorting state
+  /**
+   * When true, syncs API page index to `?page=` (1-based) in the URL (back/forward restores the list page).
+   * When undefined and `store` is set, URL sync is on. Pass `false` to keep pagination in component state only.
+   */
+  syncPaginationWithUrl?: boolean;
 }
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
@@ -185,9 +191,14 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     extraPath,
     customExportFn,
     initialSorting,
+    syncPaginationWithUrl,
   }: DataTableProps<TData, TValue>,
   ref: React.Ref<{ refresh: () => void }>
 ) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [sorting, setSorting] = React.useState<SortingState>(initialSorting || []);
   const [paginationInput, setPaginationInput] = React.useState("");
   const [paginationError, setPaginationError] = React.useState("");
@@ -201,8 +212,46 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   }, [initialSorting]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const [pageIndex, setPageIndex] = React.useState(0);
+  const [localPageIndex, setLocalPageIndex] = React.useState(0);
   const [pageSize, setPageSize] = React.useState(per_page ?? PAGE_SIZE_OPTIONS[0]);
+
+  const urlPaginationEnabled =
+    syncPaginationWithUrl !== undefined
+      ? syncPaginationWithUrl && Boolean(store)
+      : Boolean(store);
+
+  const pageIndexFromUrl = React.useMemo(() => {
+    if (!urlPaginationEnabled) return 0;
+    const raw = searchParams.get("page");
+    const n = parseInt(raw || "1", 10);
+    if (isNaN(n) || n < 1) return 0;
+    return n - 1;
+  }, [urlPaginationEnabled, searchParams]);
+
+  const pageIndex = urlPaginationEnabled ? pageIndexFromUrl : localPageIndex;
+
+  const replaceUrlPage = React.useCallback(
+    (zeroBased: number) => {
+      const nextParams = new URLSearchParams(searchParams.toString());
+      if (zeroBased <= 0) nextParams.delete("page");
+      else nextParams.set("page", String(zeroBased + 1));
+      const qs = nextParams.toString();
+      const nextUrl = qs ? `${pathname}?${qs}` : pathname;
+      const currentQs = searchParams.toString();
+      const currentUrl = currentQs ? `${pathname}?${currentQs}` : pathname;
+      if (nextUrl === currentUrl) return;
+      router.replace(nextUrl, { scroll: false });
+    },
+    [pathname, router, searchParams],
+  );
+
+  const goToFirstPage = React.useCallback(() => {
+    if (urlPaginationEnabled) {
+      replaceUrlPage(0);
+    } else {
+      setLocalPageIndex(0);
+    }
+  }, [urlPaginationEnabled, replaceUrlPage]);
   const [refreshCount, setRefreshCount] = React.useState(0);
   const [filterState, setFilterState] = React.useState<{ [key: string]: string }>({});
   const [pendingFilterState, setPendingFilterState] = React.useState<{ [key: string]: string }>({});
@@ -334,6 +383,25 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
     loading = false;
   }
 
+  const paginationMetadataReady =
+    !store ||
+    !!(storeQuery?.data && !storeQuery?.isLoading && !storeQuery?.isFetching);
+
+  React.useEffect(() => {
+    if (!urlPaginationEnabled || !paginationMetadataReady || pageCount < 1) {
+      return;
+    }
+    if (pageIndex > pageCount - 1) {
+      replaceUrlPage(pageCount - 1);
+    }
+  }, [
+    urlPaginationEnabled,
+    paginationMetadataReady,
+    pageCount,
+    pageIndex,
+    replaceUrlPage,
+  ]);
+
   const table = useReactTable({
     data: tableData,
     columns,
@@ -447,22 +515,30 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
   // Pagination handlers
   const handlePageChange = (page: number) => {
     if (page < 0 || page >= pageCount) return;
-    setPageIndex(page);
+    if (urlPaginationEnabled) {
+      replaceUrlPage(page);
+    } else {
+      setLocalPageIndex(page);
+    }
   };
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
-    setPageIndex(0);
+    goToFirstPage();
   };
 
   // Debounced search state for API/store mode
   const [searchValue, setSearchValue] = React.useState("");
+  const prevStoreRef = React.useRef<typeof store>(undefined);
 
-  // Reset search/filter/page state only when store changes (prevents unnecessary refetch)
+  // Reset search/filter/page when `store` changes (not on initial mount — preserves ?page= on load)
   React.useEffect(() => {
-    setFilterState({});
-    setSearchValue("");
-    setPageIndex(0);
-  }, [store]);
+    if (prevStoreRef.current !== undefined && prevStoreRef.current !== store) {
+      setFilterState({});
+      setSearchValue("");
+      goToFirstPage();
+    }
+    prevStoreRef.current = store;
+  }, [store, goToFirstPage]);
 
   // Debounced search for API/store mode
   React.useEffect(() => {
@@ -510,12 +586,12 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                 onChange={(event) => {
                   if (store) {
                     setSearchValue(event.target.value);
-                    setPageIndex(0);
+                    goToFirstPage();
                   } else if (searchKey) {
                     table
                       .getColumn(searchKey)
                       ?.setFilterValue(event.target.value);
-                    setPageIndex(0);
+                    goToFirstPage();
                   }
                 }}
                 className="pl-8 max-w-sm"
@@ -737,7 +813,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                           setPendingFilterState({});
                           setFilterState({});
                           setActiveFilters({});
-                          setPageIndex(0);
+                          goToFirstPage();
                           setFilterDropdownOpen(false);
                         }}
                         data-testid="filter-reset"
@@ -748,7 +824,7 @@ export const DataTable = React.forwardRef(function DataTable<TData, TValue>(
                         size="sm"
                         onClick={() => {
                           setFilterState(pendingFilterState);
-                          setPageIndex(0);
+                          goToFirstPage();
                           setFilterDropdownOpen(false);
                         }}
                         data-testid="filter-apply"
