@@ -1,6 +1,5 @@
 "use client"
 
-import { useRoles } from "@/components/dashboard/RolesContext";
 import UserForm from "@/components/dashboard/UserForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { toast } from "@/hooks/use-toast";
@@ -11,10 +10,9 @@ import * as Yup from "yup";
 import { useContext } from "../layout";
 
 export default function EditUserPage() {
-  const { roles, isLoading: isRolesLoading } = useRoles()
   const router = useRouter()
   const [updateUser] = useUpdateUserMutation()
-  const { user, isLoading, fetchUser } = useContext();
+  const { user, isLoading, refetch } = useContext();
 
   if (!user) { return null; }
 
@@ -69,12 +67,10 @@ export default function EditUserPage() {
     {
       name: "role_id",
       label: "Role",
-      type: "select" as const,
+      type: "selectWithFetch" as const,
       required: true,
       placeholder: "Select role",
-      options: roles
-        .filter((role) => !["vss", "ime", "distributor"].includes(role.name.toLowerCase()))
-        .map((role) => ({ label: role.name, value: role.uuid })),
+      store: "roles",
     },
     {
       name: "status",
@@ -93,7 +89,7 @@ export default function EditUserPage() {
     try {
       await updateUser({ id: user.uuid, data: values }).unwrap();
       toast({ title: "Success", description: "User updated successfully" });
-      fetchUser();
+      refetch();
       router.push(`/dashboard/general-settings/users/${user.uuid}`);
     } catch (error: any) {
       catchError(error, setFieldError);
@@ -111,7 +107,7 @@ export default function EditUserPage() {
         initialValues={initialValues}
         validationSchema={validationSchema}
         fields={fields}
-        isLoading={isLoading || isRolesLoading}
+        isLoading={isLoading}
         onSubmit={handleSubmit}
         submitLabel="Update User"
         onCancel={() => router.back()}

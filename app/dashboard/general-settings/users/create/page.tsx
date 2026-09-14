@@ -1,5 +1,4 @@
 "use client";
-import { useRoles } from "@/components/dashboard/RolesContext";
 import UserForm from "@/components/dashboard/UserForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { toast } from "@/hooks/use-toast";
@@ -9,7 +8,6 @@ import { useRouter } from "next/navigation";
 import * as Yup from "yup";
 
 export default function CreateUserPage() {
-  const { roles, isLoading: isRolesLoading } = useRoles()
   const [createUser, { isLoading }] = useCreateUserMutation()
   const router = useRouter()
 
@@ -72,12 +70,10 @@ export default function CreateUserPage() {
     {
       name: "role_id",
       label: "Role",
-      type: "select" as const,
+      type: "selectWithFetch" as const,
       required: true,
       placeholder: "Select role",
-      options: roles
-        .filter((role) => !["vss", "ime", "distributor"].includes(role.name.toLowerCase()))
-        .map((role) => ({ label: role.name, value: role.uuid })),
+      store: "roles",
     },
     {
       name: "send_notification",
@@ -110,7 +106,7 @@ export default function CreateUserPage() {
         initialValues={initialValues}
         validationSchema={validationSchema}
         fields={fields}
-        isLoading={isLoading || isRolesLoading}
+        isLoading={isLoading}
         onSubmit={handleSubmit}
         submitLabel="Create User"
         onCancel={() => router.back()}
