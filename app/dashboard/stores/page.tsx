@@ -51,6 +51,16 @@ export default function StoresPage() {
             placeholder: "Select market",
           },
           {
+            type: "selectWithFetch",
+            label: "Coverage Area",
+            param: "coverage_area_id",
+            fetchUrl: "/coverage-areas",
+            valueKey: "uuid",
+            labelKey: "name",
+            searchParam: "search",
+            placeholder: "Select coverage area",
+          },
+          {
             type: "select",
             label: "Market Status",
             param: "in_market",

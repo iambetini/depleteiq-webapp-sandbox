@@ -28,6 +28,11 @@ export interface Store {
   business: Business
   location: Location | null
   market: Market | null
+  coverage_area: {
+    uuid: string
+    name: string
+    enable_geofence?: boolean
+  } | null
   in_market: boolean
   promo_class: string | null
   category: string[] | string | null
