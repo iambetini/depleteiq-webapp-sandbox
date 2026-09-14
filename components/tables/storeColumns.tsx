@@ -90,6 +90,11 @@ export function useStoreColumns(
       cell: ({ row }) => row.original.market?.full_name || row.original.market?.name || "-",
     },
     {
+      accessorKey: "coverage_area.name",
+      header: "Coverage Area",
+      cell: ({ row }) => row.original.coverage_area?.name || "-",
+    },
+    {
       accessorKey: "promo_class",
       header: "Promo Class",
       cell: ({ row }) => (
