@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { ColumnDef } from "@/components/ui/data-table-types";
 import {
@@ -6,13 +7,26 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { StatusBadge } from "@/components/ui/status-badge";
 import type { VssInventoryTransaction } from "@/types/vss-inventory-transaction";
 import { Eye, MoreHorizontal } from "lucide-react";
 import React from "react";
 
+// Matches the type options in lib/filters/vss-inventory-transactions.ts
+const TYPE_BADGE_CLASSES: Record<string, string> = {
+  order: "bg-blue-100 text-blue-700",
+  supply: "bg-green-100 text-green-700",
+  adjustment: "bg-amber-100 text-amber-700",
+  reversal: "bg-red-100 text-red-700",
+};
+const DEFAULT_TYPE_BADGE_CLASS = "bg-gray-100 text-gray-700";
+
 const TypeCell = React.memo(({ type }: { type: string }) => (
-  <StatusBadge status={type as any} />
+  <Badge
+    variant="outline"
+    className={`border-transparent capitalize ${TYPE_BADGE_CLASSES[type] || DEFAULT_TYPE_BADGE_CLASS}`}
+  >
+    {type?.replace(/_/g, " ") || "-"}
+  </Badge>
 ));
 TypeCell.displayName = "TypeCell";
 
