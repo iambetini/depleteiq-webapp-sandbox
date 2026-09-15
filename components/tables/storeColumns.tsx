@@ -77,6 +77,7 @@ export function useStoreColumns(
     {
       accessorKey: "category",
       header: "Category",
+      showByDefault: false,
       cell: ({ row }) => {
         const cat = row.original.category
         if (!cat) return "-"
