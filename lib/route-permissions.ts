@@ -26,22 +26,22 @@ export const routePermissions: RoutePermission[] = [
   {
     href: "/dashboard/branches",
     pattern: /^\/dashboard\/branches$/,
-    permissions: ["view distributors"],
+    permissions: ["view branches", "view distributors"],
   },
   {
     href: "/dashboard/branches/create",
     pattern: /^\/dashboard\/branches\/create$/,
-    permissions: ["create distributors"],
+    permissions: ["create branches", "create distributors"],
   },
   {
     href: "/dashboard/branches/[id]",
-    pattern: /^\/dashboard\/branches\/\d+$/,
-    permissions: ["view distributors"],
+    pattern: /^\/dashboard\/branches\/[a-f0-9-]+$/,
+    permissions: ["view branches", "view distributors"],
   },
   {
     href: "/dashboard/branches/[id]/edit",
-    pattern: /^\/dashboard\/branches\/\d+\/edit$/,
-    permissions: ["edit distributors"],
+    pattern: /^\/dashboard\/branches\/[a-f0-9-]+\/edit$/,
+    permissions: ["edit branches", "edit distributors"],
   },
 
   // Brands
@@ -69,22 +69,22 @@ export const routePermissions: RoutePermission[] = [
   {
     href: "/dashboard/businesses/distributors",
     pattern: /^\/dashboard\/businesses\/distributors$/,
-    permissions: ["view dashboard","view distributors"],
+    permissions: ["view dashboard", "view businesses", "view distributors"],
   },
   {
     href: "/dashboard/businesses/distributors/create",
     pattern: /^\/dashboard\/businesses\/distributors\/create$/,
-    permissions: ["create distributors"],
+    permissions: ["create businesses", "create distributors"],
   },
   {
     href: "/dashboard/businesses/distributors/[id]",
     pattern: /^\/dashboard\/businesses\/distributors\/\d+$/,
-    permissions: ["view distributors"],
+    permissions: ["view businesses", "view distributors"],
   },
   {
     href: "/dashboard/businesses/distributors/[id]/manage",
     pattern: /^\/dashboard\/businesses\/distributors\/\d+\/manage$/,
-    permissions: ["edit distributors"],
+    permissions: ["edit businesses", "edit distributors"],
   },
   {
     href: "/dashboard/businesses/distributors/[id]/orders",
@@ -101,22 +101,22 @@ export const routePermissions: RoutePermission[] = [
   {
     href: "/dashboard/businesses/wholesalers",
     pattern: /^\/dashboard\/businesses\/wholesalers$/,
-    permissions: ["view wholesalers"],
+    permissions: ["view businesses", "view wholesalers"],
   },
   {
     href: "/dashboard/businesses/wholesalers/create",
     pattern: /^\/dashboard\/businesses\/wholesalers\/create$/,
-    permissions: ["create wholesalers"],
+    permissions: ["create businesses", "create wholesalers"],
   },
   {
     href: "/dashboard/businesses/wholesalers/[id]",
     pattern: /^\/dashboard\/businesses\/wholesalers\/\d+$/,
-    permissions: ["view wholesalers"],
+    permissions: ["view businesses", "view wholesalers"],
   },
   {
     href: "/dashboard/businesses/wholesalers/[id]/edit",
     pattern: /^\/dashboard\/businesses\/wholesalers\/\d+\/edit$/,
-    permissions: ["edit wholesalers"],
+    permissions: ["edit businesses", "edit wholesalers"],
   },
 
   // Dashboard
@@ -296,6 +296,28 @@ export const routePermissions: RoutePermission[] = [
     href: "/dashboard/locations/[id]/edit",
     pattern: /^\/dashboard\/locations\/\d+\/edit$/,
     permissions: ["edit locations"],
+  },
+
+  // Locations - Coverage Areas
+  {
+    href: "/dashboard/locations/coverage-areas",
+    pattern: /^\/dashboard\/locations\/coverage-areas$/,
+    permissions: ["view coverage_areas", "view locations"],
+  },
+  {
+    href: "/dashboard/locations/coverage-areas/create",
+    pattern: /^\/dashboard\/locations\/coverage-areas\/create$/,
+    permissions: ["create coverage_areas", "create locations"],
+  },
+  {
+    href: "/dashboard/locations/coverage-areas/[id]",
+    pattern: /^\/dashboard\/locations\/coverage-areas\/[a-f0-9-]+$/,
+    permissions: ["view coverage_areas", "view locations"],
+  },
+  {
+    href: "/dashboard/locations/coverage-areas/[id]/edit",
+    pattern: /^\/dashboard\/locations\/coverage-areas\/[a-f0-9-]+\/edit$/,
+    permissions: ["edit coverage_areas", "edit locations"],
   },
 
   // Footprints
@@ -486,6 +508,28 @@ export const routePermissions: RoutePermission[] = [
     permissions: ["edit promos"],
   },
 
+  // QR Codes
+  {
+    href: "/dashboard/qr-codes",
+    pattern: /^\/dashboard\/qr-codes$/,
+    permissions: ["view qr_codes"],
+  },
+  {
+    href: "/dashboard/qr-codes/create",
+    pattern: /^\/dashboard\/qr-codes\/create$/,
+    permissions: ["create qr_codes"],
+  },
+  {
+    href: "/dashboard/qr-codes/[id]",
+    pattern: /^\/dashboard\/qr-codes\/[a-f0-9-]+$/,
+    permissions: ["view qr_codes"],
+  },
+  {
+    href: "/dashboard/qr-codes/[id]/edit",
+    pattern: /^\/dashboard\/qr-codes\/[a-f0-9-]+\/edit$/,
+    permissions: ["edit qr_codes"],
+  },
+
   // Reports
   {
     href: "/dashboard/reports",
@@ -550,6 +594,28 @@ export const routePermissions: RoutePermission[] = [
     href: "/dashboard/general-settings/settings/reports",
     pattern: /^\/dashboard\/general-settings\/settings\/reports$/,
     permissions: ["all access"],
+  },
+
+  // Stores
+  {
+    href: "/dashboard/stores",
+    pattern: /^\/dashboard\/stores$/,
+    permissions: ["view stores"],
+  },
+  {
+    href: "/dashboard/stores/create",
+    pattern: /^\/dashboard\/stores\/create$/,
+    permissions: ["create stores"],
+  },
+  {
+    href: "/dashboard/stores/[id]",
+    pattern: /^\/dashboard\/stores\/[a-f0-9-]+$/,
+    permissions: ["view stores"],
+  },
+  {
+    href: "/dashboard/stores/[id]/edit",
+    pattern: /^\/dashboard\/stores\/[a-f0-9-]+\/edit$/,
+    permissions: ["edit stores"],
   },
 
   // Targets
