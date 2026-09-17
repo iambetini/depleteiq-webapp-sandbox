@@ -1,12 +1,12 @@
 "use client";
+import PermissionsDisplay from "@/components/dashboard/PermissionsDisplay";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useContext } from "./layout";
 import { Calendar, FileText, Laptop, Smartphone } from "lucide-react";
-import { useRouter } from "next/navigation";
+import type { Permission } from "@/types/permission";
 
 export default function RoleDetailPage() {
-  const router = useRouter()
   const { role } = useContext()
 
   if (!role) { return null; }
@@ -65,6 +65,17 @@ export default function RoleDetailPage() {
                 <p className="font-medium text-[#444444]">{role.created_at}</p>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-[#444444]">Permissions</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <PermissionsDisplay
+              permissions={role.permissions as Permission[] | string[] | undefined}
+            />
           </CardContent>
         </Card>
       </div>

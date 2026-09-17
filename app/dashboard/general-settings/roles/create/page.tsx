@@ -2,13 +2,10 @@
 
 import RoleForm, { RoleFormValues } from "@/components/dashboard/RoleForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
-import { catchError } from "@/lib/utils";
-import { useCreateRoleMutation } from "@/store/roles";
 import { useRouter } from "next/navigation";
 
 export default function CreateRolePage() {
   const router = useRouter()
-  const [createRole, { isLoading }] = useCreateRoleMutation()
 
   const initialValues: RoleFormValues = {
     name: "",
@@ -17,26 +14,13 @@ export default function CreateRolePage() {
     permissions: [],
   }
 
-  const handleSubmit = async (values: RoleFormValues, helpers: any) => {
-    try {
-      await createRole(values).unwrap()
-      helpers.resetForm()
-      router.push("/dashboard/general-settings/roles")
-    } catch (error: any) {
-      catchError(error, helpers.setFieldError);
-    } finally {
-      helpers.setSubmitting(false)
-    }
-  }
-
   return (
     <>
       <ViewPageHeader title="Create Role" />
       <RoleForm
         initialValues={initialValues}
         isEdit={false}
-        onSubmit={handleSubmit}
-        loading={isLoading}
+        onSuccess={() => router.push("/dashboard/general-settings/roles")}
         title="Role Information"
         description="Add a new role to the system"
         submitButtonText="Create Role"
