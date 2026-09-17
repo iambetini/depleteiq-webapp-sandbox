@@ -1,5 +1,6 @@
 "use client"
 
+import PermissionsPicker from "@/components/dashboard/PermissionsPicker"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -7,9 +8,10 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "@/hooks/use-toast"
 import { apiClient } from "@/lib/api-client"
+import { normalizePermissionsCatalog } from "@/lib/permissions-catalog"
 import { useCreateRoleMutation, useUpdateRoleMutation } from "@/store/roles"
-import { Permission } from "@/types/permission"
-import { ErrorMessage, Field, Form, Formik } from "formik"
+import { Permission, PermissionsCatalogItems } from "@/types/permission"
+import { ErrorMessage, Form, Formik } from "formik"
 import { Save } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -39,6 +41,29 @@ export const roleValidationSchema = Yup.object({
   permissions: Yup.array().of(Yup.string()),
 })
 
+async function fetchPermissionsCatalog(): Promise<Permission[]> {
+  const requests = [
+    "/permissions?per_page=1000",
+    "/permissions",
+  ]
+
+  let lastError: unknown = null
+
+  for (const endpoint of requests) {
+    try {
+      const res = await apiClient.get<{ items: PermissionsCatalogItems }>(endpoint)
+      if (res.status === "success") {
+        return normalizePermissionsCatalog(res.data?.items)
+      }
+    } catch (error) {
+      lastError = error
+    }
+  }
+
+  if (lastError) throw lastError
+  return []
+}
+
 export default function RoleForm({
   initialValues,
   isEdit = false,
@@ -48,7 +73,8 @@ export default function RoleForm({
   description,
   submitButtonText,
 }: RoleFormProps) {
-  const [permissions, setPermissions] = useState<{ uuid: string; name: string }[]>([])
+  const [permissions, setPermissions] = useState<Permission[]>([])
+  const [isLoadingPermissions, setIsLoadingPermissions] = useState(true)
   const [isLoading, setIsLoading] = useState(false)
 
   const router = useRouter()
@@ -56,29 +82,30 @@ export default function RoleForm({
   const [createRole] = useCreateRoleMutation()
 
   useEffect(() => {
-    // Fetch permissions
-    apiClient.get<{ items: { id: string; name: string }[] }>("/permissions?per_page=1000")
-      .then((res) => {
-        if (res.status === "success" && Array.isArray(res.data.items)) {
-          const items = Array.isArray(res.data.items[0])
-            ? (res.data.items as any).flat()
-            : res.data.items;
-          setPermissions(items)
-        } else {
-          setPermissions([])
-        }
+    let cancelled = false
+
+    setIsLoadingPermissions(true)
+    fetchPermissionsCatalog()
+      .then((items) => {
+        if (!cancelled) setPermissions(items)
       })
       .catch(() => {
-        setPermissions([])
+        if (!cancelled) setPermissions([])
       })
+      .finally(() => {
+        if (!cancelled) setIsLoadingPermissions(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const handleSubmit = async (values: RoleFormValues, { setSubmitting, setFieldError, resetForm }: any) => {
     setIsLoading(true)
     try {
+      const permissionsPayload: Permission[] = values.permissions.map((uuid) => ({ uuid } as Permission));
       if (isEdit && roleId) {
-        // Map string[] to Permission[]
-        const permissionsPayload: Permission[] = values.permissions.map((uuid) => ({ uuid } as Permission));
         await updateRole({ id: roleId, data: { ...values, permissions: permissionsPayload } }).unwrap()
         toast({
           title: "Success",
@@ -90,7 +117,6 @@ export default function RoleForm({
           router.push(`/dashboard/general-settings/roles/${roleId}`);
         }
       } else {
-        const permissionsPayload: Permission[] = values.permissions.map((uuid) => ({ uuid } as Permission));
         await createRole({ ...values, permissions: permissionsPayload }).unwrap()
         toast({
           title: "Success",
@@ -114,10 +140,10 @@ export default function RoleForm({
 
   return (
     <div className="space-y-6">
-      <Card className="max-w-3xl">
+      <Card className="max-w-5xl">
         <CardHeader>
-          <CardTitle>Role Information</CardTitle>
-          <CardDescription>Enter the details for the role</CardDescription>
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
         </CardHeader>
         <CardContent>
           <Formik
@@ -126,7 +152,7 @@ export default function RoleForm({
             onSubmit={handleSubmit}
             enableReinitialize
           >
-            {({ values, handleChange, setFieldValue, errors, touched, isSubmitting }) => (
+            {({ values, handleChange, setFieldValue, isSubmitting }) => (
               <Form className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -172,36 +198,12 @@ export default function RoleForm({
                 </div>
                 <div className="space-y-2">
                   <Label>Permissions</Label>
-                  <div
-                    className="grid grid-cols-2 gap-2 overflow-y-auto rounded border border-muted"
-                    style={{ maxHeight: 240, minHeight: 120 }}
-                  >
-                    {permissions.map((perm) => (
-                      <label key={perm.uuid} className="flex items-center space-x-2 px-2 py-1">
-                        <Field
-                          type="checkbox"
-                          name="permissions"
-                          value={perm.uuid}
-                          checked={values.permissions.includes(perm.uuid)}
-                          onChange={() => {
-                            if (values.permissions.includes(perm.uuid)) {
-                              setFieldValue(
-                                "permissions",
-                                values.permissions.filter((id) => id !== perm.uuid)
-                              )
-                            } else {
-                              setFieldValue(
-                                "permissions",
-                                [...values.permissions, perm.uuid]
-                              )
-                            }
-                          }}
-                          className="accent-primary"
-                        />
-                        <span>{perm.name}</span>
-                      </label>
-                    ))}
-                  </div>
+                  <PermissionsPicker
+                    permissions={permissions}
+                    selectedIds={values.permissions}
+                    onChange={(ids) => setFieldValue("permissions", ids)}
+                    isLoading={isLoadingPermissions}
+                  />
                   <ErrorMessage name="permissions" component="p" className="text-sm text-red-500" />
                 </div>
                 <div className="flex items-center justify-end space-x-4 pt-6 border-t">
