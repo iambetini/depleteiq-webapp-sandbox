@@ -2,12 +2,18 @@
 
 import RoleForm, { RoleFormValues } from "@/components/dashboard/RoleForm";
 import ViewPageHeader from "@/components/dashboard/ViewPageHeader";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 import { useRouter } from "next/navigation";
 import { useContext } from "../layout";
 
 export default function EditRolePage() {
   const router = useRouter();
   const { role, isLoading } = useContext();
+
+  if (isLoading) {
+    return <LoadingSkeleton />;
+  }
+
   if (!role) { return null; }
 
   const initialValues: RoleFormValues = {
@@ -16,10 +22,6 @@ export default function EditRolePage() {
     access_type: role?.access_type || "web",
     permissions: role?.permissions?.map((p: any) => p.uuid || p.id) || [],
   };
-
-  if (isLoading) {
-    return <div className="p-8">Loading role data...</div>;
-  }
 
   return (
     <>

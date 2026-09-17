@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/hooks/use-toast"
 import { apiClient } from "@/lib/api-client"
 import { normalizePermissionsCatalog } from "@/lib/permissions-catalog"
+import { catchError } from "@/lib/utils"
 import { useCreateRoleMutation, useUpdateRoleMutation } from "@/store/roles"
 import { Permission, PermissionsCatalogItems } from "@/types/permission"
 import { ErrorMessage, Form, Formik } from "formik"
@@ -129,8 +130,9 @@ export default function RoleForm({
         }
       }
     } catch (error: any) {
-      if (error?.errors) {
-        setFieldError("name", error.errors.name || "")
+      catchError(error, setFieldError)
+      if (error?.errors?.name) {
+        setFieldError("name", error.errors.name)
       }
     } finally {
       setIsLoading(false)

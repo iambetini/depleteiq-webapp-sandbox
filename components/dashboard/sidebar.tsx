@@ -112,7 +112,7 @@ export const sidebarItems: SidebarItem[] = [
   {
     title: "Businesses",
     href: "/dashboard/businesses",
-    permissions: ["view distributors", "view wholesalers"],
+    permissions: ["view businesses", "view distributors", "view wholesalers"],
     icon: "Building2",
   },
   {
@@ -154,7 +154,7 @@ export const sidebarItems: SidebarItem[] = [
   {
     title: "Branches",
     href: "/dashboard/branches",
-    permissions: ["view distributors"],
+    permissions: ["view branches", "view distributors"],
     icon: "GitBranch",
   },
   {
