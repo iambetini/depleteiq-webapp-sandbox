@@ -3,8 +3,7 @@
 import { Badge } from "@/components/ui/badge"
 import {
   formatPermissionLabel,
-  groupPermissionsByCategory,
-  groupPermissionsByModule,
+  groupPermissionsByCategoryWithModules,
 } from "@/lib/permissions-catalog"
 import type { Permission } from "@/types/permission"
 
@@ -45,48 +44,33 @@ export default function PermissionsDisplay({
     return <p className="text-sm text-[#ababab]">No permissions assigned</p>
   }
 
-  const groups = groupPermissionsByModule(list)
+  const categories = groupPermissionsByCategoryWithModules(list)
 
   return (
-    <div className="space-y-4">
-      {groups.map((group) => {
-        const categoryGroups = groupPermissionsByCategory(group.permissions)
-
-        return (
-          <div key={group.module} className="space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="font-medium text-[#444444]">
-                {formatPermissionLabel(group.module)}
+    <div className="space-y-5">
+      {categories.map((categoryGroup) => (
+        <div key={categoryGroup.category} className="space-y-3">
+          <p className="font-medium text-orange-600">{categoryGroup.category}</p>
+          {categoryGroup.modules.map((moduleGroup) => (
+            <div key={moduleGroup.module} className="space-y-2">
+              <p className="text-sm font-medium text-[#444444]">
+                {formatPermissionLabel(moduleGroup.module)}
               </p>
-              {group.categories.map((category) => (
-                <Badge key={category} variant="secondary" className="font-normal">
-                  {category}
-                </Badge>
-              ))}
-            </div>
-            {categoryGroups.map(([category, categoryPermissions]) => (
-              <div key={category} className="space-y-2">
-                {categoryGroups.length > 1 && (
-                  <p className="text-xs font-medium uppercase tracking-wide text-[#ababab]">
-                    {category}
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-2">
-                  {categoryPermissions.map((permission) => (
-                    <Badge
-                      key={permission.uuid}
-                      variant="outline"
-                      className="font-normal"
-                    >
-                      {formatPermissionLabel(permission.name)}
-                    </Badge>
-                  ))}
-                </div>
+              <div className="flex flex-wrap gap-2">
+                {moduleGroup.permissions.map((permission) => (
+                  <Badge
+                    key={permission.uuid}
+                    variant="outline"
+                    className="font-normal"
+                  >
+                    {formatPermissionLabel(permission.name)}
+                  </Badge>
+                ))}
               </div>
-            ))}
-          </div>
-        )
-      })}
+            </div>
+          ))}
+        </div>
+      ))}
     </div>
   )
 }
