@@ -1,23 +1,16 @@
 "use client"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
-import {
   formatPermissionLabel,
-  groupPermissionsByCategory,
-  groupPermissionsByModule,
+  groupPermissionsByCategoryWithModules,
   isAllAccessPermission,
 } from "@/lib/permissions-catalog"
+import { cn } from "@/lib/utils"
 import type { Permission } from "@/types/permission"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 interface PermissionsPickerProps {
   permissions: Permission[]
@@ -33,6 +26,7 @@ export default function PermissionsPicker({
   isLoading = false,
 }: PermissionsPickerProps) {
   const [search, setSearch] = useState("")
+  const [activeCategory, setActiveCategory] = useState<string>("")
 
   const allAccess = useMemo(
     () => permissions.find((permission) => isAllAccessPermission(permission)),
@@ -60,19 +54,23 @@ export default function PermissionsPicker({
     })
   }, [permissions, search])
 
-  const showAllAccess = Boolean(
-    allAccess &&
-      filteredPermissions.some((permission) => permission.uuid === allAccess.uuid),
+  const categories = useMemo(
+    () => groupPermissionsByCategoryWithModules(filteredPermissions),
+    [filteredPermissions],
   )
 
-  const groups = useMemo(
-    () =>
-      groupPermissionsByModule(
-        filteredPermissions.filter(
-          (permission) => !isAllAccessPermission(permission),
-        ),
-      ),
-    [filteredPermissions],
+  useEffect(() => {
+    if (categories.length === 0) {
+      setActiveCategory("")
+      return
+    }
+    if (!categories.some((group) => group.category === activeCategory)) {
+      setActiveCategory(categories[0].category)
+    }
+  }, [categories, activeCategory])
+
+  const activeGroup = categories.find(
+    (group) => group.category === activeCategory,
   )
 
   const selectedCount = selectedIds.length
@@ -126,131 +124,126 @@ export default function PermissionsPicker({
         </p>
       </div>
 
-      {showAllAccess && allAccess && (
-        <label className="flex items-start gap-3 rounded-md border border-[#ff6600]/30 bg-[#ff6600]/5 p-3">
-          <Checkbox
-            checked={hasAllAccess}
-            onCheckedChange={(checked) =>
-              togglePermission(allAccess.uuid, checked === true)
-            }
-            className="mt-0.5"
-          />
-          <span>
-            <span className="block font-medium text-[#444444]">
-              {formatPermissionLabel(allAccess.name)}
-            </span>
-            <span className="block text-sm text-[#ababab]">
-              Grants every permission. Other checkboxes are disabled while this
-              is selected.
-            </span>
-          </span>
-        </label>
+      <div className="border-b border-gray-200">
+        <nav
+          className="-mb-px flex flex-wrap gap-x-6 gap-y-1 overflow-x-auto"
+          aria-label="Permission categories"
+        >
+          {groupPermissionsByCategoryWithModules(permissions).map((group) => {
+            const isActive = group.category === activeCategory
+            const selectedInCategory = group.permissions.filter((permission) =>
+              selectedIds.includes(permission.uuid),
+            ).length
+
+            return (
+              <button
+                key={group.category}
+                type="button"
+                onClick={() => {
+                  setSearch("")
+                  setActiveCategory(group.category)
+                }}
+                className={cn(
+                  "whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors duration-200",
+                  isActive
+                    ? "border-orange-500 text-orange-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300",
+                )}
+                aria-current={isActive ? "page" : undefined}
+              >
+                {group.category}
+                <span className={cn("ml-1.5 text-xs", isActive ? "text-orange-500" : "text-[#ababab]")}>
+                  {selectedInCategory}/{group.permissions.length}
+                </span>
+              </button>
+            )
+          })}
+        </nav>
+      </div>
+
+      {hasAllAccess && activeGroup && allAccess?.category !== activeGroup.category && (
+        <p className="rounded-md border border-[#ff6600]/30 bg-[#ff6600]/5 px-3 py-2 text-sm text-[#444444]">
+          All Access is selected under General. Other permissions are included.
+        </p>
       )}
 
-      {groups.length === 0 && !showAllAccess ? (
+      {!activeGroup ? (
         <div className="rounded-md border border-muted p-4 text-sm text-[#ababab]">
-          No permissions match “{search}”.
+          {search
+            ? `No permissions match “${search}” in this category.`
+            : "Select a category to view permissions."}
         </div>
       ) : (
-        <Accordion
-          type="multiple"
-          className="rounded-md border border-muted px-3"
-        >
-          {groups.map((group) => {
-            const selectedInGroup = group.permissions.filter((permission) =>
+        <div className="space-y-5">
+          {activeGroup.modules.map((moduleGroup) => {
+            const modulePermissions = moduleGroup.permissions
+            const selectedInModule = modulePermissions.filter((permission) =>
               selectedIds.includes(permission.uuid),
             ).length
             const allSelected =
-              group.permissions.length > 0 &&
-              selectedInGroup === group.permissions.length
-            const categoryGroups = groupPermissionsByCategory(group.permissions)
+              modulePermissions.length > 0 &&
+              selectedInModule === modulePermissions.length
+            const isAllAccessModule = modulePermissions.every(isAllAccessPermission)
 
             return (
-              <AccordionItem key={group.module} value={group.module}>
-                <div className="flex items-center gap-2">
-                  <div className="min-w-0 flex-1">
-                    <AccordionTrigger className="hover:no-underline">
-                      <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2 pr-3 text-left">
-                        <span className="font-medium text-[#444444]">
-                          {formatPermissionLabel(group.module)}
-                        </span>
-                        {group.categories.map((category) => (
-                          <Badge
-                            key={category}
-                            variant="secondary"
-                            className="font-normal"
-                          >
-                            {category}
-                          </Badge>
-                        ))}
-                        <span className="text-xs text-[#ababab]">
-                          {selectedInGroup}/{group.permissions.length}
-                        </span>
-                      </span>
-                    </AccordionTrigger>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0"
-                    disabled={hasAllAccess}
-                    onClick={() =>
-                      toggleGroup(group.permissions, !allSelected)
-                    }
-                  >
-                    {allSelected ? "Clear" : "Select all"}
-                  </Button>
+              <div key={moduleGroup.module} className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <h4 className="font-medium text-[#444444]">
+                    {formatPermissionLabel(moduleGroup.module)}
+                  </h4>
+                  {!isAllAccessModule && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={hasAllAccess}
+                      onClick={() => toggleGroup(modulePermissions, !allSelected)}
+                    >
+                      {allSelected ? "Clear" : "Select all"}
+                    </Button>
+                  )}
                 </div>
-                <AccordionContent>
-                  <div className="space-y-4">
-                    {categoryGroups.map(([category, categoryPermissions]) => (
-                      <div key={category} className="space-y-2">
-                        {categoryGroups.length > 1 && (
-                          <p className="text-xs font-medium uppercase tracking-wide text-[#ababab]">
-                            {category}
-                          </p>
-                        )}
-                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                          {categoryPermissions.map((permission) => {
-                            const checked = selectedIds.includes(
-                              permission.uuid,
-                            )
-                            const disabled =
-                              hasAllAccess &&
-                              !isAllAccessPermission(permission)
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {modulePermissions.map((permission) => {
+                    const checked = selectedIds.includes(permission.uuid)
+                    const isAllAccess = isAllAccessPermission(permission)
+                    const disabled = hasAllAccess && !isAllAccess
 
-                            return (
-                              <label
-                                key={permission.uuid}
-                                className="flex items-start gap-2 rounded px-1 py-1"
-                              >
-                                <Checkbox
-                                  checked={checked || hasAllAccess}
-                                  disabled={disabled}
-                                  onCheckedChange={(value) =>
-                                    togglePermission(
-                                      permission.uuid,
-                                      value === true,
-                                    )
-                                  }
-                                  className="mt-0.5"
-                                />
-                                <span className="text-sm text-[#444444]">
-                                  {formatPermissionLabel(permission.name)}
-                                </span>
-                              </label>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+                    return (
+                      <label
+                        key={permission.uuid}
+                        className={cn(
+                          "flex items-start gap-2 rounded px-1 py-1",
+                          isAllAccess && "col-span-full rounded-md border border-[#ff6600]/30 bg-[#ff6600]/5 p-3",
+                        )}
+                      >
+                        <Checkbox
+                          checked={checked || (hasAllAccess && !isAllAccess)}
+                          disabled={disabled}
+                          onCheckedChange={(value) =>
+                            togglePermission(permission.uuid, value === true)
+                          }
+                          className="mt-0.5"
+                        />
+                        <span>
+                          <span className="block text-sm text-[#444444]">
+                            {formatPermissionLabel(permission.name)}
+                          </span>
+                          {isAllAccess && (
+                            <span className="block text-sm text-[#ababab]">
+                              Grants every permission. Other checkboxes are
+                              disabled while this is selected.
+                            </span>
+                          )}
+                        </span>
+                      </label>
+                    )
+                  })}
+                </div>
+              </div>
             )
           })}
-        </Accordion>
+        </div>
       )}
     </div>
   )

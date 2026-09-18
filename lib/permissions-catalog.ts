@@ -7,6 +7,12 @@ export interface PermissionModuleGroup {
   permissions: Permission[];
 }
 
+export interface PermissionCategoryGroup {
+  category: string;
+  modules: PermissionModuleGroup[];
+  permissions: Permission[];
+}
+
 const ALL_ACCESS_MODULE = "all access";
 
 export function isAllAccessPermission(permission: Pick<Permission, "name">) {
@@ -122,4 +128,20 @@ export function groupPermissionsByCategory(permissions: Permission[]) {
   }
 
   return Array.from(grouped.entries()).sort(([a], [b]) => a.localeCompare(b));
+}
+
+export function groupPermissionsByCategoryWithModules(
+  permissions: Permission[],
+): PermissionCategoryGroup[] {
+  return groupPermissionsByCategory(permissions)
+    .map(([category, categoryPermissions]) => ({
+      category,
+      permissions: categoryPermissions,
+      modules: groupPermissionsByModule(categoryPermissions),
+    }))
+    .sort((a, b) => {
+      if (a.category === "General") return -1;
+      if (b.category === "General") return 1;
+      return a.category.localeCompare(b.category);
+    });
 }
