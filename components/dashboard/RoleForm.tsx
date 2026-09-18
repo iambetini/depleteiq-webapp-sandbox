@@ -2,7 +2,7 @@
 
 import PermissionsPicker from "@/components/dashboard/PermissionsPicker"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -70,8 +70,6 @@ export default function RoleForm({
   isEdit = false,
   roleId,
   onSuccess,
-  title,
-  description,
   submitButtonText,
 }: RoleFormProps) {
   const [permissions, setPermissions] = useState<Permission[]>([])
@@ -142,12 +140,8 @@ export default function RoleForm({
 
   return (
     <div className="space-y-6">
-      <Card className="max-w-5xl">
-        <CardHeader>
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <Card className="max-w-6xl">
+        <CardContent className="pt-6">
           <Formik
             initialValues={initialValues}
             validationSchema={roleValidationSchema}
@@ -156,59 +150,59 @@ export default function RoleForm({
           >
             {({ values, handleChange, setFieldValue, isSubmitting }) => (
               <Form className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+                  <div className="space-y-5">
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Name *</Label>
+                      <Input
+                        id="name"
+                        name="name"
+                        value={values.name}
+                        onChange={handleChange}
+                        placeholder="Enter role name"
+                      />
+                      <ErrorMessage name="name" component="p" className="text-sm text-red-500" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Description</Label>
+                      <Input
+                        id="description"
+                        name="description"
+                        value={values.description}
+                        onChange={handleChange}
+                        placeholder="Enter description"
+                      />
+                      <ErrorMessage name="description" component="p" className="text-sm text-red-500" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="access_type">Access Type</Label>
+                      <Select
+                        value={values.access_type}
+                        onValueChange={(value) => setFieldValue("access_type", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="web">Web</SelectItem>
+                          <SelectItem value="mobile">Mobile</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <ErrorMessage name="access_type" component="p" className="text-sm text-red-500" />
+                    </div>
+                  </div>
                   <div className="space-y-2">
-                    <Label htmlFor="name">Name *</Label>
-                    <Input
-                      id="name"
-                      name="name"
-                      value={values.name}
-                      onChange={handleChange}
-                      placeholder="Enter role name"
+                    <Label>Permissions</Label>
+                    <PermissionsPicker
+                      permissions={permissions}
+                      selectedIds={values.permissions}
+                      onChange={(ids) => setFieldValue("permissions", ids)}
+                      isLoading={isLoadingPermissions}
                     />
-                    <ErrorMessage name="name" component="p" className="text-sm text-red-500" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Input
-                      id="description"
-                      name="description"
-                      value={values.description}
-                      onChange={handleChange}
-                      placeholder="Enter description"
-                    />
-                    <ErrorMessage name="description" component="p" className="text-sm text-red-500" />
+                    <ErrorMessage name="permissions" component="p" className="text-sm text-red-500" />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="access_type">Access Type</Label>
-                    <Select
-                      value={values.access_type}
-                      onValueChange={(value) => setFieldValue("access_type", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="web">Web</SelectItem>
-                        <SelectItem value="mobile">Mobile</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <ErrorMessage name="access_type" component="p" className="text-sm text-red-500" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Permissions</Label>
-                  <PermissionsPicker
-                    permissions={permissions}
-                    selectedIds={values.permissions}
-                    onChange={(ids) => setFieldValue("permissions", ids)}
-                    isLoading={isLoadingPermissions}
-                  />
-                  <ErrorMessage name="permissions" component="p" className="text-sm text-red-500" />
-                </div>
-                <div className="flex items-center justify-end space-x-4 pt-6 border-t">
+                <div className="flex items-center justify-end space-x-4 pt-4">
                   <Button type="button" variant="outline" onClick={() => router.back()}>
                     Cancel
                   </Button>
