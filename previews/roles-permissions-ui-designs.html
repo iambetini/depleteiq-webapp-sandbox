@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DepleteIQ — Roles & Permissions UI options</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --orange: #ff6600;
+      --orange-600: #ea580c;
+      --orange-50: #fff4ec;
+      --ink: #444444;
+      --muted: #8a8a8a;
+      --line: #e8e8e8;
+      --bg: #f4f4f5;
+      --white: #fff;
+      --green: #12b636;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    button, input, select { font-family: inherit; }
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 20px 64px;
+    }
+    header.hero {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 20px;
+    }
+    header.hero h1 { margin: 0 0 6px; font-size: 22px; }
+    header.hero p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+    .picker-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+    @media (max-width: 860px) {
+      .picker-row { grid-template-columns: 1fr 1fr; }
+    }
+    .design-btn {
+      text-align: left;
+      border: 1px solid var(--line);
+      background: #fafafa;
+      border-radius: 12px;
+      padding: 12px 12px 14px;
+      cursor: pointer;
+    }
+    .design-btn strong { display: block; font-size: 13px; margin-bottom: 4px; }
+    .design-btn span { display: block; font-size: 12px; color: var(--muted); line-height: 1.35; }
+    .design-btn.active {
+      border-color: var(--orange);
+      background: var(--orange-50);
+      box-shadow: 0 0 0 3px rgba(255,102,0,.12);
+    }
+    .design-btn.active strong { color: var(--orange-600); }
+    .canvas {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .canvas-bar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--line);
+      background: #fcfcfc;
+    }
+    .canvas-bar h2 { margin: 0; font-size: 15px; }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--orange-600);
+      background: var(--orange-50);
+      border: 1px solid #ffd7bf;
+      padding: 4px 8px;
+      border-radius: 999px;
+    }
+    .role-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr 180px;
+      gap: 12px;
+      padding: 18px 20px 8px;
+    }
+    @media (max-width: 720px) {
+      .role-meta { grid-template-columns: 1fr; }
+    }
+    label.field { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .role-meta input, .role-meta select {
+      width: 100%;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 10px;
+      font-size: 14px;
+    }
+    .perm-wrap { padding: 8px 20px 20px; }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .toolbar input[type="search"] {
+      flex: 1;
+      max-width: 320px;
+      height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 12px;
+    }
+    .count { font-size: 13px; color: var(--muted); white-space: nowrap; }
+    .footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 14px 20px;
+      border-top: 1px solid var(--line);
+    }
+    .btn {
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #fff;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .btn.primary { background: var(--orange); border-color: var(--orange); color: #fff; }
+    .hidden { display: none !important; }
+    .module-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 14px 0 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .ghost {
+      height: 30px;
+      font-size: 12px;
+      padding: 0 10px;
+      border-radius: 7px;
+      border: 1px solid var(--line);
+      background: #fff;
+      cursor: pointer;
+    }
+    .checks {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 16px;
+    }
+    @media (max-width: 640px) { .checks { grid-template-columns: 1fr; } }
+    .check {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      font-size: 13px;
+      padding: 6px 4px;
+    }
+    .all-access {
+      grid-column: 1 / -1;
+      border: 1px solid #ffd7bf;
+      background: var(--orange-50);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .all-access small { display: block; color: var(--muted); margin-top: 2px; }
+    .tabs {
+      display: flex;
+      gap: 18px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 12px;
+      overflow-x: auto;
+    }
+    .tabs button {
+      background: none;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      padding: 8px 2px 10px;
+      color: var(--muted);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .tabs button.on {
+      color: var(--orange-600);
+      border-bottom-color: var(--orange);
+    }
+    .tabs button em {
+      font-style: normal;
+      font-weight: 500;
+      font-size: 11px;
+      margin-left: 6px;
+      color: inherit;
+      opacity: .7;
+    }
+
+    /* Design B */
+    .split { display: grid; grid-template-columns: 220px 1fr; min-height: 360px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+    @media (max-width: 720px) { .split { grid-template-columns: 1fr; } }
+    .rail { background: #fafafa; border-right: 1px solid var(--line); padding: 10px; }
+    .rail button {
+      width: 100%;
+      text-align: left;
+      border: 0;
+      background: transparent;
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--ink);
+      display: flex;
+      justify-content: space-between;
+    }
+    .rail button.on { background: var(--orange-50); color: var(--orange-600); font-weight: 600; }
+    .pane { padding: 16px; }
+
+    /* Design C matrix */
+    table.matrix { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.matrix th, table.matrix td { border-bottom: 1px solid var(--line); padding: 10px 8px; text-align: center; }
+    table.matrix th:first-child, table.matrix td:first-child { text-align: left; }
+    table.matrix thead th { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .chip {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .chip.on { background: var(--orange); color: #fff; border-color: var(--orange); }
+
+    /* Design D cards */
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+    .mod-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fff;
+    }
+    .mod-card h3 { margin: 0 0 4px; font-size: 14px; }
+    .mod-card .cat { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+    .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      background: #fff;
+    }
+    .pill.on { background: var(--orange); color: #fff; border-color: var(--orange); }
+
+    /* Design E accordion */
+    details.cat {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      margin-bottom: 10px;
+      background: #fff;
+      overflow: hidden;
+    }
+    details.cat[open] { border-color: #ffd7bf; }
+    details.cat summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    details.cat summary::-webkit-details-marker { display: none; }
+    details.cat[open] summary { color: var(--orange-600); background: var(--orange-50); }
+    .cat-body { padding: 4px 16px 16px; }
+    .note { font-size: 12px; color: var(--muted); margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>Roles &amp; Permissions — pick a UI direction</h1>
+      <p>
+        Standalone preview only. This is not the live app. Data is the catalog JSON the team shared
+        (modules + categories). Click a design, then try tabs, search, and checkboxes.
+      </p>
+      <div class="picker-row" id="designPicker"></div>
+    </header>
+
+    <section class="canvas">
+      <div class="canvas-bar">
+        <h2 id="canvasTitle">Design A</h2>
+        <span class="badge" id="liveCount">0 selected</span>
+      </div>
+      <div class="role-meta">
+        <div>
+          <label class="field">Role name</label>
+          <input value="Operations" />
+        </div>
+        <div>
+          <label class="field">Description</label>
+          <input value="Can manage brands and branches" />
+        </div>
+        <div>
+          <label class="field">Access type</label>
+          <select><option>Web</option><option>Mobile</option></select>
+        </div>
+      </div>
+      <div class="perm-wrap">
+        <div class="toolbar">
+          <input id="search" type="search" placeholder="Search permissions, modules, categories" />
+          <div class="count" id="countLabel"></div>
+        </div>
+        <div id="stage"></div>
+      </div>
+      <div class="footer">
+        <button class="btn" type="button">Cancel</button>
+        <button class="btn primary" type="button">Save role</button>
+      </div>
+    </section>
+    <p class="note">Send this file as-is. Open it in Chrome/Edge. No install needed. App source files were not changed.</p>
+  </div>
+
+  <script>
+    const CATALOG = {
+      "all access": [{ uuid: "37062502-136e-4356-ac5b-d440f7bececb", name: "all access", module: "all access", category: "General" }],
+      "audit logs": [{ uuid: "24d29f2a-3038-4363-9aee-6f830f9d293a", name: "view audit logs", module: "audit logs", category: "Audit & Logging" }],
+      branches: [
+        { uuid: "d939b4da-d614-4480-88ef-57d4622df2fe", name: "create branches", module: "branches", category: "General" },
+        { uuid: "228e0a9a-f117-4dfb-8ce4-ee3f64db1bd0", name: "delete branches", module: "branches", category: "General" },
+        { uuid: "fe0c6aa0-aff3-4f80-a4ca-39303b700460", name: "edit branches", module: "branches", category: "General" },
+        { uuid: "d06e6a4e-f120-4417-a28c-dd6c09b8afda", name: "view branches", module: "branches", category: "General" }
+      ],
+      brands: [
+        { uuid: "5cc358d4-1345-45ea-8d9a-f20aca2e8575", name: "create brands", module: "brands", category: "Brand Management" },
+        { uuid: "64c495b5-9a83-4c02-956a-9aec930347e7", name: "delete brands", module: "brands", category: "Brand Management" },
+        { uuid: "4166e6b8-a6de-4a03-a715-9bfee09234f0", name: "edit brands", module: "brands", category: "Brand Management" },
+        { uuid: "b8aab5f5-6b0a-4d83-8b85-e9ce1e10ad9d", name: "view brands", module: "brands", category: "Brand Management" }
+      ],
+      businesses: [
+        { uuid: "d0653086-49f3-41fc-923d-f7c4bb3f8dc4", name: "create businesses", module: "businesses", category: "General" },
+        { uuid: "dca4b0b4-c092-49f6-9cad-fbf621a6b755", name: "delete businesses", module: "businesses", category: "General" },
+        { uuid: "ec54d649-023d-4af9-b9b7-5fc65df62e67", name: "edit businesses", module: "businesses", category: "General" },
+        { uuid: "5f9edc4d-dbb1-408e-8454-4f604db5e16e", name: "view businesses", module: "businesses", category: "General" }
+      ],
+      coverage_areas: [
+        { uuid: "71043d48-c61c-4558-ba42-dea6883a1756", name: "create coverage_areas", module: "coverage_areas", category: "General" },
+        { uuid: "7e8bef97-d1bd-4a95-ab3c-e954441299d7", name: "delete coverage_areas", module: "coverage_areas", category: "General" },
+        { uuid: "e4638d86-0779-4f40-931e-76d4cee99181", name: "edit coverage_areas", module: "coverage_areas", category: "General" },
+        { uuid: "c12a3287-97dd-4d2d-a56f-b81a916e1265", name: "view coverage_areas", module: "coverage_areas", category: "General" }
+      ]
+    };
+
+    const ALL = Object.values(CATALOG).flat();
+    const ACTIONS = ["view", "create", "edit", "delete"];
+    const DESIGNS = [
+      { id: "A", name: "A · Category tabs", blurb: "One orange tab. Only that category’s modules show." },
+      { id: "B", name: "B · Split pane", blurb: "Categories on the left. Modules on the right." },
+      { id: "C", name: "C · Permission matrix", blurb: "Modules as rows, View/Create/Edit/Delete as columns." },
+      { id: "D", name: "D · Module cards", blurb: "Each module is a card. Actions are orange pills." },
+      { id: "E", name: "E · One-open panels", blurb: "Category headers. Opening one closes the others." }
+    ];
+
+    const state = {
+      design: "A",
+      selected: new Set(),
+      category: "General",
+      search: "",
+      openPanel: "General"
+    };
+
+    const title = (s) => s.replaceAll("_", " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    const isAll = (p) => p.name === "all access";
+    const hasAll = () => [...state.selected].some((id) => ALL.find((p) => p.uuid === id && isAll(p)));
+    const actionOf = (p) => {
+      const m = p.name.match(/^(view|create|edit|delete)\s+/);
+      return m ? m[1] : p.name === "all access" ? "all" : "other";
+    };
+    const matchSearch = (p) => {
+      const q = state.search.trim().toLowerCase();
+      if (!q) return true;
+      return [p.name, p.module, p.category].join(" ").toLowerCase().includes(q);
+    };
+    const byCategory = () => {
+      const map = new Map();
+      ALL.filter(matchSearch).forEach((p) => {
+        const c = p.category || "General";
+        if (!map.has(c)) map.set(c, []);
+        map.get(c).push(p);
+      });
+      const order = ["General"];
+      return [...map.entries()].sort((a, b) => {
+        const ai = order.indexOf(a[0]); const bi = order.indexOf(b[0]);
+        if (ai !== -1 || bi !== -1) return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+        return a[0].localeCompare(b[0]);
+      });
+    };
+    const modulesIn = (perms) => {
+      const map = new Map();
+      perms.forEach((p) => {
+        if (!map.has(p.module)) map.set(p.module, []);
+        map.get(p.module).push(p);
+      });
+      return [...map.entries()];
+    };
+    const catCount = (cat) => ALL.filter((p) => p.category === cat).length;
+    const catSelected = (cat) => ALL.filter((p) => p.category === cat && state.selected.has(p.uuid)).length;
+
+    function toggle(id, on) {
+      if (on) state.selected.add(id); else state.selected.delete(id);
+      render();
+    }
+    function toggleGroup(perms, on) {
+      perms.forEach((p) => on ? state.selected.add(p.uuid) : state.selected.delete(p.uuid));
+      render();
+    }
+
+    function checkbox(p, extraClass = "") {
+      const locked = hasAll() && !isAll(p);
+      const checked = state.selected.has(p.uuid) || (hasAll() && !isAll(p));
+      return `<label class="check ${extraClass}">
+        <input type="checkbox" data-id="${p.uuid}" ${checked ? "checked" : ""} ${locked ? "disabled" : ""} />
+        <span>${title(p.name)}${isAll(p) ? "<small>Grants every permission.</small>" : ""}</span>
+      </label>`;
+    }
+
+    function moduleBlock(module, perms) {
+      const allOn = perms.every((p) => state.selected.has(p.uuid));
+      return `<div>
+        <div class="module-title">
+          <span>${title(module)}</span>
+          ${perms.every(isAll) ? "" : `<button class="ghost" data-group="${module}" data-on="${allOn ? "0" : "1"}">${allOn ? "Clear" : "Select all"}</button>`}
+        </div>
+        <div class="checks">${perms.map((p) => checkbox(p, isAll(p) ? "all-access" : "")).join("")}</div>
+      </div>`;
+    }
+
+    function tabsHtml(active) {
+      const cats = [...new Set(ALL.map((p) => p.category))];
+      cats.sort((a, b) => (a === "General" ? -1 : b === "General" ? 1 : a.localeCompare(b)));
+      return `<div class="tabs">${cats.map((c) => `<button data-cat="${c}" class="${c === active ? "on" : ""}">${c}<em>${catSelected(c)}/${catCount(c)}</em></button>`).join("")}</div>`;
+    }
+
+    function renderA() {
+      const groups = byCategory();
+      if (!groups.some(([c]) => c === state.category) && groups[0]) state.category = groups[0][0];
+      const current = groups.find(([c]) => c === state.category)?.[1] || [];
+      return tabsHtml(state.category) + modulesIn(current).map(([m, ps]) => moduleBlock(m, ps)).join("");
+    }
+
+    function renderB() {
+      const groups = byCategory();
+      if (!groups.some(([c]) => c === state.category) && groups[0]) state.category = groups[0][0];
+      const current = groups.find(([c]) => c === state.category)?.[1] || [];
+      return `<div class="split">
+        <div class="rail">${groups.map(([c]) => `<button data-cat="${c}" class="${c === state.category ? "on" : ""}">${c}<span>${catSelected(c)}/${catCount(c)}</span></button>`).join("")}</div>
+        <div class="pane">${modulesIn(current).map(([m, ps]) => moduleBlock(m, ps)).join("") || "<p class='count'>Nothing in this category.</p>"}</div>
+      </div>`;
+    }
+
+    function renderC() {
+      const cats = [...new Set(ALL.map((p) => p.category))];
+      cats.sort((a, b) => (a === "General" ? -1 : b === "General" ? 1 : a.localeCompare(b)));
+      const rows = ALL.filter(matchSearch).filter((p) => !isAll(p) && (state.category === "All" || p.category === state.category));
+      const mods = [...new Set(rows.map((p) => p.module))];
+      const allPerm = ALL.find(isAll);
+      return `<div class="chips">
+        <button class="chip ${state.category === "All" ? "on" : ""}" data-cat="All">All</button>
+        ${cats.map((c) => `<button class="chip ${state.category === c ? "on" : ""}" data-cat="${c}">${c}</button>`).join("")}
+      </div>
+      ${allPerm ? checkbox(allPerm, "all-access") : ""}
+      <table class="matrix">
+        <thead><tr><th>Module</th>${ACTIONS.map((a) => `<th>${title(a)}</th>`).join("")}</tr></thead>
+        <tbody>${mods.map((m) => {
+          const perms = ALL.filter((p) => p.module === m);
+          return `<tr><td>${title(m)}</td>${ACTIONS.map((a) => {
+            const p = perms.find((x) => actionOf(x) === a);
+            if (!p) return "<td>—</td>";
+            const locked = hasAll();
+            const checked = state.selected.has(p.uuid) || hasAll();
+            return `<td><input type="checkbox" data-id="${p.uuid}" ${checked ? "checked" : ""} ${locked ? "disabled" : ""} /></td>`;
+          }).join("")}</tr>`;
+        }).join("")}</tbody>
+      </table>`;
+    }
+
+    function renderD() {
+      const cats = [...new Set(ALL.map((p) => p.category))];
+      cats.sort((a, b) => (a === "General" ? -1 : b === "General" ? 1 : a.localeCompare(b)));
+      const list = ALL.filter(matchSearch).filter((p) => state.category === "All" || p.category === state.category);
+      const mods = [...new Set(list.map((p) => p.module))];
+      return `<div class="chips">
+        <button class="chip ${state.category === "All" ? "on" : ""}" data-cat="All">All categories</button>
+        ${cats.map((c) => `<button class="chip ${state.category === c ? "on" : ""}" data-cat="${c}">${c}</button>`).join("")}
+      </div>
+      <div class="cards">${mods.map((m) => {
+        const perms = ALL.filter((p) => p.module === m && matchSearch(p));
+        const cat = perms[0]?.category || "";
+        return `<article class="mod-card">
+          <h3>${title(m)}</h3>
+          <div class="cat">${cat}</div>
+          <div class="pills">${perms.map((p) => {
+            const on = state.selected.has(p.uuid) || (hasAll() && !isAll(p));
+            return `<button class="pill ${on ? "on" : ""}" data-id="${p.uuid}" data-toggle="1">${isAll(p) ? "All access" : title(actionOf(p))}</button>`;
+          }).join("")}</div>
+        </article>`;
+      }).join("")}</div>`;
+    }
+
+    function renderE() {
+      const groups = byCategory();
+      return groups.map(([c, perms]) => `<details class="cat" data-panel="${c}" ${state.openPanel === c ? "open" : ""}>
+        <summary>${c}<em style="font-weight:500;color:#8a8a8a;font-size:12px">${catSelected(c)}/${catCount(c)}</em></summary>
+        <div class="cat-body">${modulesIn(perms).map(([m, ps]) => moduleBlock(m, ps)).join("")}</div>
+      </details>`).join("");
+    }
+
+    function renderPicker() {
+      document.getElementById("designPicker").innerHTML = DESIGNS.map((d) =>
+        `<button class="design-btn ${state.design === d.id ? "active" : ""}" data-design="${d.id}">
+          <strong>${d.name}</strong><span>${d.blurb}</span>
+        </button>`
+      ).join("");
+    }
+
+    function render() {
+      renderPicker();
+      const meta = DESIGNS.find((d) => d.id === state.design);
+      document.getElementById("canvasTitle").textContent = meta.name;
+      document.getElementById("countLabel").textContent = `${state.selected.size} of ${ALL.length} selected`;
+      document.getElementById("liveCount").textContent = `${state.selected.size} selected`;
+      const stage = document.getElementById("stage");
+      stage.innerHTML = ({ A: renderA, B: renderB, C: renderC, D: renderD, E: renderE })[state.design]();
+    }
+
+    document.body.addEventListener("click", (e) => {
+      const design = e.target.closest("[data-design]");
+      if (design) {
+        state.design = design.dataset.design;
+        if (state.design === "C" || state.design === "D") state.category = "All";
+        else if (state.category === "All") state.category = "General";
+        render();
+        return;
+      }
+      const cat = e.target.closest("[data-cat]");
+      if (cat) {
+        state.category = cat.dataset.cat;
+        state.search = "";
+        document.getElementById("search").value = "";
+        render();
+        return;
+      }
+      const group = e.target.closest("[data-group]");
+      if (group) {
+        const perms = ALL.filter((p) => p.module === group.dataset.group);
+        toggleGroup(perms, group.dataset.on === "1");
+        return;
+      }
+      const pill = e.target.closest("[data-toggle]");
+      if (pill) {
+        const id = pill.dataset.id;
+        toggle(id, !state.selected.has(id));
+      }
+    });
+
+    document.body.addEventListener("toggle", (e) => {
+      const panel = e.target.closest("[data-panel]");
+      if (!panel || state.design !== "E") return;
+      if (panel.open) {
+        state.openPanel = panel.dataset.panel;
+        document.querySelectorAll("details.cat").forEach((el) => {
+          if (el !== panel) el.open = false;
+        });
+      }
+    }, true);
+
+    document.body.addEventListener("change", (e) => {
+      if (e.target.matches("input[type=checkbox][data-id]")) {
+        toggle(e.target.dataset.id, e.target.checked);
+      }
+    });
+
+    document.getElementById("search").addEventListener("input", (e) => {
+      state.search = e.target.value;
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
