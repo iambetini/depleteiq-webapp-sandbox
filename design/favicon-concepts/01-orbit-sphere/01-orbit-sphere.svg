@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff7a1f"/><stop offset="1" stop-color="#f25c00"/>
+    </linearGradient></defs><rect x="0" y="0" width="128" height="128" rx="28" fill="url(#g)"/>
+  <defs><clipPath id="sphere"><circle cx="64" cy="64" r="44"/></clipPath></defs>
+  <circle cx="64" cy="64" r="44" fill="#ffffff"/>
+  <g clip-path="url(#sphere)" transform="rotate(-18 64 64)"
+     stroke="#f25c00" stroke-width="13" fill="none" stroke-linecap="round"><path d="M 8,42 Q 64,26 120,42" /><path d="M 4,67 Q 64,52 124,67" /><path d="M 12,92 Q 64,78 116,92" /></g>
+  <circle cx="64" cy="64" r="44" fill="none" stroke="#f25c00" stroke-width="3" opacity="0.25"/>
+</svg>
