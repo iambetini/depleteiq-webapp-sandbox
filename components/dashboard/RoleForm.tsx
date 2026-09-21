@@ -155,8 +155,8 @@ export default function RoleForm({
             enableReinitialize
           >
             {({ values, handleChange, setFieldValue, isSubmitting }) => (
-              <Form className="flex h-full min-h-0 flex-1 flex-col">
-                <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-2 lg:grid-rows-[minmax(max-content,1fr)]">
+              <Form className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+                <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 overflow-hidden lg:grid-cols-2 lg:grid-rows-1">
                   <div className="space-y-4 self-start">
                     <div className="space-y-2">
                       <Label htmlFor="name">Name *</Label>
@@ -197,7 +197,7 @@ export default function RoleForm({
                       <ErrorMessage name="access_type" component="p" className="text-sm text-red-500" />
                     </div>
                   </div>
-                  <div className="flex min-h-0 min-w-0 flex-col gap-2">
+                  <div className="flex h-full min-h-0 min-w-0 flex-col gap-2 overflow-hidden max-lg:h-[20rem]">
                     <Label className="shrink-0">Permissions</Label>
                     <PermissionsPicker
                       permissions={permissions}

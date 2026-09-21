@@ -15,7 +15,7 @@ export default function CreateRolePage() {
   }
 
   return (
-    <div className="flex min-h-0 flex-col lg:h-[calc(100dvh-12.5rem)]">
+    <div className="flex min-h-0 flex-col overflow-hidden lg:h-[calc(100dvh-16.5rem)]">
       <ViewPageHeader title="Create Role" />
       <div className="min-h-0 flex-1">
         <RoleForm
