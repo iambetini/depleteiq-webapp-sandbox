@@ -56,7 +56,7 @@ export default function ChangePasswordPage() {
       })
       await update({ mustChangePassword: false })
       toast({ title: "Success", description: "Password updated successfully!" })
-      router.push("/dashboard")
+      window.location.href = "/dashboard"
     } catch (err: any) {
       catchError(err, setFieldError)
       setPasswordError(err?.message || "Failed to change password.")

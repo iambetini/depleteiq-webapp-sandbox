@@ -7,7 +7,7 @@ import { showError } from "./notifications";
 // Constants
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
-const TOKEN_CACHE_DURATION = 23 * 60 * 60 * 1000; // 23 hours
+const REFRESH_BUFFER_MS = 5 * 60 * 1000; // refresh 5 minutes before expiry
 
 // Types
 export interface ApiResponse<T> {
@@ -51,8 +51,10 @@ const formatErrorMessages = (errors: any[]): string => {
 class ApiClient {
   private axiosInstance: AxiosInstance;
   private cachedToken: string | null = null;
-  private tokenExpiry: number | null = null;
+  private tokenObtainedAt: number | null = null;
+  private tokenExpiresIn: number | null = null;
   private sessionPromise: Promise<any> | null = null;
+  private refreshPromise: Promise<boolean> | null = null;
 
   constructor(baseURL: string) {
     this.axiosInstance = this.createAxiosInstance(baseURL);
@@ -73,7 +75,6 @@ class ApiClient {
 
   private setupInterceptors(): void {
     this.axiosInstance.interceptors.request.use(this.handleRequest.bind(this));
-
     this.axiosInstance.interceptors.response.use(
       this.handleSuccessResponse.bind(this),
       this.handleErrorResponse.bind(this),
@@ -81,6 +82,13 @@ class ApiClient {
   }
 
   private async handleRequest(config: any): Promise<any> {
+    const timeUntilExpiry = this.getTimeUntilExpiry();
+
+    // Proactive refresh if token expires within 5 minutes
+    if (timeUntilExpiry !== null && timeUntilExpiry < REFRESH_BUFFER_MS) {
+      await this.refreshAccessToken();
+    }
+
     const token = await this.getValidToken();
 
     if (token) {
@@ -106,11 +114,16 @@ class ApiClient {
     return this.createErrorFromResponse(response);
   }
 
-  private handleErrorResponse(error: any): Promise<never> {
+  private async handleErrorResponse(error: any): Promise<never> {
     const message = this.extractErrorMessage(error);
 
     if (message === "Unauthenticated.") {
-      this.handleAuthError();
+      const refreshed = await this.refreshAccessToken();
+      if (refreshed) {
+        return this.axiosInstance.request(error.config);
+      }
+      this.clearCache();
+      signOut();
     }
 
     const config = (error.config || {}) as ApiRequestConfig;
@@ -155,15 +168,82 @@ class ApiClient {
     }
   }
 
+  // --- Token management ---
+
+  private getTimeUntilExpiry(): number | null {
+    if (!this.tokenObtainedAt || !this.tokenExpiresIn) return null;
+    const expiryMs = this.tokenObtainedAt + this.tokenExpiresIn * 1000;
+    return expiryMs - Date.now();
+  }
+
+  private async getRefreshTokenFromSession(): Promise<string | null> {
+    try {
+      const session = await this.createSessionRequest();
+      return session?.refresh_token || null;
+    } catch {
+      return null;
+    }
+  }
+
+  private async refreshAccessToken(): Promise<boolean> {
+    if (this.refreshPromise) return this.refreshPromise;
+
+    this.refreshPromise = (async () => {
+      try {
+        const refresh_token = await this.getRefreshTokenFromSession();
+        if (!refresh_token) return false;
+
+        const response = await fetch("/api/auth/refresh", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refresh_token }),
+        });
+
+        if (!response.ok) return false;
+
+        const data = await response.json();
+        if (data.status !== "success") return false;
+
+        const { token, refresh_token: new_refresh_token, expires_in } =
+          data.data;
+
+        this.cachedToken = token;
+        this.tokenObtainedAt = Date.now();
+        this.tokenExpiresIn = expires_in;
+
+        return true;
+      } catch {
+        return false;
+      } finally {
+        this.refreshPromise = null;
+      }
+    })();
+
+    return this.refreshPromise;
+  }
+
+  private clearCache(): void {
+    this.cachedToken = null;
+    this.tokenObtainedAt = null;
+    this.tokenExpiresIn = null;
+    this.sessionPromise = null;
+  }
+
   private async getValidToken(): Promise<string | null> {
-    // Return cached token if valid
-    if (this.cachedToken && this.tokenExpiry && Date.now() < this.tokenExpiry) {
+    // Return cached token if still valid (> 5 minutes remaining)
+    const timeUntilExpiry = this.getTimeUntilExpiry();
+    if (this.cachedToken && timeUntilExpiry !== null && timeUntilExpiry > REFRESH_BUFFER_MS) {
       return this.cachedToken;
     }
 
     // Wait for existing session request
     if (this.sessionPromise) {
       const session = await this.sessionPromise;
+      if (session?.accessToken) {
+        this.cachedToken = session.accessToken;
+        this.tokenObtainedAt = session.token_obtained_at || null;
+        this.tokenExpiresIn = session.expires_in || null;
+      }
       return session?.accessToken || null;
     }
 
@@ -176,7 +256,8 @@ class ApiClient {
 
       if (token) {
         this.cachedToken = token;
-        this.tokenExpiry = Date.now() + TOKEN_CACHE_DURATION;
+        this.tokenObtainedAt = session.token_obtained_at || Date.now();
+        this.tokenExpiresIn = session.expires_in || null;
       }
 
       return token;
@@ -191,16 +272,7 @@ class ApiClient {
       : getSession();
   }
 
-  private handleAuthError(): void {
-    this.refreshToken();
-    signOut();
-  }
-
-  public refreshToken(): void {
-    this.cachedToken = null;
-    this.tokenExpiry = null;
-    this.sessionPromise = null;
-  }
+  // --- Public API ---
 
   private mergeConfig(config?: ApiRequestConfig): ApiRequestConfig {
     return { showToast: true, ...config };
@@ -220,7 +292,6 @@ class ApiClient {
     }
   }
 
-  // Public API methods
   async get<T>(
     endpoint: string,
     config?: ApiRequestConfig,

@@ -5,6 +5,9 @@ declare module "next-auth" {
   interface Session {
     user: AppUser & DefaultSession["user"];
     accessToken: string;
+    refresh_token?: string;
+    token_obtained_at?: number;
+    expires_in?: number;
   }
 
   interface User extends AppUser {
@@ -16,5 +19,8 @@ declare module "next-auth/jwt" {
   interface JWT {
     user: AppUser;
     accessToken: string;
+    refresh_token?: string;
+    token_obtained_at?: number;
+    expires_in?: number;
   }
 }
