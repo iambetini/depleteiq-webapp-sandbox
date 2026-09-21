@@ -22,7 +22,7 @@ export default function CreateRolePage() {
         isEdit={false}
         onSuccess={() => router.push("/dashboard/general-settings/roles")}
         title="Role Information"
-        description="Add a new role to the system"
+        description="Enter the details for the role"
         submitButtonText="Create Role"
       />
     </>
