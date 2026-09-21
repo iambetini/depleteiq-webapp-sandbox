@@ -141,7 +141,7 @@ export default function RoleForm({
   }
 
   return (
-    <div className="lg:h-[calc(100dvh-17.5rem)]">
+    <div className="h-full min-h-0">
       <Card className="flex h-full min-h-0 max-w-6xl flex-col overflow-hidden">
         <CardHeader className="shrink-0 px-6 py-4">
           <CardTitle className="text-xl text-[#444444]">{title}</CardTitle>
