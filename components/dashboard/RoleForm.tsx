@@ -147,7 +147,7 @@ export default function RoleForm({
           <CardTitle className="text-xl text-[#444444]">{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
         </CardHeader>
-        <CardContent className="flex min-h-0 flex-1 flex-col pt-0">
+        <CardContent className="flex min-h-0 flex-1 flex-col overflow-hidden pt-0 pb-4">
           <Formik
             initialValues={initialValues}
             validationSchema={roleValidationSchema}
@@ -155,9 +155,9 @@ export default function RoleForm({
             enableReinitialize
           >
             {({ values, handleChange, setFieldValue, isSubmitting }) => (
-              <Form className="flex min-h-0 flex-1 flex-col gap-4">
-                <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-2">
-                  <div className="space-y-4">
+              <Form className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
+                <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 overflow-hidden lg:grid-cols-2 lg:grid-rows-1">
+                  <div className="min-h-0 space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Name *</Label>
                       <Input
@@ -197,8 +197,8 @@ export default function RoleForm({
                       <ErrorMessage name="access_type" component="p" className="text-sm text-red-500" />
                     </div>
                   </div>
-                  <div className="flex min-h-[22rem] min-w-0 flex-col gap-2 lg:min-h-0">
-                    <Label>Permissions</Label>
+                  <div className="flex min-h-0 min-w-0 flex-col gap-2 overflow-hidden max-lg:min-h-[22rem]">
+                    <Label className="shrink-0">Permissions</Label>
                     <PermissionsPicker
                       permissions={permissions}
                       selectedIds={values.permissions}
@@ -208,7 +208,7 @@ export default function RoleForm({
                     <ErrorMessage name="permissions" component="p" className="text-sm text-red-500" />
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center justify-end space-x-4 pt-1">
+                <div className="flex shrink-0 items-center justify-end space-x-4 border-t bg-card pt-4">
                   <Button type="button" variant="outline" onClick={() => router.back()}>
                     Cancel
                   </Button>
