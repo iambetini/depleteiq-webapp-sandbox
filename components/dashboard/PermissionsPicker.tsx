@@ -114,7 +114,7 @@ export default function PermissionsPicker({
           type="multiple"
           value={openCategories}
           onValueChange={setOpenCategories}
-          className="min-h-0 flex-1 overflow-y-auto rounded-md border border-muted"
+          className="h-full min-h-0 flex-1 overflow-y-auto rounded-md border border-muted"
         >
           {categories.map((group, index) => {
             const items = [...group.permissions].sort((a, b) => {
