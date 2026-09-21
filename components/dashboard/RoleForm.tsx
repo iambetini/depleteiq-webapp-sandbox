@@ -141,13 +141,13 @@ export default function RoleForm({
   }
 
   return (
-    <div className="h-full min-h-0">
-      <Card className="flex h-full min-h-0 max-w-6xl flex-col">
-        <CardHeader className="shrink-0 px-6 py-4">
+    <div>
+      <Card className="max-w-6xl">
+        <CardHeader className="px-6 py-4">
           <CardTitle className="text-xl text-[#444444]">{title}</CardTitle>
           <CardDescription>{description}</CardDescription>
         </CardHeader>
-        <CardContent className="flex min-h-0 flex-1 flex-col pt-0 pb-4">
+        <CardContent className="pt-0 pb-4">
           <Formik
             initialValues={initialValues}
             validationSchema={roleValidationSchema}
@@ -155,9 +155,9 @@ export default function RoleForm({
             enableReinitialize
           >
             {({ values, handleChange, setFieldValue, isSubmitting }) => (
-              <Form className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-                <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 overflow-hidden lg:grid-cols-2 lg:grid-rows-1">
-                  <div className="space-y-4 self-start">
+              <Form className="space-y-4">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Name *</Label>
                       <Input
@@ -197,7 +197,7 @@ export default function RoleForm({
                       <ErrorMessage name="access_type" component="p" className="text-sm text-red-500" />
                     </div>
                   </div>
-                  <div className="flex h-full min-h-0 min-w-0 flex-col gap-2 overflow-hidden max-lg:h-[20rem]">
+                  <div className="flex h-[min(20rem,calc(100dvh-28rem))] min-h-[16rem] min-w-0 flex-col gap-2">
                     <Label className="shrink-0">Permissions</Label>
                     <PermissionsPicker
                       permissions={permissions}
@@ -208,7 +208,7 @@ export default function RoleForm({
                     <ErrorMessage name="permissions" component="p" className="text-sm text-red-500" />
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center justify-end space-x-4 pt-2 lg:ml-auto lg:w-1/2 lg:border-t lg:pt-3">
+                <div className="flex items-center justify-end space-x-4 border-t pt-4">
                   <Button type="button" variant="outline" onClick={() => router.back()}>
                     Cancel
                   </Button>
