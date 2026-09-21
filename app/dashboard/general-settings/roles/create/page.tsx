@@ -15,16 +15,18 @@ export default function CreateRolePage() {
   }
 
   return (
-    <>
+    <div className="flex min-h-0 flex-col lg:h-[calc(100dvh-12.5rem)]">
       <ViewPageHeader title="Create Role" />
-      <RoleForm
-        initialValues={initialValues}
-        isEdit={false}
-        onSuccess={() => router.push("/dashboard/general-settings/roles")}
-        title="Role Information"
-        description="Add a new role to the system"
-        submitButtonText="Create Role"
-      />
-    </>
+      <div className="min-h-0 flex-1">
+        <RoleForm
+          initialValues={initialValues}
+          isEdit={false}
+          onSuccess={() => router.push("/dashboard/general-settings/roles")}
+          title="Role Information"
+          description="Enter the details for the role"
+          submitButtonText="Create Role"
+        />
+      </div>
+    </div>
   )
 }

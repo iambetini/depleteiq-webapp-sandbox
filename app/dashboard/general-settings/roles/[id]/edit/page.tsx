@@ -24,20 +24,22 @@ export default function EditRolePage() {
   };
 
   return (
-    <>
+    <div className="flex min-h-0 flex-col lg:h-[calc(100dvh-12.5rem)]">
       <ViewPageHeader
         title="Edit Role"
         description="Update role information"
       />
-      <RoleForm
-        initialValues={initialValues}
-        isEdit={true}
-        roleId={role.uuid}
-        title="Edit Role"
-        description="Update role information"
-        submitButtonText="Update Role"
-        onSuccess={() => router.push(`/dashboard/general-settings/roles/${role.uuid}`)}
-      />
-    </>
+      <div className="min-h-0 flex-1">
+        <RoleForm
+          initialValues={initialValues}
+          isEdit={true}
+          roleId={role.uuid}
+          title="Edit Role"
+          description="Update role information"
+          submitButtonText="Update Role"
+          onSuccess={() => router.push(`/dashboard/general-settings/roles/${role.uuid}`)}
+        />
+      </div>
+    </div>
   );
 }

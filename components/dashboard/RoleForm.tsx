@@ -2,7 +2,7 @@
 
 import PermissionsPicker from "@/components/dashboard/PermissionsPicker"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -70,6 +70,8 @@ export default function RoleForm({
   isEdit = false,
   roleId,
   onSuccess,
+  title,
+  description,
   submitButtonText,
 }: RoleFormProps) {
   const [permissions, setPermissions] = useState<Permission[]>([])
@@ -139,9 +141,13 @@ export default function RoleForm({
   }
 
   return (
-    <div className="space-y-6">
-      <Card className="max-w-6xl">
-        <CardContent className="pt-6">
+    <div className="h-full min-h-0">
+      <Card className="flex h-full min-h-0 max-w-6xl flex-col overflow-hidden">
+        <CardHeader className="shrink-0 px-6 py-4">
+          <CardTitle className="text-xl text-[#444444]">{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
+        <CardContent className="flex min-h-0 flex-1 flex-col pt-0">
           <Formik
             initialValues={initialValues}
             validationSchema={roleValidationSchema}
@@ -149,9 +155,9 @@ export default function RoleForm({
             enableReinitialize
           >
             {({ values, handleChange, setFieldValue, isSubmitting }) => (
-              <Form className="space-y-6">
-                <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-                  <div className="space-y-5">
+              <Form className="flex min-h-0 flex-1 flex-col gap-4">
+                <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 lg:grid-cols-2">
+                  <div className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Name *</Label>
                       <Input
@@ -191,7 +197,7 @@ export default function RoleForm({
                       <ErrorMessage name="access_type" component="p" className="text-sm text-red-500" />
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="flex min-h-[22rem] min-w-0 flex-col gap-2 lg:min-h-0">
                     <Label>Permissions</Label>
                     <PermissionsPicker
                       permissions={permissions}
@@ -202,7 +208,7 @@ export default function RoleForm({
                     <ErrorMessage name="permissions" component="p" className="text-sm text-red-500" />
                   </div>
                 </div>
-                <div className="flex items-center justify-end space-x-4 pt-4">
+                <div className="flex shrink-0 items-center justify-end space-x-4 pt-1">
                   <Button type="button" variant="outline" onClick={() => router.back()}>
                     Cancel
                   </Button>
