@@ -88,7 +88,7 @@ export default function PermissionsPicker({
       value={openCategories}
       onValueChange={setOpenCategories}
       className={cn(
-        "h-full min-h-0 flex-1 overflow-y-auto rounded-md border border-muted",
+        "min-h-0 flex-1 overflow-y-auto rounded-md border border-muted",
         className,
       )}
     >

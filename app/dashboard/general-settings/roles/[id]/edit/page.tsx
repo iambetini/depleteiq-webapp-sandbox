@@ -24,7 +24,7 @@ export default function EditRolePage() {
   };
 
   return (
-    <div className="flex min-h-0 flex-col lg:h-[calc(100dvh-12.5rem)]">
+    <div className="flex min-h-0 flex-col overflow-hidden lg:h-[calc(100dvh-16.5rem)]">
       <ViewPageHeader
         title="Edit Role"
         description="Update role information"
