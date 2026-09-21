@@ -208,7 +208,7 @@ export default function RoleForm({
                     <ErrorMessage name="permissions" component="p" className="text-sm text-red-500" />
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center justify-end space-x-4 border-t pt-4">
+                <div className="flex shrink-0 items-center justify-end space-x-4 pt-2 lg:ml-auto lg:w-1/2 lg:border-t lg:pt-3">
                   <Button type="button" variant="outline" onClick={() => router.back()}>
                     Cancel
                   </Button>
