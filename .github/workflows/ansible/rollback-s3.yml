@@ -560,9 +560,6 @@
             dest: "{{ backup_dir }}/pre-rollback-backup_{{ backup_timestamp }}.tar.gz"
             format: gz
             exclude_path:
-              - "{{ deploy_dir }}/node_modules"
-              - "{{ deploy_dir }}/.next"
-              - "{{ deploy_dir }}/out"
               - "{{ deploy_dir }}/.git"
               - "{{ deploy_dir }}/storage/logs/*"
               - "{{ deploy_dir }}/.github"
@@ -579,29 +576,12 @@
         - debug:
             msg: "Could not create safety backup, continuing with rollback..."
 
-    - name: Remove existing build folder
-      file:
-        path: "{{ deploy_dir }}.next"
-        state: absent
-
     - name: Extract backup to deployment directory
       unarchive:
         src: "{{ temp_restore_dir }}/{{ backup_filename }}"
         dest: "{{ deploy_dir }}"
         remote_src: yes
       register: extraction
-
-    - name: Install dependencies with pnpm
-      command: pnpm install --frozen-lockfile
-      args:
-        chdir: "{{ deploy_dir }}"
-      become_user: "{{ app_user }}"
-
-    - name: Build the Next.js application
-      command: pnpm build
-      args:
-        chdir: "{{ deploy_dir }}"
-      become_user: "{{ app_user }}"
 
     - name: Deploy via PM2 Ecosystem
       shell: |

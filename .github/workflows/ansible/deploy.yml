@@ -69,8 +69,6 @@
         delete: yes
         rsync_opts:
           - "--exclude=.git"
-          - "--exclude=node_modules"
-          - "--exclude=.next"
 
     # ========== NGINX CONFIGURATION ==========
     - name: Check if nginx config file exists after copy
@@ -114,23 +112,6 @@
             name: nginx
             state: reloaded
           when: nginx_copied is changed and nginx_test.rc == 0
-
-    - name: Remove existing build folder
-      file:
-        path: "{{ deploy_dir }}.next"
-        state: absent
-
-    - name: Install dependencies with pnpm
-      command: pnpm install --frozen-lockfile
-      args:
-        chdir: "{{ deploy_dir }}"
-      become_user: "{{ app_user }}"
-
-    - name: Build the Next.js application
-      command: pnpm build
-      args:
-        chdir: "{{ deploy_dir }}"
-      become_user: "{{ app_user }}"
 
     - name: Deploy via PM2 Ecosystem
       shell: |
