@@ -70,9 +70,6 @@
             dest: "{{ temp_backup_dir }}/backup_{{ backup_timestamp }}.tar.gz"
             format: gz
             exclude_path:
-                - "{{ deploy_dir }}/node_modules"
-                - "{{ deploy_dir }}/.next"
-                - "{{ deploy_dir }}/out"
                 - "{{ deploy_dir }}/.git"
                 - "{{ deploy_dir }}/.github"
                 - "{{ deploy_dir }}/*.log"
