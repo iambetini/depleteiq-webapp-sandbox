@@ -8,8 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectWi
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { ErrorMessage, Form, Formik } from "formik";
-import { Plus, Save } from "lucide-react";
-import { forwardRef, useImperativeHandle, useRef } from "react";
+import { Eye, EyeOff, Plus, Save } from "lucide-react";
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 
 type FieldType =
   | "text"
@@ -72,6 +72,46 @@ interface UserFormProps {
 
 export interface UserFormRef {
   setFieldValue: (fieldName: string, value: any) => void
+}
+
+function FormPasswordInput({
+  id,
+  name,
+  value,
+  onChange,
+  placeholder,
+}: {
+  id: string
+  name: string
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  placeholder?: string
+}) {
+  const [show, setShow] = useState(false)
+
+  return (
+    <div className="relative">
+      <Input
+        id={id}
+        name={name}
+        type={show ? "text" : "password"}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="pr-10"
+        autoComplete="new-password"
+      />
+      <button
+        type="button"
+        tabIndex={-1}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        onClick={() => setShow((v) => !v)}
+        aria-label={show ? "Hide password" : "Show password"}
+      >
+        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  )
 }
 
 export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
@@ -253,7 +293,22 @@ export const UserForm = forwardRef<UserFormRef, UserFormProps>(({
                           </div>
                         )
                       }
-                      // Default: text, email, password, number
+                      if (field.type === "password") {
+                        return (
+                          <div className="space-y-2" key={field.name}>
+                            <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>
+                            <FormPasswordInput
+                              id={field.name}
+                              name={field.name}
+                              value={values[field.name]}
+                              onChange={handleChange}
+                              placeholder={field.placeholder}
+                            />
+                            <ErrorMessage name={field.name} component="p" className="text-sm text-red-500" />
+                          </div>
+                        )
+                      }
+                      // Default: text, email, number
                       return (
                         <div className="space-y-2" key={field.name}>
                           <Label htmlFor={field.name}>{field.label}{field.required && " *"}</Label>

@@ -11,7 +11,7 @@ interface LocationItem {
 interface MultiMapProps {
     locations: LocationItem[]
     className?: string
-    /** When true, draw an orange path (soft underlay + dashes + sparse direction arrows). */
+    /** When true, draw a dashed orange path with directional arrowheads. */
     showPath?: boolean
 }
 
@@ -170,59 +170,64 @@ export function MultiMap({
 
         if (pathPts.length < 2) return
 
-        // Soft solid underlay — same orange weight/texture as the continuous path
-        const underlay = new google.maps.Polyline({
-            path: pathPts,
-            geodesic: true,
-            strokeColor: "#f97316",
-            strokeOpacity: 0.45,
-            strokeWeight: 3,
-            map: mapInstance.current,
-            zIndex: 1,
-        })
+        // Deep saturated safety orange (matches reference)
+        const pathColor = "#ff6600"
 
-        // Dashed segment symbol over the underlay
+        // Moderate-weight dashes — bold but not bulky; ~2:1 dash-to-gap
         const dashedSymbol = {
             path: "M 0,-1 0,1",
             strokeOpacity: 1,
-            strokeColor: "#f97316",
-            scale: 4,
+            strokeColor: pathColor,
+            strokeWeight: 4,
+            scale: 5,
         }
 
-        // Forward arrow — sparse so direction stays clear without clutter
+        // Arrowheads wider than the dash so the triangle stays sharp above the line
         const arrowSymbol = {
             path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-            scale: 3,
-            strokeColor: "#ffffff",
+            scale: 4,
+            strokeColor: pathColor,
             strokeWeight: 1,
-            fillColor: "#ea580c",
+            fillColor: pathColor,
             fillOpacity: 1,
         }
 
-        // Transparent stroke carrying dashes + directional arrows
-        const dashedPath = new google.maps.Polyline({
+        const lineOpts = {
             path: pathPts,
             geodesic: true,
-            strokeColor: "#f97316",
+            strokeColor: pathColor,
             strokeOpacity: 0,
-            strokeWeight: 3,
+            strokeWeight: 4,
+            map: mapInstance.current,
+        }
+
+        // Dashes only (centers every 18px → gaps at 9, 27, 45, 63, 81…)
+        const dashedPath = new google.maps.Polyline({
+            ...lineOpts,
             icons: [
                 {
                     icon: dashedSymbol,
                     offset: "0",
                     repeat: "18px",
                 },
-                {
-                    icon: arrowSymbol,
-                    offset: "50%",
-                    repeat: "160px",
-                },
             ],
-            map: mapInstance.current,
             zIndex: 2,
         })
 
-        polylineRef.current = [underlay, dashedPath]
+        // Arrows on a higher layer, sitting in dash gaps — never at the path start
+        const arrowPath = new google.maps.Polyline({
+            ...lineOpts,
+            icons: [
+                {
+                    icon: arrowSymbol,
+                    offset: "81px",
+                    repeat: "54px",
+                },
+            ],
+            zIndex: 3,
+        })
+
+        polylineRef.current = [dashedPath, arrowPath]
     }
 
     const syncMarkers = () => {
@@ -260,15 +265,12 @@ export function MultiMap({
                 position: { lat: p.lat, lng: p.lng },
                 map: mapInstance.current,
                 title: p.title || "",
-                label:
-                    pts.length <= 40
-                        ? {
-                              text: String(index + 1),
-                              color: "#ffffff",
-                              fontSize: "11px",
-                              fontWeight: "700",
-                          }
-                        : undefined,
+                label: {
+                    text: String(index + 1),
+                    color: "#ffffff",
+                    fontSize: pts.length > 99 ? "9px" : "11px",
+                    fontWeight: "700",
+                },
                 zIndex: pts.length - index,
             })
 
