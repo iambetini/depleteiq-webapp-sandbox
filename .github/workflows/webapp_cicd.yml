@@ -1,7 +1,7 @@
 name: Webapp Pipeline
 
 run-name: |
-  ${{ 
+  ${{
     github.ref == 'refs/heads/prod' && 'Deploy to Prod' ||
     github.ref == 'refs/heads/stage' && 'Deploy to Stage' ||
     github.ref == 'refs/heads/dev' && 'Deploy to Dev' ||
@@ -30,7 +30,7 @@ permissions:
 jobs:
   check-source-branch:
     name: Check PR Source Branch
-    runs-on: runner
+    runs-on: ubuntu-latest
     steps:
       - name: Ensure source is stage
         if: github.event_name == 'pull_request' && github.base_ref == 'prod'
@@ -58,12 +58,75 @@ jobs:
               state: 'closed'
             });
 
-  build_and_test:
-    name: Buld and Test
+  lint:
+    name: Lint
     needs: check-source-branch
-    runs-on: runner
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (check only)
+        run: pnpm lint
+        continue-on-error: true # Don't fail on lint errors
+
+  type-check:
+    name: Type Check
+    needs: check-source-branch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm type-check
+        continue-on-error: true
+
+  build_and_test:
+    name: Build and Test
+    needs: check-source-branch
+    runs-on: ubuntu-latest
+    # Set environment for job based on branch (needed to resolve
+    # environment-scoped secrets: ENV_FILE, DIGITALOCEAN_ACCESS_TOKEN, etc.)
+    environment: ${{  github.ref == 'refs/heads/prod' && 'prod' || github.ref == 'refs/heads/stage' && 'stage' || 'dev' }}
+    env:
+      stage: ${{  github.ref == 'refs/heads/prod' && 'prod' || github.ref == 'refs/heads/stage' && 'stage' || 'dev' }}
+    outputs:
+      artifact_key: ${{ steps.upload.outputs.artifact_key }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - uses: pnpm/action-setup@v4
         name: Install pnpm
@@ -87,18 +150,70 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint (check only)
-        run: pnpm lint
-        continue-on-error: true # Don't fail on lint errors
+      # Everything below this point exists only to produce and ship a
+      # deployable artifact. Skipped on pull_request: PRs never deploy (see
+      # the `deploy` job's `if:`), so building one here would just be a real
+      # DO Spaces upload with real secrets for an object nothing ever
+      # downloads or cleans up. `pnpm build` above still runs on PRs - that's
+      # the actual validation value (catches build breakage before merge).
+      - name: Install DigitalOcean doctl
+        if: github.event_name != 'pull_request'
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
-      - name: Type check
-        run: pnpm type-check
-        continue-on-error: true
-        env:
-          NODE_OPTIONS: --max-old-space-size=4096
+      # Droplet IPs are stable, pre-existing infrastructure - resolving this
+      # here (instead of only in deploy) lets .env.production get the real
+      # webapp IP substituted in before pnpm build runs, matching today's
+      # ordering (IP resolved, then build) now that build happens here.
+      - name: Get IP for environment
+        if: github.event_name != 'pull_request'
+        id: ip_output
+        run: |
+          RAW_DATA=$(doctl compute droplet get ${project}-${application}-1-${stage} --format "Name,PrivateIPv4" --no-header)
+          JSON_MAP=$(echo "$RAW_DATA" | jq -R -c 'split(" ") | map(select(. != "")) | {(.[0]): .[1]}')
+          echo "vm_ips=$JSON_MAP" >> $GITHUB_OUTPUT
+
+      - name: Write env file
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "Writing .env from GitHub Secret..."
+          cat > .env.production << 'EOF'
+          ${{ secrets.ENV_FILE }}
+          EOF
+
+          WEBAPP_IP=$(echo '${{ steps.ip_output.outputs.vm_ips }}' | jq -r '[to_entries[] | select(.key | contains("-webapp-")) | .value] | join(" ")')
+          sed -i "s/__APP_URL__/$WEBAPP_IP/g" .env.production
+
+          echo WEBAPP_IP is $WEBAPP_IP
 
       - name: Build
         run: pnpm build
+
+      - name: Assemble standalone bundle
+        if: github.event_name != 'pull_request'
+        run: |
+          cp -r .next/static .next/standalone/.next/static
+          cp .env.production .next/standalone/.env.production
+          tar -czf build.tar.gz -C .next/standalone .
+
+      - id: install-aws-cli
+        if: github.event_name != 'pull_request'
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 2
+
+      - id: upload
+        name: Upload build artifact to DO Spaces
+        if: github.event_name != 'pull_request'
+        run: |
+          KEY="infra/nextjs-artifacts/${{ env.project }}-${{ env.application }}/${{ env.stage }}/${{ github.run_id }}.tar.gz"
+          aws s3 cp build.tar.gz "s3://${{ secrets.CI_BUILDS_BUCKET }}/$KEY" --endpoint-url "${{ secrets.DO_BUCKET_ENDPOINT }}"
+          echo "artifact_key=$KEY" >> "$GITHUB_OUTPUT"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
 
   deploy:
     name: Deploy to Server
@@ -115,6 +230,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
+        with:
+          sparse-checkout: |
+            .github/workflows/ansible
 
       # - name: Setup Terraform
       #   uses: hashicorp/setup-terraform@v3
@@ -155,35 +273,37 @@ jobs:
           JSON_MAP=$(echo "$RAW_DATA" | jq -R -c 'split(" ") | map(select(. != "")) | {(.[0]): .[1]}')
           echo "vm_ips=$JSON_MAP" >> $GITHUB_OUTPUT
 
-        # Create .env, docker-compose and nginx file from Secrets and replace placeholders
-      - name: Populate .env and docker-compose and nginx file
+      - name: Download build artifact from DO Spaces
         run: |
-          echo "Writing .env from GitHub Secret..."
+          mkdir -p build-output
+          aws s3 cp "s3://${{ secrets.CI_BUILDS_BUCKET }}/${{ needs.build_and_test.outputs.artifact_key }}" build.tar.gz --endpoint-url "${{ secrets.DO_BUCKET_ENDPOINT }}"
+          tar -xzf build.tar.gz -C build-output
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
 
-          cat > .env.production << 'EOF'
-          ${{ secrets.ENV_FILE }}
-          EOF
-
+        # Create nginx and pm2 config from Secrets and replace placeholders
+        # (.env.production is not written here - it already arrived inside
+        # the downloaded build artifact, pre-substituted in build_and_test)
+      - name: Populate nginx and pm2 config file
+        run: |
           echo "Writing nginx config file"
-          cat > nginx.conf << 'EOF'
+          cat > build-output/nginx.conf << 'EOF'
           ${{ secrets.NGINX_CONFIG }}
           EOF
 
           echo "Writing ecosystem config file"
-          cat > ecosystem.config.js << 'EOF'
+          cat > build-output/ecosystem.config.js << 'EOF'
           ${{ secrets.ECO_CONFIG }}
           EOF
-           
+
           # Get every VM IPs for API servers
           # API_IP=$(echo '${{ steps.ip_output.outputs.vm_ips }}' | jq -r '[to_entries[] | select(.key | contains("-api-")) | .value] | join(" ")')
           WEBAPP_IP=$(echo '${{ steps.ip_output.outputs.vm_ips }}' | jq -r '[to_entries[] | select(.key | contains("-webapp-")) | .value] | join(" ")')
 
-          # Replace the placeholders in .env.production
-          sed -i "s/__APP_URL__/$WEBAPP_IP/g" .env.production
-          # sed -i "s/__API_URL__/$API_IP/g" .env.production
-
           # Replace the placeholder in nginx.conf
-          sed -i "s/__NGINX_SERVER_HOST__/$WEBAPP_IP/g" nginx.conf
+          sed -i "s/__NGINX_SERVER_HOST__/$WEBAPP_IP/g" build-output/nginx.conf
 
           echo API_IP is $API_IP
           echo WEBAPP_IP is $WEBAPP_IP
@@ -249,8 +369,8 @@ jobs:
 
           # Add WEBAPP servers filtered by VM_NAME
           echo '${{ steps.ip_output.outputs.vm_ips }}' | jq -r \
-            'to_entries[] | 
-            select(.key | contains("-webapp-")) | 
+            'to_entries[] |
+            select(.key | contains("-webapp-")) |
             "\(.key) ansible_host=\(.value)"' >> inventory.ini
 
           # Add the final part
@@ -266,13 +386,7 @@ jobs:
           vm_name: "${{ env.project }}-${{ env.application }}"
           SSH_USER: ${{ secrets.SSH_USER }}
 
-      #  Executre code backup on server with ansible
-      # - name: Run Code Backup
-      #   run: ansible-playbook -i inventory.ini .github/workflows/ansible/backup.yml
-      #   env:
-      #     PROJECT: "${{ env.project }}-${{ env.application }}"
-      #     SSH_USER: ${{ secrets.SSH_USER }}
-
+      #  Execute code backup on server with ansible
       - name: Run Code Backup to S3
         run: ansible-playbook -i inventory.ini .github/workflows/ansible/backup-s3.yml
         env:
@@ -292,6 +406,6 @@ jobs:
         env:
           PROJECT: "${{ env.project }}-${{ env.application }}"
           SSH_USER: ${{ secrets.SSH_USER }}
-          SOURCE_DIR: ${{ github.workspace }}
+          SOURCE_DIR: ${{ github.workspace }}/build-output
           SSL_EMAIL: ${{ secrets.SSL_EMAIL }}
           DOMAIN_NAMES: ${{ secrets.DOMAIN_NAMES }}

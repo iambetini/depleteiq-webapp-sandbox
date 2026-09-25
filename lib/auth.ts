@@ -19,14 +19,22 @@ export const authOptions: NextAuthOptions = {
 
         try {
           const { data } = await apiClient.post<{
-            item: { user: User; token: string };
+            item: {
+              user: User;
+              token?: string;
+              access_token?: string;
+              refresh_token?: string;
+              expires_in?: number;
+            };
           }>("/auth/login", {
             email: credentials.email,
             password: credentials.password,
           });
 
-          const { user, token } = data.item;
-          if (!token) {
+          const { user, token, access_token, refresh_token, expires_in } =
+            data.item;
+          const accessToken = access_token || token;
+          if (!accessToken) {
             throw new Error("Invalid credentials");
           }
 
@@ -39,7 +47,7 @@ export const authOptions: NextAuthOptions = {
             item: User;
           }>("/auth/me", {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${accessToken}`,
             },
           });
 
@@ -63,9 +71,17 @@ export const authOptions: NextAuthOptions = {
             role: fullUser.role
               ? { ...fullUser.role, permissions: [] as any[] }
               : undefined,
-            accessToken: token,
+            accessToken,
+            refresh_token,
+            token_obtained_at: Date.now(),
+            expires_in,
             mustChangePassword: isWeakPassword(credentials.password),
-          } as User & { accessToken: string };
+          } as User & {
+            accessToken: string;
+            refresh_token?: string;
+            token_obtained_at: number;
+            expires_in?: number;
+          };
         } catch (error: any) {
           throw new Error(error?.message || "Authentication failed");
         }
@@ -75,8 +91,20 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user, trigger, session }) {
       if (user) {
-        const { accessToken, ...userWithoutToken } = user as any;
-        Object.assign(token, { user: userWithoutToken, accessToken });
+        const { accessToken, refresh_token, token_obtained_at, expires_in, ...userWithoutToken } = user as any;
+        Object.assign(token, {
+          user: userWithoutToken,
+          accessToken,
+          refresh_token,
+          token_obtained_at,
+          expires_in,
+        });
+      }
+      if (trigger === "update" && session) {
+        if ((session as any).accessToken) token.accessToken = (session as any).accessToken;
+        if ((session as any).refresh_token) token.refresh_token = (session as any).refresh_token;
+        if ((session as any).token_obtained_at) token.token_obtained_at = (session as any).token_obtained_at;
+        if ((session as any).expires_in) token.expires_in = (session as any).expires_in;
       }
       if (trigger === "update" && (session as any)?.mustChangePassword === false) {
         token.user = { ...token.user, mustChangePassword: false };
@@ -88,6 +116,9 @@ export const authOptions: NextAuthOptions = {
         Object.assign(session, {
           user: token.user,
           accessToken: token.accessToken,
+          refresh_token: token.refresh_token,
+          token_obtained_at: token.token_obtained_at,
+          expires_in: token.expires_in,
         });
       }
       return session;
